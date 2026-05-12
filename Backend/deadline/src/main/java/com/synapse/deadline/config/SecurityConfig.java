@@ -19,17 +19,19 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            // Configurações de CORS e CSRF
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            .csrf(AbstractHttpConfigurer::disable)
-            // A nossa API é REST (Stateless), não guarda sessão do utilizador
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(authorize -> authorize
+                // Configurações de CORS e CSRF
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .csrf(AbstractHttpConfigurer::disable)
+
+                // A nossa API é REST (Stateless), não guarda sessão do utilizador
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(authorize -> authorize
+
                 // Liberar rotas públicas
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
+                .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
                 
                 // Qualquer outra rota exigirá o token JWT
                 .anyRequest().authenticated()
@@ -44,12 +46,12 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // 👇 2. CRIE ESTE MÉTODO PARA DIZER QUEM PODE ACESSAR A API 👇
+    // ESTE MÉTODO PARA DIZ QUEM PODE ACESSAR A API 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
-        // Libera o acesso para o seu React
+        // Libera o acesso para o React
         configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173")); 
         
         // Libera os métodos HTTP (O 'OPTIONS' é o que resolve o seu erro de Preflight!)
