@@ -85,3 +85,8 @@ secrets.json
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# ==========================================
+# Arquivos indesejados específicos do projeto
+# ==========================================
+.xml

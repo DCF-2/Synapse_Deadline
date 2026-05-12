@@ -11,6 +11,12 @@ jobs:
   # Job de testes do Backend (Spring Boot)
   backend-tests:
     runs-on: ubuntu-latest
+    
+    # Define a pasta padrão para todos os comandos 'run' deste job
+    defaults:
+      run:
+        working-directory: ./Backend/deadline
+
     steps:
       - name: Checkout do código
         uses: actions/checkout@v4
@@ -20,13 +26,13 @@ jobs:
         with:
           java-version: '21'
           distribution: 'temurin'
-          cache: maven # ou 'gradle' se estiver usando Gradle
+          cache: maven
 
-      - name: Rodar testes e build do Backend (Maven)
-        run: |
-          cd Backend/deadline
-          mvn clean verify
-          
+      - name: Build e Testes do Backend (Maven)
+        run: mvn -B clean verify
+        env:
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+
 # Teste do Frontend (React) desativados temporariamente,
 # pois precisamos configurar o ambiente de testes do React, 
 # e isso pode levar um tempo. Assim que estiver configurado, 
