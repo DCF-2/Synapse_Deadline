@@ -52,7 +52,11 @@ public class SecurityConfig {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
         // Libera o acesso para o React
-        configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173")); 
+        configuration.setAllowedOrigins(
+            java.util.List.of(
+                "http://localhost:5173",
+                "https://synapse-deadline.vercel.app/"
+            )); 
         
         // Libera os métodos HTTP (O 'OPTIONS' é o que resolve o seu erro de Preflight!)
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
