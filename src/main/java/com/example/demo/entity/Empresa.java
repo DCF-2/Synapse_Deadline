@@ -1,11 +1,15 @@
-
 package com.example.demo.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalTime;
+import java.util.List;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Empresa {
+
+@OneToMany(mappedBy = "empresa")
+private List<Produto> produtos;
 
 @Id
 @GeneratedValue(strategy = GenerationType.IDENTITY)
