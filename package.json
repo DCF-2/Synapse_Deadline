@@ -9,20 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.0.1",
+    "bootstrap": "^5.3.8",
+    "lucide-react": "^0.511.0",
     "next": "^15.3.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "lucide-react": "^0.511.0",
-    "zod": "^3.24.0",
     "react-hook-form": "^7.56.0",
-    "@hookform/resolvers": "^5.0.1"
+    "react-router-dom": "^7.15.0",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "typescript": "^5.8.3",
     "tailwindcss": "^4",
-    "@tailwindcss/postcss": "^4"
+    "typescript": "^5.8.3"
   }
 }
