@@ -56,3 +56,14 @@ jobs:
 #          cd Frontend/deadline
 #          npm install
 #          npm run test
+
+# 2. Job de Deploy (Só corre na branch MAIN e se os testes passarem)
+  deploy-backend:
+    needs: backend-tests
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Disparar Deploy no Render
+        run: |
+          echo "Testes passaram com sucesso. A iniciar deploy no Render..."
+          curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
