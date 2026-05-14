@@ -18,26 +18,38 @@ public class EmpresaService {
     private EmpresaRepository repository;
 
     @Autowired
-    private PasswordEncoder passwordEncoder; // <-- FIX: Injeção do BCrypt
+    private PasswordEncoder passwordEncoder;
 
     public EmpresaResponseDTO cadastrar(EmpresaCadastroDTO dto) {
         
-        // <-- FIX: Validação de Duplicidade
+        // 1. Validações de Negócio (Precisam ser IllegalArgumentException para passar nos testes)
         if (repository.existsByEmailLogin(dto.getEmailLogin())) {
-            throw new RuntimeException("Já existe uma empresa registrada com este e-mail.");
+            throw new IllegalArgumentException("E-mail de login já cadastrado");
         }
         if (repository.existsByCnpj(dto.getCnpj())) {
-            throw new RuntimeException("Já existe uma empresa registrada com este CNPJ.");
+            throw new IllegalArgumentException("CNPJ já cadastrado");
+        }
+        
+        // Validação Lógica de Horários (TC_020)
+        if (dto.getHorarioAbertura() != null && dto.getHorarioFechamento() != null) {
+            if (dto.getHorarioFechamento().isBefore(dto.getHorarioAbertura())) {
+                throw new IllegalArgumentException("Horário de fechamento não pode ser anterior ao horário de abertura");
+            }
         }
 
         Empresa e = new Empresa();
         e.setNomeFantasia(dto.getNomeFantasia());
         e.setRazaoSocial(dto.getRazaoSocial());
         e.setCnpj(dto.getCnpj());
-        e.setEndereco(dto.getEndereco());
+        
+        // Concatena o endereço para salvar na entidade (já que a entidade possui apenas um campo 'endereco')
+        String enderecoCompleto = String.format("%s, %s, %s, %s, %s, %s", 
+            dto.getLogradouro(), dto.getNumero(), dto.getBairro(), dto.getCep(), dto.getCidade(), dto.getUf());
+        e.setEndereco(enderecoCompleto);
+        
         e.setEmailLogin(dto.getEmailLogin());
         
-        // <-- FIX: Encriptar a senha ANTES de salvar
+        // Encriptar a senha
         e.setSenha(passwordEncoder.encode(dto.getSenha()));
         
         e.setContatoWhatsapp(dto.getContatoWhatsapp());
@@ -50,22 +62,18 @@ public class EmpresaService {
 
         Empresa salva = repository.save(e);
 
-        // <-- FIX: Retorna o DTO seguro
         return new EmpresaResponseDTO(salva.getId(), salva.getNomeFantasia(), salva.getCnpj(), salva.getEmailLogin());
     }
 
     public void recuperarSenha(String email) {
-    Empresa empresa = repository.findByEmailLogin(email)
-        .orElseThrow(() -> new RuntimeException("E-mail não encontrado"));
+        Empresa empresa = repository.findByEmailLogin(email)
+            .orElseThrow(() -> new RuntimeException("E-mail não encontrado"));
 
-    // Gera uma senha aleatória simples
-    String novaSenhaPlana = UUID.randomUUID().toString().substring(0, 8);
-    
-    // Atualiza no banco (criptografada)
-    empresa.setSenha(passwordEncoder.encode(novaSenhaPlana));
-    repository.save(empresa);
+        String novaSenhaPlana = UUID.randomUUID().toString().substring(0, 8);
+        
+        empresa.setSenha(passwordEncoder.encode(novaSenhaPlana));
+        repository.save(empresa);
 
-    // TODO: Integrar com Spring Mail para enviar 'novaSenhaPlana' por e-mail
-    System.out.println("NOVA SENHA PARA " + email + ": " + novaSenhaPlana);
+        System.out.println("NOVA SENHA PARA " + email + ": " + novaSenhaPlana);
     }
 }

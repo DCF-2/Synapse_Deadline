@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import IndexPage from './pages/Index'
 import LoginPage from './pages/Login'
+import CadastroPage from './pages/Cadastro'
 import DashboardPage from './pages/Dashboard'
 import ClienteHomePage from './pages/ClienteHome'
 
@@ -13,6 +14,7 @@ export default function App() {
         
         {/* Rotas da Farmácia (Empresa) */}
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/cadastro" element={<CadastroPage />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         
         {/* Rota do Cliente Final */}

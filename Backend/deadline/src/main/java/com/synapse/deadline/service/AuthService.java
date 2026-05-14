@@ -22,13 +22,13 @@ public class AuthService {
     private PasswordEncoder passwordEncoder; 
 
     public String autenticar(LoginDTO dto) {
-        Empresa empresa = repository.findByEmailLogin(dto.emailLogin())
-                .orElseThrow(() -> new CredenciaisInvalidasException());
+        Empresa empresa = repository.findByEmailLogin(dto.getEmail())
 
-        if (!passwordEncoder.matches(dto.senha(), empresa.getSenha())) {
+                .orElseThrow(() -> new CredenciaisInvalidasException());
+        if (!passwordEncoder.matches(dto.getSenha(), empresa.getSenha())) {
             throw new CredenciaisInvalidasException();
         }
-
+        
         return tokenService.gerarToken(empresa);
     }
 }
