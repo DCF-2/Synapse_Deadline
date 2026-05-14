@@ -30,7 +30,7 @@ public class SecurityConfig {
                 // Liberar rotas públicas
                 .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
+                .requestMatchers(HttpMethod.POST, "/empresa/cadastrar").permitAll()
                 .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
                 
                 // Qualquer outra rota exigirá o token JWT
