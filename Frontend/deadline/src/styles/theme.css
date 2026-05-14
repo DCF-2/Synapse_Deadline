@@ -1,0 +1,223 @@
+/* ===================================
+   DEADLINE - DESIGN SYSTEM
+   Cores extraídas da logo
+   =================================== */
+
+:root {
+  /* Cores Primárias */
+  --dl-primary: #2D9B83;          /* Verde/Teal - cor principal da logo */
+  --dl-primary-dark: #238069;     /* Verde escuro para hover */
+  --dl-primary-light: #3DB896;    /* Verde claro para destaques */
+  
+  /* Cores Secundárias */
+  --dl-secondary: #1E3A5F;        /* Azul escuro - "DEAD" na logo */
+  --dl-secondary-light: #2A4A73;  /* Azul para hover */
+  
+  /* Cor de Destaque */
+  --dl-accent: #F5A623;           /* Laranja/Amarelo - seta da logo */
+  --dl-accent-dark: #E09000;      /* Laranja escuro para hover */
+  
+  /* Neutros */
+  --dl-background: #F5F9FC;       /* Fundo claro */
+  --dl-surface: #FFFFFF;          /* Cards e superfícies */
+  --dl-text-primary: #1E3A5F;     /* Texto principal */
+  --dl-text-secondary: #64748B;   /* Texto secundário */
+  --dl-text-muted: #94A3B8;       /* Texto desabilitado */
+  --dl-border: #E2E8F0;           /* Bordas */
+  
+  /* Estados */
+  --dl-success: #22C55E;
+  --dl-error: #EF4444;
+  --dl-warning: #F59E0B;
+  
+  /* Sombras */
+  --dl-shadow-sm: 0 1px 2px rgba(30, 58, 95, 0.05);
+  --dl-shadow-md: 0 4px 6px rgba(30, 58, 95, 0.07);
+  --dl-shadow-lg: 0 10px 25px rgba(30, 58, 95, 0.1);
+  --dl-shadow-xl: 0 20px 40px rgba(30, 58, 95, 0.15);
+  
+  /* Bordas */
+  --dl-radius-sm: 8px;
+  --dl-radius-md: 12px;
+  --dl-radius-lg: 16px;
+  --dl-radius-xl: 24px;
+  
+  /* Transições */
+  --dl-transition: all 0.2s ease;
+}
+
+/* ===================================
+   ESTILOS GLOBAIS
+   =================================== */
+
+body {
+  background-color: var(--dl-background);
+  color: var(--dl-text-primary);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===================================
+   COMPONENTES CUSTOMIZADOS
+   =================================== */
+
+/* Cards */
+.dl-card {
+  background: var(--dl-surface);
+  border-radius: var(--dl-radius-lg);
+  box-shadow: var(--dl-shadow-lg);
+  border: 1px solid var(--dl-border);
+}
+
+/* Botão Primário */
+.dl-btn-primary {
+  background: linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-primary-dark) 100%);
+  border: none;
+  color: white;
+  font-weight: 600;
+  padding: 12px 24px;
+  border-radius: var(--dl-radius-md);
+  transition: var(--dl-transition);
+  box-shadow: var(--dl-shadow-md);
+}
+
+.dl-btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--dl-shadow-lg);
+  background: linear-gradient(135deg, var(--dl-primary-light) 0%, var(--dl-primary) 100%);
+  color: white;
+}
+
+.dl-btn-primary:active {
+  transform: translateY(0);
+}
+
+.dl-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Botão Secundário */
+.dl-btn-secondary {
+  background: transparent;
+  border: 2px solid var(--dl-primary);
+  color: var(--dl-primary);
+  font-weight: 600;
+  padding: 10px 22px;
+  border-radius: var(--dl-radius-md);
+  transition: var(--dl-transition);
+}
+
+.dl-btn-secondary:hover {
+  background: var(--dl-primary);
+  color: white;
+}
+
+/* Inputs */
+.dl-input {
+  border: 2px solid var(--dl-border);
+  border-radius: var(--dl-radius-md);
+  padding: 14px 16px;
+  transition: var(--dl-transition);
+  background: var(--dl-surface);
+}
+
+.dl-input:focus {
+  border-color: var(--dl-primary);
+  box-shadow: 0 0 0 4px rgba(45, 155, 131, 0.1);
+  outline: none;
+}
+
+.dl-input::placeholder {
+  color: var(--dl-text-muted);
+}
+
+/* Form Floating customizado */
+.dl-form-floating .form-control {
+  border: 2px solid var(--dl-border);
+  border-radius: var(--dl-radius-md);
+  padding: 16px;
+  height: auto;
+  transition: var(--dl-transition);
+}
+
+.dl-form-floating .form-control:focus {
+  border-color: var(--dl-primary);
+  box-shadow: 0 0 0 4px rgba(45, 155, 131, 0.1);
+}
+
+.dl-form-floating label {
+  color: var(--dl-text-secondary);
+  padding: 16px;
+}
+
+/* Links */
+.dl-link {
+  color: var(--dl-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: var(--dl-transition);
+}
+
+.dl-link:hover {
+  color: var(--dl-primary-dark);
+  text-decoration: underline;
+}
+
+/* Alertas */
+.dl-alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  color: var(--dl-error);
+  border-radius: var(--dl-radius-md);
+  padding: 12px 16px;
+}
+
+.dl-alert-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  color: var(--dl-success);
+  border-radius: var(--dl-radius-md);
+  padding: 12px 16px;
+}
+
+/* ===================================
+   ANIMAÇÕES
+   =================================== */
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dl-animate-in {
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Steps Animation */
+.dl-step {
+  opacity: 0;
+  animation: fadeInUp 0.5s ease forwards;
+}
+
+.dl-step:nth-child(1) { animation-delay: 0.1s; }
+.dl-step:nth-child(2) { animation-delay: 0.2s; }
+.dl-step:nth-child(3) { animation-delay: 0.3s; }
+.dl-step:nth-child(4) { animation-delay: 0.4s; }
+
+/* ===================================
+   RESPONSIVIDADE
+   =================================== */
+
+@media (max-width: 768px) {
+  .dl-card {
+    margin: 16px;
+    border-radius: var(--dl-radius-md);
+  }
+}
