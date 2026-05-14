@@ -16,7 +16,7 @@ public class EmpresaController {
     @Autowired
     private EmpresaService service;
 
-    @PostMapping("/cadastro")
+    @PostMapping("/cadastrar")
     public ResponseEntity<EmpresaResponseDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
         EmpresaResponseDTO response = service.cadastrar(dto);
         // <-- FIX: Retorna 201 Created
