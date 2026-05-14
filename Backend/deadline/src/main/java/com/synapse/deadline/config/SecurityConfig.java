@@ -41,7 +41,7 @@ public class SecurityConfig {
     }
 
     // Regista o BCrypt como o codificador oficial de palavras-passe do projeto
-    @Bean
+   @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
