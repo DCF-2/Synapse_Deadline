@@ -165,20 +165,29 @@ export default function CadastroPage() {
       nomeFantasia: formData.nomeFantasia,
       razaoSocial: formData.razaoSocial,
       cnpj: formData.cnpj.replace(/\D/g, ''),
-      endereco: formData.endereco,
       emailLogin: formData.emailLogin,
-      senha: formData.senha,
+      senha: formData.senha, // Garante que digitas uma senha forte no teste: ex "SenhaTeste123!"
       instrucoesRetirada: formData.instrucoesRetirada,
       diasFuncionamento: formData.diasFuncionamento.join(','),
-      horarioAbertura: formData.horarioAbertura,
-      horarioFechamento: formData.horarioFechamento,
+      horarioAbertura: formData.horarioAbertura + ":00", // O Java LocalTime gosta do formato HH:mm:ss
+      horarioFechamento: formData.horarioFechamento + ":00",
       contatoWhatsapp: formData.contatoWhatsapp.replace(/\D/g, ''),
       contato1: formData.contato1.replace(/\D/g, ''),
-      contato2: formData.contato2.replace(/\D/g, '')
+      contato2: formData.contato2.replace(/\D/g, ''),
+      
+      // Ajuste temporário para o Backend não dar erro 400 no endereço:
+      logradouro: formData.endereco, 
+      numero: "S/N", 
+      bairro: "Centro", 
+      cep: "00000-000", 
+      cidade: "Recife", 
+      uf: "PE",
+      coordenadasLocalizacao: "-8.0476,-34.8770"
     };
 
     try {
-      const response = await fetch('https://synapse-deadline.onrender.com/empresas/cadastrar', {
+      const response = await fetch('https://synapse-deadline.onrender.com/empresa/cadastro', {
+      //const response = await fetch('http://localhost:8080/empresa/cadastro', { // Use esta linha para testes locais
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

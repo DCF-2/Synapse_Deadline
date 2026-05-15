@@ -30,7 +30,7 @@ public class SecurityConfig {
                 // Liberar rotas públicas
                 .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/empresa/cadastrar").permitAll()
+                .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
                 .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
                 
                 // Qualquer outra rota exigirá o token JWT
@@ -55,7 +55,7 @@ public class SecurityConfig {
         configuration.setAllowedOrigins(
             java.util.List.of(
                 "http://localhost:5173",
-                "https://synapse-deadline.vercel.app/"
+                "https://synapse-deadline.vercel.app"
             )); 
         
         // Libera os métodos HTTP (O 'OPTIONS' é o que resolve o seu erro de Preflight!)

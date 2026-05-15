@@ -1,5 +1,6 @@
 package com.synapse.deadline.service;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaResponseDTO;
 import com.synapse.deadline.entity.Empresa;
@@ -11,7 +12,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalTime;
 
@@ -19,11 +25,25 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.http.MediaType;  
+
 @ExtendWith(MockitoExtension.class)
+@SpringBootTest
+@AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class EmpresaServiceTest {
 
     @InjectMocks
     private EmpresaService empresaService;
+
+    @Autowired
+    private MockMvc mockMvc; 
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @Mock
     private EmpresaRepository empresaRepository;
@@ -128,5 +148,5 @@ public class EmpresaServiceTest {
 
         assertEquals("Horário de fechamento não pode ser anterior ao horário de abertura", exception.getMessage());
         verify(empresaRepository, never()).save(any(Empresa.class));
-    }
+    }   
 }
