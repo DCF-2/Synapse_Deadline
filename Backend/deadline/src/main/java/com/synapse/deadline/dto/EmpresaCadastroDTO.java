@@ -1,112 +1,80 @@
 package com.synapse.deadline.dto;
 
-import jakarta.validation.constraints.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.br.CNPJ;
-import java.time.LocalTime;
 
+/**
+ * DTO para o registo inicial de uma nova Empresa parceira no marketplace.
+ */
 public class EmpresaCadastroDTO {
 
-    @NotBlank(message = "O Nome Fantasia é obrigatório")
-    @Size(max = 255, message = "O Nome Fantasia excedeu o limite de caracteres")
+    @NotBlank(message = "O nome fantasia é obrigatório.")
     private String nomeFantasia;
 
-    @NotBlank(message = "A Razão Social é obrigatória")
+    @NotBlank(message = "A razão social é obrigatória.")
     private String razaoSocial;
 
-    @NotBlank(message = "O CNPJ é obrigatório")
-    @CNPJ(message = "CNPJ com formato inválido ou dígito verificador incorreto")
+    @NotBlank(message = "O CNPJ é obrigatório.")
+    @CNPJ(message = "O CNPJ fornecido é inválido.")
     private String cnpj;
 
-    @NotBlank(message = "O E-mail de login é obrigatório")
-    @Email(message = "Formato de e-mail de login inválido")
-    private String emailLogin;
+    private String logotipo;
 
-    @NotBlank(message = "A Senha é obrigatória")
-    @Size(min = 8, message = "A senha deve ter no mínimo 8 caracteres")
-    @Pattern(regexp = ".*[!@#$%^&*()_+=\\[\\]{};':\"\\\\|,.<>\\/?].*", message = "A senha deve conter pelo menos um caractere especial")
-    private String senha;
+    @NotNull(message = "O ID do ramo de atuação é obrigatório.")
+    private Long idRamo;
 
-    // --- Endereço e Coordenadas (Quebrado conforme QA) ---
-    @NotBlank(message = "O Logradouro é obrigatório")
-    @Size(max = 255, message = "Logradouro muito longo")
-    private String logradouro;
+    @Valid
+    @NotNull(message = "Os dados de endereço são obrigatórios.")
+    private EnderecoDTO endereco;
 
-    @NotBlank(message = "O Número é obrigatório")
-    private String numero; 
-
-    @NotBlank(message = "O Bairro é obrigatório")
-    private String bairro;
-
-    @NotBlank(message = "O CEP é obrigatório")
-    @Pattern(regexp = "^\\d{5}-?\\d{3}$", message = "Formato de CEP inválido")
-    private String cep;
-
-    @NotBlank(message = "A Cidade é obrigatória")
-    @Pattern(regexp = "^[A-Za-zÀ-ÿ\\s]+$", message = "A cidade não pode conter números")
-    private String cidade;
-
-    @NotBlank(message = "A UF é obrigatória")
-    @Size(min = 2, max = 2, message = "A UF deve conter exatamente 2 caracteres")
-    private String uf;
-
-    @Pattern(regexp = "^[-+]?([1-8]?\\d(\\.\\d+)?|90(\\.0+)?),\\s*[-+]?(180(\\.0+)?|((1[0-7]\\d)|([1-9]?\\d))(\\.\\d+)?)$", 
-             message = "Coordenadas inválidas ou fora do intervalo")
-    private String coordenadasLocalizacao;
-
-    // --- Contatos e Funcionamento ---
-    @Pattern(regexp = "^\\d{10,11}$", message = "WhatsApp inválido, deve conter DDD e número")
     private String contatoWhatsapp;
-    
     private String contato1;
     private String contato2;
+    private String emailContato;
+
+    @NotBlank(message = "As instruções de retirada são obrigatórias para orientar o consumidor.")
     private String instrucoesRetirada;
 
-    @NotBlank(message = "Os dias de funcionamento são obrigatórios")
-    private String diasFuncionamento;
+    @NotBlank(message = "O e-mail de login é obrigatório.")
+    @Email(message = "E-mail de login inválido.")
+    private String emailLogin;
 
-    @NotNull(message = "O horário de abertura é obrigatório")
-    private LocalTime horarioAbertura;
-    
-    @NotNull(message = "O horário de fechamento é obrigatório")
-    private LocalTime horarioFechamento;
+    @NotBlank(message = "A palavra-passe é obrigatória.")
+    private String senha;
 
-    // GETTERS E SETTERS (Pode gerá-los automaticamente na sua IDE para todos os campos acima)
+    @NotBlank(message = "O horário de funcionamento é obrigatório.")
+    private String horarioFuncionamento;
+
+    // --- GETTERS E SETTERS ---
     public String getNomeFantasia() { return nomeFantasia; }
     public void setNomeFantasia(String nomeFantasia) { this.nomeFantasia = nomeFantasia; }
     public String getRazaoSocial() { return razaoSocial; }
     public void setRazaoSocial(String razaoSocial) { this.razaoSocial = razaoSocial; }
     public String getCnpj() { return cnpj; }
     public void setCnpj(String cnpj) { this.cnpj = cnpj; }
-    public String getEmailLogin() { return emailLogin; }
-    public void setEmailLogin(String emailLogin) { this.emailLogin = emailLogin; }
-    public String getSenha() { return senha; }
-    public void setSenha(String senha) { this.senha = senha; }
-    public String getLogradouro() { return logradouro; }
-    public void setLogradouro(String logradouro) { this.logradouro = logradouro; }
-    public String getNumero() { return numero; }
-    public void setNumero(String numero) { this.numero = numero; }
-    public String getBairro() { return bairro; }
-    public void setBairro(String bairro) { this.bairro = bairro; }
-    public String getCep() { return cep; }
-    public void setCep(String cep) { this.cep = cep; }
-    public String getCidade() { return cidade; }
-    public void setCidade(String cidade) { this.cidade = cidade; }
-    public String getUf() { return uf; }
-    public void setUf(String uf) { this.uf = uf; }
-    public String getCoordenadasLocalizacao() { return coordenadasLocalizacao; }
-    public void setCoordenadasLocalizacao(String coordenadasLocalizacao) { this.coordenadasLocalizacao = coordenadasLocalizacao; }
+    public String getLogotipo() { return logotipo; }
+    public void setLogotipo(String logotipo) { this.logotipo = logotipo; }
+    public Long getIdRamo() { return idRamo; }
+    public void setIdRamo(Long idRamo) { this.idRamo = idRamo; }
+    public EnderecoDTO getEndereco() { return endereco; }
+    public void setEndereco(EnderecoDTO endereco) { this.endereco = endereco; }
     public String getContatoWhatsapp() { return contatoWhatsapp; }
     public void setContatoWhatsapp(String contatoWhatsapp) { this.contatoWhatsapp = contatoWhatsapp; }
     public String getContato1() { return contato1; }
     public void setContato1(String contato1) { this.contato1 = contato1; }
     public String getContato2() { return contato2; }
     public void setContato2(String contato2) { this.contato2 = contato2; }
+    public String getEmailContato() { return emailContato; }
+    public void setEmailContato(String emailContato) { this.emailContato = emailContato; }
     public String getInstrucoesRetirada() { return instrucoesRetirada; }
     public void setInstrucoesRetirada(String instrucoesRetirada) { this.instrucoesRetirada = instrucoesRetirada; }
-    public String getDiasFuncionamento() { return diasFuncionamento; }
-    public void setDiasFuncionamento(String diasFuncionamento) { this.diasFuncionamento = diasFuncionamento; }
-    public LocalTime getHorarioAbertura() { return horarioAbertura; }
-    public void setHorarioAbertura(LocalTime horarioAbertura) { this.horarioAbertura = horarioAbertura; }
-    public LocalTime getHorarioFechamento() { return horarioFechamento; }
-    public void setHorarioFechamento(LocalTime horarioFechamento) { this.horarioFechamento = horarioFechamento; }
+    public String getEmailLogin() { return emailLogin; }
+    public void setEmailLogin(String emailLogin) { this.emailLogin = emailLogin; }
+    public String getSenha() { return senha; }
+    public void setSenha(String senha) { this.senha = senha; }
+    public String getHorarioFuncionamento() { return horarioFuncionamento; }
+    public void setHorarioFuncionamento(String horarioFuncionamento) { this.horarioFuncionamento = horarioFuncionamento; }
 }

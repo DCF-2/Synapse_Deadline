@@ -1,7 +1,8 @@
 package com.synapse.deadline.controller;
 
+import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
+import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
-import com.synapse.deadline.dto.ProdutoResponseDTO;
 import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.service.ProdutoService;
 
@@ -21,7 +22,7 @@ public class ProdutoController {
     private ProdutoService service;
 
     @PostMapping("/{idEmpresa}")
-    public ResponseEntity<Produto> cadastrar(
+    public ResponseEntity<ProdutoEmpresaDetalhesDTO> cadastrar(
             @Valid @RequestBody ProdutoRequestDTO dto,
             @PathVariable Long idEmpresa
     ) {
@@ -50,10 +51,10 @@ public class ProdutoController {
 
     /**
      * Endpoint GET /produto/empresa
-     * Retorna a lista de produtos da empresa autenticada.
+     * Retorna a lista de produtos da empresa autenticada de forma resumida.
      */
     @GetMapping("/empresa")
-    public ResponseEntity<List<ProdutoResponseDTO>> listarPorEmpresa() {
+    public ResponseEntity<List<ProdutoEmpresaResumoDTO>> listarPorEmpresa() {
         return ResponseEntity.ok(
                 service.listarProdutosPorEmpresaLogada()
         );
