@@ -19,7 +19,6 @@ public class EmpresaController {
     @PostMapping("/cadastro")
     public ResponseEntity<EmpresaPerfilDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
         EmpresaPerfilDTO response = service.cadastrar(dto);
-        // <-- FIX: Retorna 201 Created
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }

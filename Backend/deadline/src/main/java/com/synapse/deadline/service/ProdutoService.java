@@ -13,6 +13,8 @@ import com.synapse.deadline.repository.ProdutoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,17 +34,19 @@ public class ProdutoService {
     @Autowired
     private CategoriaProdutoRepository categoriaRepository;
 
-    public ProdutoEmpresaDetalhesDTO cadastrarProduto(ProdutoRequestDTO dto, Long idEmpresa) {
+    
+    public ProdutoEmpresaDetalhesDTO cadastrarProduto(ProdutoRequestDTO dto) {
         
-        // Validação de EAN Duplicado (Impede catálogo duplicado)
         if (dto.getCodBarrasEan() != null && !dto.getCodBarrasEan().isBlank()) {
             if (produtoRepository.existsByCodBarrasEan(dto.getCodBarrasEan())) {
                 throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
             }
         }
 
-        Empresa empresa = empresaRepository.findById(idEmpresa)
-                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada"));
+        // 1. Extração segura da identidade via contexto de segurança do Spring (Token JWT)
+        String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+        Empresa empresa = empresaRepository.findByEmailLogin(emailLogado)
+                .orElseThrow(() -> new IllegalArgumentException("Empresa autenticada não encontrada"));
 
         CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou não encontrada"));
@@ -66,25 +70,42 @@ public class ProdutoService {
         return produtoRepository.findAll();
     }
 
+    
+   
+
     public void remover(Long id) {
-        produtoRepository.deleteById(id);
+        // 1. Descobrir quem está a tentar apagar
+        String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        // 2. Buscar o produto
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+                
+        // 3. Validação de Propriedade (Prevenção de IDOR)
+        if (!produto.getEmpresa().getEmailLogin().equals(emailLogado)) {
+            throw new SecurityException("Acesso negado. Não tem permissão para alterar este produto.");
+        }
+
+        // 4. Soft Delete: Apenas inativa o produto no catálogo, preservando o histórico
+        produto.setAtivo(false);
+        produtoRepository.save(produto);
     }
 
     /**
-     * Lista todos os produtos pertencentes à empresa que está logada no sistema.
+     * Devolve uma Página de DTOs em vez de uma Lista, todos os produtos pertencentes à empresa que está logada no sistema.
      * Retorna a versão de Resumo (sem detalhes excessivos) conforme UML.
      */
-    public List<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada() {
+     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
         String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
         
         Empresa empresa = empresaRepository.findByEmailLogin(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Empresa autenticada não encontrada"));
 
-        List<Produto> produtos = produtoRepository.findByEmpresaId(empresa.getId());
+        // O repositório agora devolve paginação diretamente do banco (com limit e offset)
+        Page<Produto> produtos = produtoRepository.findByEmpresaId(empresa.getId(), pageable);
 
-        return produtos.stream()
-                .map(this::converterParaResumoDTO)
-                .collect(Collectors.toList());
+        // O método .map() do Page do Spring aplica a conversão em cada item da página automaticamente
+        return produtos.map(this::converterParaResumoDTO);
     }
 
     // --- MÉTODOS AUXILIARES DE CONVERSÃO ---

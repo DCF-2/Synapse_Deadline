@@ -4,7 +4,7 @@ import com.synapse.deadline.dto.LoginDTO;
 import com.synapse.deadline.dto.AuthResponseDTO;
 import com.synapse.deadline.service.AuthService;
 import com.synapse.deadline.service.EmpresaService;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
-@CrossOrigin(origins = "*") 
 @Tag(name = "Autenticação", description = "Endpoints para gerenciamento de acesso e tokens")
 public class AuthController {
 
@@ -32,11 +31,5 @@ public class AuthController {
         // O serviço agora devolve o DTO corretamente populado
         AuthResponseDTO response = authService.autenticar(dto);
         return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/esqueci-senha")
-    public ResponseEntity<Void> esqueciSenha(@RequestParam String email) {
-        empresaService.recuperarSenha(email); 
-        return ResponseEntity.ok().build();
     }
 }
