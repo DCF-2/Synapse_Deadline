@@ -28,6 +28,13 @@ public class CategoriaProduto {
     @Column(unique = true, nullable = false)
     private String slug;
 
+    /**
+     * Indica se a categoria está ativa no sistema.
+     * Requisito: Não pode ser nulo.
+     */
+    @Column(nullable = false)
+    private Boolean ativo = true;
+
     // --- CONSTRUTORES ---
     public CategoriaProduto() {
     }
@@ -41,4 +48,7 @@ public class CategoriaProduto {
 
     public String getSlug() { return slug; }
     public void setSlug(String slug) { this.slug = slug; }
+
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
 }

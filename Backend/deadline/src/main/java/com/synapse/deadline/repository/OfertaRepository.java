@@ -4,6 +4,9 @@ import com.synapse.deadline.entity.Oferta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -28,4 +31,13 @@ public interface OfertaRepository extends JpaRepository<Oferta, Long> {
      * @return Lista de ofertas geradas para este produto.
      */
     List<Oferta> findByProdutoId(Long idProduto);
+
+    /**
+     * Filtra todas as ofertas associadas a um determinado produto do catálogo e que tenham data de término após uma determinada data.
+     *
+     * @param produtoId O identificador único do produto base.
+     * @param dataAtual A data de referência para filtragem.
+     * @return Lista de ofertas geradas para este produto e que ainda estão válidas.
+     */
+    List<Oferta> findByProdutoIdAndDataFimOfertaAfter(Long produtoId, LocalDate dataAtual);
 }

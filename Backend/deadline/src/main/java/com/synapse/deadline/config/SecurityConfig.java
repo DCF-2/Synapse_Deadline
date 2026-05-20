@@ -27,6 +27,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Permite que o H2 rode num Frame
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -35,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
                         .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll() // Libera acesso ao console
                         .anyRequest().authenticated()
                 );
 

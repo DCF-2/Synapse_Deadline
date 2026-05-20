@@ -47,4 +47,21 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
      * @return true se o código já existir no banco de dados, false caso contrário.
      */
     boolean existsByCodBarrasEan(String codBarrasEan);
+
+    /**
+     * Localiza todos os produtos ativos pertencentes a uma determinada empresa parceira.
+     *
+     * @param empresaId Identificador único da empresa proprietária.
+     * @param pageable Objeto para paginação dos resultados.
+     * @return Página contendo os produtos da referida empresa.
+     */
+    Page<Produto> findByEmpresaIdAndAtivoTrue(Long empresaId, Pageable pageable);
+
+    /**
+     * Localiza todos os produtos ativos pertencentes a uma determinada categoria.
+     *
+     * @param categoriaId Identificador único da categoria.
+     * @return Lista contendo os produtos da referida categoria.
+     */
+    List<Produto> findByCategoriaIdAndAtivoTrue(Long categoriaId);
 }
