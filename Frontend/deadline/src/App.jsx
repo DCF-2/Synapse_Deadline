@@ -1,25 +1,23 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import IndexPage from './pages/Index'
-import LoginPage from './pages/Login'
-import CadastroPage from './pages/Cadastro'
-import DashboardPage from './pages/Dashboard'
-import ClienteHomePage from './pages/ClienteHome'
+import { Routes, Route, Navigate } from 'react-router-dom';
+import ClienteHome from './pages/ClienteHome';
+import AuthPage from './pages/AuthPage';
+import Dashboard from './pages/Dashboard';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        {/* Rota principal: Onde o usuário escolhe quem ele é */}
-        <Route path="/" element={<IndexPage />} />
-        
-        {/* Rotas da Farmácia (Empresa) */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/cadastro" element={<CadastroPage />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        
-        {/* Rota do Cliente Final */}
-        <Route path="/vitrine" element={<ClienteHomePage />} />
-      </Routes>
-    </BrowserRouter>
-  )
+    <Routes>
+      {/* Rota principal (Vitrine) */}
+      <Route path="/" element={<ClienteHome />} />
+      
+      {/* Rota unificada de Autenticação (Double Slider) */}
+      <Route path="/auth" element={<AuthPage />} />
+      
+      {/* Redirecionamentos de segurança para links antigos */}
+      <Route path="/login" element={<Navigate to="/auth" replace />} />
+      <Route path="/cadastro" element={<Navigate to="/auth" replace />} />
+      
+      {/* Painel Administrativo da Empresa */}
+      <Route path="/dashboard" element={<Dashboard />} />
+    </Routes>
+  );
 }
