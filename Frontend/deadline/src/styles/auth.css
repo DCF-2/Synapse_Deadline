@@ -160,12 +160,34 @@
 .ds-add-btn { width: 48px; height: 48px; border-radius: 12px; border: none; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
 
 /* Layout Utilities para o React */
-.ds-row { display: flex; gap: 10px; }
+.ds-row { 
+  display: flex; 
+  gap: 12px; 
+  margin-top: 20px; /* Adiciona respiro antes dos botões */
+}
 .ds-flex-1 { flex: 1; }
 .ds-flex-2 { flex: 2; }
 
 /* Botões */
-.ds-btn { width: 100%; padding: 14px; border-radius: 24px; font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s; margin-top: 12px; flex-shrink: 0; }
+.ds-btn { 
+  width: 100%; 
+  padding: 14px; 
+  border-radius: 24px; 
+  font-size: 14px; 
+  font-weight: 700; 
+  cursor: pointer; 
+  transition: all 0.2s; 
+  margin-top: 12px; 
+  flex-shrink: 0; 
+}
+
+
+.ds-row .ds-btn {
+  width: auto;
+  flex: 1; /* Faz com que ambos os botões dividam o espaço igualmente */
+  margin-top: 0; /* Remove a margem superior quando estão em linha */
+}
+
 .ds-btn-primary { background: var(--dl-primary, #2D9B83); color: #FFF; border: none; box-shadow: 0 4px 12px rgba(45, 155, 131, 0.3); }
 .ds-btn-primary:active { transform: scale(0.98); }
 .ds-btn-secondary { background: #F1F5F9; color: #475569; border: none; }

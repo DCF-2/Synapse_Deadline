@@ -2,17 +2,19 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/auth.css';
 
+// Configuração da URL da API, utilizando variável de ambiente para flexibilidade entre ambientes de desenvolvimento e produção
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [erro, setErro] = useState(null);
+  const [success, setSuccess] = useState(null);
 
-  // === STATES DA AUTENTICAÇÃO ===
   const [emailLogin, setEmailLogin] = useState('');
   const [senhaLogin, setSenhaLogin] = useState('');
 
-  // === STATES DO CADASTRO WIZARD ===
   const [step, setStep] = useState(1);
   const [showNovoRamo, setShowNovoRamo] = useState(false);
   
@@ -23,7 +25,6 @@ export default function AuthPage() {
     emailLogin: '', senha: '', confirmarSenha: ''
   });
 
-  // === MÁSCARAS E VALIDAÇÕES ===
   const maskCNPJ = (v) => v.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
   const maskCEP = (v) => v.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2').slice(0, 9);
   const maskPhone = (v) => v.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{4,5})(\d{4})$/, '$1-$2').slice(0, 15);
@@ -45,12 +46,17 @@ export default function AuthPage() {
 
   const isSenhaForte = (senha) => /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/.test(senha);
 
-  const toggleView = (loginMode) => { setIsLogin(loginMode); setErro(null); setStep(1); setShowNovoRamo(false); };
+  const toggleView = (loginMode) => { 
+    setIsLogin(loginMode); setErro(null); 
+    setStep(1); 
+    setShowNovoRamo(false); 
+    setSuccess(null);
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault(); setErro(null); setLoading(true);
     try {
-      const res = await fetch('https://synapse-deadline.onrender.com/auth/login', {
+      const res = await fetch(`${API_URL}/auth/login`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ emailLogin, senha: senhaLogin })
       });
@@ -75,33 +81,77 @@ export default function AuthPage() {
   };
 
   const validarEAvancar = (e, proximoStep) => {
-    e.preventDefault(); setErro(null);
-    if (step === 1 && !isValidCNPJ(cad.cnpj)) { setErro('O CNPJ introduzido é inválido.'); return; }
-    if (step === 4) {
-      if (cad.senha !== cad.confirmarSenha) { setErro('As senhas digitadas não coincidem.'); return; }
-      if (!isSenhaForte(cad.senha)) { setErro('A senha deve ter 8+ caracteres, Maiúscula, Número e Símbolo.'); return; }
+    e.preventDefault();
+    setErro(null);
+
+    if (step === 1) {
+      if (!isValidCNPJ(cad.cnpj)) { setErro('CNPJ inválido.'); return; }
+      if (!cad.idRamo && !showNovoRamo) { setErro('Selecione um ramo de atuação.'); return; }
     }
+
+    if (step === 2) {
+      if (!cad.numero || cad.numero.trim() === '') {
+        setErro('O número do endereço é obrigatório.');
+        return;
+      }
+    }
+
+    if (step === 4) {
+      if (cad.senha !== cad.confirmarSenha) { setErro('As senhas não coincidem.'); return; }
+      if (!isSenhaForte(cad.senha)) { setErro('Senha muito fraca.'); return; }
+    }
+    
     setStep(proximoStep);
   };
 
   const realizarCadastro = async () => {
     setErro(null); setLoading(true);
-    const enderecoCompleto = `${cad.logradouro}, ${cad.numero}${cad.complemento ? ' - ' + cad.complemento : ''}, ${cad.bairro}, ${cad.cep}, ${cad.cidade}, ${cad.uf}`;
+
     const payload = {
-      nomeFantasia: cad.nomeFantasia, razaoSocial: cad.razaoSocial, cnpj: cad.cnpj.replace(/\D/g, ''),
-      logotipo: cad.logotipo || "default_logo.png", idRamo: showNovoRamo ? 1 : (parseInt(cad.idRamo) || 1), novoRamo: showNovoRamo ? cad.novoRamo : null,
-      endereco: enderecoCompleto, contatoWhatsapp: cad.contatoWhatsapp.replace(/\D/g, ''), contato1: cad.contato1.replace(/\D/g, ''),
-      contato2: cad.contato2.replace(/\D/g, ''), emailContato: cad.emailContato || cad.emailLogin, emailLogin: cad.emailLogin,
-      senha: cad.senha, instrucoesRetirada: cad.instrucoesRetirada, horarioFuncionamento: cad.horarioFuncionamento
+      nomeFantasia: cad.nomeFantasia,
+      razaoSocial: cad.razaoSocial,
+      cnpj: cad.cnpj.replace(/\D/g, ''),
+      logotipo: cad.logotipo || "default_logo.png",
+      idRamo: showNovoRamo ? 1 : (parseInt(cad.idRamo) || 1),
+      novoRamo: showNovoRamo ? cad.novoRamo : null,
+      endereco: {
+        logradouro: cad.logradouro,
+        numero: cad.numero,
+        complemento: cad.complemento || "",
+        bairro: cad.bairro,
+        cep: cad.cep.replace(/\D/g, ''),
+        cidade: cad.cidade,
+        uf: cad.uf
+      },
+      contatoWhatsapp: cad.contatoWhatsapp.replace(/\D/g, ''),
+      contato1: cad.contato1.replace(/\D/g, ''),
+      contato2: cad.contato2.replace(/\D/g, ''),
+      emailContato: cad.emailContato || cad.emailLogin,
+      emailLogin: cad.emailLogin,
+      senha: cad.senha,
+      instrucoesRetirada: cad.instrucoesRetirada,
+      horarioFuncionamento: cad.horarioFuncionamento
     };
 
     try {
-      const res = await fetch('https://synapse-deadline.onrender.com/empresa/cadastro', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+      const res = await fetch(`${API_URL}/empresa/cadastro`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
       });
-      if (res.ok) { alert("Cadastro efetuado com sucesso!"); toggleView(true); } 
-      else { const data = await res.json(); setErro(data.message || 'Erro ao processar o cadastro.'); }
-    } catch (err) { setErro('Erro na comunicação com o servidor.'); } finally { setLoading(false); }
+      
+      if (res.ok) {
+        //setSuccess('Cadastro efetuado com sucesso! Faça login para acessar o painel.');
+        // Alert chato da porra
+        //alert("Cadastro efetuado com sucesso!");
+        toggleView(true);
+      } else {
+        const data = await res.json();
+        setErro(data.message || 'Erro ao processar o cadastro.');
+      }
+    } catch (err) {
+      setErro('Erro na comunicação com o servidor.');
+    } finally { setLoading(false); }
   };
 
   const stepNames = ["Empresa", "Endereço", "Contatos", "Acesso", "Revisão"];
@@ -116,7 +166,6 @@ export default function AuthPage() {
         <div className="ds-form-container ds-sign-up-container">
           <div className="ds-form">
             
-            {/* CONTAINER SEGURO DA LOGO */}
             <div className="ds-logo-wrapper">
               <img src="/logo_deadline.png" alt="Deadline Logo" className="ds-logo" />
             </div>
@@ -139,18 +188,9 @@ export default function AuthPage() {
             <div className="ds-form-scroll-area">
               {step === 1 && (
                 <form onSubmit={(e) => validarEAvancar(e, 2)} className="dl-animate-in">
-                  <div className="ds-input-group">
-                    <label className="ds-label">Nome Fantasia *</label>
-                    <input className="ds-input" type="text" placeholder="Ex: Drogaria Popular" value={cad.nomeFantasia} onChange={e => setCad({...cad, nomeFantasia: e.target.value})} required />
-                  </div>
-                  <div className="ds-input-group">
-                    <label className="ds-label">Razão Social *</label>
-                    <input className="ds-input" type="text" placeholder="Ex: Comercial LTDA" value={cad.razaoSocial} onChange={e => setCad({...cad, razaoSocial: e.target.value})} required />
-                  </div>
-                  <div className="ds-input-group">
-                    <label className="ds-label">CNPJ *</label>
-                    <input className="ds-input" type="text" placeholder="00.000.000/0000-00" value={cad.cnpj} onChange={e => setCad({...cad, cnpj: maskCNPJ(e.target.value)})} required />
-                  </div>
+                  <div className="ds-input-group"><label className="ds-label">Nome Fantasia *</label><input className="ds-input" type="text" placeholder="Ex: Drogaria Popular" value={cad.nomeFantasia} onChange={e => setCad({...cad, nomeFantasia: e.target.value})} required /></div>
+                  <div className="ds-input-group"><label className="ds-label">Razão Social *</label><input className="ds-input" type="text" placeholder="Ex: Comercial LTDA" value={cad.razaoSocial} onChange={e => setCad({...cad, razaoSocial: e.target.value})} required /></div>
+                  <div className="ds-input-group"><label className="ds-label">CNPJ *</label><input className="ds-input" type="text" placeholder="00.000.000/0000-00" value={cad.cnpj} onChange={e => setCad({...cad, cnpj: maskCNPJ(e.target.value)})} required /></div>
                   <div className="ds-input-group">
                     <label className="ds-label">Ramo de Atuação *</label>
                     <div className="ds-row">
@@ -186,6 +226,7 @@ export default function AuthPage() {
                     <div className="ds-input-group ds-flex-2"><label className="ds-label">Bairro *</label><input className="ds-input" type="text" value={cad.bairro} onChange={e => setCad({...cad, bairro: e.target.value})} required /></div>
                     <div className="ds-input-group ds-flex-1"><label className="ds-label">UF *</label><input className="ds-input" type="text" maxLength="2" value={cad.uf} onChange={e => setCad({...cad, uf: e.target.value})} required /></div>
                   </div>
+                  <div className="ds-input-group"><label className="ds-label">Cidade *</label><input className="ds-input" type="text" value={cad.cidade} onChange={e => setCad({...cad, cidade: e.target.value})} required /></div>
                   <div className="ds-row">
                     <button type="button" onClick={() => setStep(1)} className="ds-btn ds-btn-secondary">Voltar</button>
                     <button type="submit" className="ds-btn ds-btn-primary">Avançar</button>
@@ -268,7 +309,6 @@ export default function AuthPage() {
         <div className="ds-form-container ds-sign-in-container">
           <div className="ds-form">
             
-            {/* CONTAINER SEGURO DA LOGO */}
             <div className="ds-logo-wrapper">
               <img src="/logo_deadline.png" alt="Deadline Logo" className="ds-logo" />
             </div>
@@ -276,7 +316,11 @@ export default function AuthPage() {
             <h1 className="ds-title">Bem-vindo de volta</h1>
             <p className="ds-subtitle">Faça o login para gerir as suas ofertas</p>
             
+            {/* Mensagem de Erro */}
             {erro && isLogin && <div className="ds-alert-error">{erro}</div>}
+
+            {/* Mensagem de Sucesso */}
+            {success && isLogin && <div className="ds-alert-success" style={{ backgroundColor: '#dcfce3', color: '#166534', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{success}</div>}
 
             <form onSubmit={handleLogin}>
               <div className="ds-input-group">
@@ -299,14 +343,12 @@ export default function AuthPage() {
         <div className="ds-overlay-container">
           <div className="ds-overlay">
             
-            {/* Painel Esquerdo */}
             <div className="ds-overlay-panel ds-overlay-left">
               <h1>Já é Parceiro?</h1>
               <p>Mantenha-se conectado e gira o seu catálogo de produtos próximos ao vencimento.</p>
               <button className="ds-btn ds-btn-ghost" onClick={() => toggleView(true)}>Fazer Login</button>
             </div>
             
-            {/* Painel Direito */}
             <div className="ds-overlay-panel ds-overlay-right">
               <h1>Olá, Lojista!</h1>
               <p>Evite o desperdício e alcance novos clientes. Registe o seu estabelecimento agora mesmo.</p>
