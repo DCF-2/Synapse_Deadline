@@ -65,4 +65,22 @@ public class GlobalExceptionHandler {
         // Em produção, você colocaria um log.error(ex.getMessage(), ex); aqui.
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(error);
     }
+
+    /**
+     * Captura erros de argumentos inválidos (ex: IllegalArgumentException).
+     * Retorna HTTP 400 - Bad Request.
+     */
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiError> handleIllegalArgumentException(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        
+        ApiError error = new ApiError(
+                java.time.LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Erro de Validação de Negócio",
+                ex.getMessage(), 
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(error);
+    }
 }

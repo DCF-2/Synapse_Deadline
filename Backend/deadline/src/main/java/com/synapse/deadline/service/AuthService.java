@@ -1,5 +1,6 @@
 package com.synapse.deadline.service;
 
+import com.synapse.deadline.dto.AuthResponseDTO;
 import com.synapse.deadline.dto.LoginDTO;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.exceptions.CredenciaisInvalidasException;
@@ -21,14 +22,19 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder; 
 
-    public String autenticar(LoginDTO dto) {
-        Empresa empresa = repository.findByEmailLogin(dto.getEmail())
-
+    public AuthResponseDTO autenticar(LoginDTO dto) {
+        // Busca a empresa pelo novo campo emailLogin
+        Empresa empresa = repository.findByEmailLogin(dto.getEmailLogin())
                 .orElseThrow(() -> new CredenciaisInvalidasException());
-        if (!passwordEncoder.matches(dto.getSenha(), empresa.getSenha())) {
+                
+        // Valida a senha usando o novo campo senhaHash
+        if (!passwordEncoder.matches(dto.getSenha(), empresa.getSenhaHash())) {
             throw new CredenciaisInvalidasException();
         }
         
-        return tokenService.gerarToken(empresa);
+        String token = tokenService.gerarToken(empresa);
+        
+        // Retorna o DTO completo conforme o diagrama de classes
+        return new AuthResponseDTO(token, empresa.getId(), empresa.getNomeFantasia());
     }
 }

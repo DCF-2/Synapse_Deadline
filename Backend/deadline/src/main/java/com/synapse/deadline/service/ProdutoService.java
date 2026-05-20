@@ -1,20 +1,27 @@
 package com.synapse.deadline.service;
 
-import com.synapse.deadline.dto.ProdutoRequestDTO;
-import com.synapse.deadline.dto.ProdutoResponseDTO;
+import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO; 
+import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO; 
+import com.synapse.deadline.dto.ProdutoRequestDTO; // O seu DTO de entrada (ajustado)
+import com.synapse.deadline.entity.CategoriaProduto;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Produto;
+import com.synapse.deadline.repository.CategoriaProdutoRepository;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Serviço responsável por gerir o catálogo base de produtos das empresas (ProdutoEmpresaService no UML).
+ */
 @Service
 public class ProdutoService {
 
@@ -24,88 +31,108 @@ public class ProdutoService {
     @Autowired
     private EmpresaRepository empresaRepository;
 
-  public Produto cadastrarProduto(ProdutoRequestDTO dto, Long idEmpresa) {
+    @Autowired
+    private CategoriaProdutoRepository categoriaRepository;
+
+    
+    public ProdutoEmpresaDetalhesDTO cadastrarProduto(ProdutoRequestDTO dto) {
         
-        // Regra TC_058: Validação de EAN Duplicado
-        if (produtoRepository.existsByCodigoBarrasEan(dto.getCodigoBarrasEan())) {
-            throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
+        if (dto.getCodBarrasEan() != null && !dto.getCodBarrasEan().isBlank()) {
+            if (produtoRepository.existsByCodBarrasEan(dto.getCodBarrasEan())) {
+                throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
+            }
         }
 
-        // Regra TC_061: Validação de Preço Promocional vs Original
-        if (dto.getPrecoPromocional() != null && 
-            dto.getPrecoPromocional().compareTo(dto.getPrecoOriginal()) > 0) {
-            throw new IllegalArgumentException("O preço promocional não pode ser maior que o original");
-        }
+        // 1. Extração segura da identidade via contexto de segurança do Spring (Token JWT)
+        String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+        Empresa empresa = empresaRepository.findByEmailLogin(emailLogado)
+                .orElseThrow(() -> new IllegalArgumentException("Empresa autenticada não encontrada"));
 
-        Empresa empresa = empresaRepository.findById(idEmpresa)
-                .orElseThrow(() -> new IllegalArgumentException("Empresa não encontrada"));
+        CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
+                .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou não encontrada"));
 
         Produto produto = new Produto();
-        produto.setNome(dto.getNome());
-        produto.setCodigoBarrasEan(dto.getCodigoBarrasEan());
-        produto.setCategoria(dto.getCategoria());
+        produto.setTituloProduto(dto.getTituloProduto()); // Antigo setNome
+        produto.setCodBarrasEan(dto.getCodBarrasEan());
+        produto.setCategoria(categoria); // Relacionamento com a nova Entidade
         produto.setDescricao(dto.getDescricao());
-        produto.setDataValidade(dto.getDataValidade());
         produto.setPrecoOriginal(dto.getPrecoOriginal());
-        produto.setPrecoPromocional(dto.getPrecoPromocional());
-        produto.setPercentualDesconto(dto.getPercentualDesconto());
+        produto.setFoto(dto.getFoto());
         produto.setEmpresa(empresa);
-        produto.setAtivo(true);
+        produto.setAtivo(true); // O produto no catálogo nasce ativo
 
-        return produtoRepository.save(produto);
+        Produto salvo = produtoRepository.save(produto);
+
+        return converterParaDetalhesDTO(salvo);
     }
 
     public List<Produto> listarProdutos() {
         return produtoRepository.findAll();
     }
 
+    
+   
+
     public void remover(Long id) {
-        produtoRepository.deleteById(id);
+        // 1. Descobrir quem está a tentar apagar
+        String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
+        
+        // 2. Buscar o produto
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+                
+        // 3. Validação de Propriedade (Prevenção de IDOR)
+        if (!produto.getEmpresa().getEmailLogin().equals(emailLogado)) {
+            throw new SecurityException("Acesso negado. Não tem permissão para alterar este produto.");
+        }
+
+        // 4. Soft Delete: Apenas inativa o produto no catálogo, preservando o histórico
+        produto.setAtivo(false);
+        produtoRepository.save(produto);
     }
 
     /**
-     * Lista todos os produtos pertencentes à empresa que está logada no sistema.
-     * @return Lista de ProdutoResponseDTO com o status calculado.
+     * Devolve uma Página de DTOs em vez de uma Lista, todos os produtos pertencentes à empresa que está logada no sistema.
+     * Retorna a versão de Resumo (sem detalhes excessivos) conforme UML.
      */
-    public List<ProdutoResponseDTO> listarProdutosPorEmpresaLogada() {
-        // 1. Extrai o e-mail da empresa logada do token JWT
+     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
         String emailLogado = SecurityContextHolder.getContext().getAuthentication().getName();
         
-        // 2. Busca a empresa no banco de dados
         Empresa empresa = empresaRepository.findByEmailLogin(emailLogado)
                 .orElseThrow(() -> new RuntimeException("Empresa autenticada não encontrada"));
 
-        // 3. Busca apenas os produtos dessa empresa específica
-        List<Produto> produtos = produtoRepository.findByEmpresaId(empresa.getId());
+        // O repositório agora devolve paginação diretamente do banco (com limit e offset)
+        Page<Produto> produtos = produtoRepository.findByEmpresaId(empresa.getId(), pageable);
 
-        // 4. Converte a lista de Entidades para a lista de DTOs seguros
-        return produtos.stream()
-                .map(this::converterParaResponseDTO)
-                .collect(Collectors.toList());
+        // O método .map() do Page do Spring aplica a conversão em cada item da página automaticamente
+        return produtos.map(this::converterParaResumoDTO);
     }
 
-    /**
-     * Método auxiliar para converter a entidade Produto em ProdutoResponseDTO e calcular o status.
-     */
-    private ProdutoResponseDTO converterParaResponseDTO(Produto produto) {
-        ProdutoResponseDTO dto = new ProdutoResponseDTO();
+    // --- MÉTODOS AUXILIARES DE CONVERSÃO ---
+
+    private ProdutoEmpresaDetalhesDTO converterParaDetalhesDTO(Produto produto) {
+        ProdutoEmpresaDetalhesDTO dto = new ProdutoEmpresaDetalhesDTO();
         dto.setId(produto.getId());
-        dto.setNome(produto.getNome());
-        dto.setCategoria(produto.getCategoria());
-        dto.setDataValidade(produto.getDataValidade());
+        dto.setIdEmpresa(produto.getEmpresa().getId());
+        dto.setTituloProduto(produto.getTituloProduto());
+        dto.setCodBarrasEan(produto.getCodBarrasEan());
+        dto.setNomeCategoria(produto.getCategoria().getNome());
+        dto.setDescricao(produto.getDescricao());
         dto.setPrecoOriginal(produto.getPrecoOriginal());
-        dto.setPrecoPromocional(produto.getPrecoPromocional());
-        dto.setPercentualDesconto(produto.getPercentualDesconto());
-        
-        // Regra de Negócio: Definição do Status
-        if (produto.getAtivo() != null && !produto.getAtivo()) {
-            dto.setStatus("INATIVO");
-        } else if (produto.getDataValidade() != null && produto.getDataValidade().isBefore(LocalDate.now())) {
-            dto.setStatus("VENCIDO");
-        } else {
-            dto.setStatus("ATIVO");
-        }
-        
+        dto.setFoto(produto.getFoto());
+        dto.setAtivo(produto.getAtivo());
+        return dto;
+    }
+
+    private ProdutoEmpresaResumoDTO converterParaResumoDTO(Produto produto) {
+        ProdutoEmpresaResumoDTO dto = new ProdutoEmpresaResumoDTO();
+        dto.setId(produto.getId());
+        dto.setTituloProduto(produto.getTituloProduto());
+        dto.setCodBarrasEan(produto.getCodBarrasEan());
+        dto.setNomeCategoria(produto.getCategoria().getNome());
+        dto.setPrecoOriginal(produto.getPrecoOriginal());
+        dto.setFoto(produto.getFoto());
+        dto.setAtivo(produto.getAtivo());
         return dto;
     }
 }
