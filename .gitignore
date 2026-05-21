@@ -1,0 +1,95 @@
+# ==========================================
+# BUILD E MAVEN/GRADLE (Mantido do original)
+# ==========================================
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ==========================================
+# JPA E BANCO DE DADOS LOCAL
+# ==========================================
+# Evita subir arquivos de bancos de dados embutidos (muito usados em testes JPA)
+*.db
+*.mv.db
+*.trace.db
+
+.next
+
+# ==========================================
+# SEGURANÇA E CHAVES (CRÍTICO PARA MARKETPLACE)
+# ==========================================
+# Nunca suba senhas de banco de dados ou chaves de API de pagamento (Stripe, Mercado Pago)
+.env
+.env.*
+applications.properties
+application-local.yml
+application-local.properties
+application-secret.yml
+application-secret.properties
+secrets.json
+
+# ==========================================
+# UPLOADS DE MÍDIA E PRODUTOS (LOCAL)
+# ==========================================
+# Se você testa o upload de fotos de produtos localmente, ignore essas pastas
+/uploads/
+/media/
+/storage/
+
+# ==========================================
+# LOGS
+# ==========================================
+# Ignora logs gerados pelo servidor ou pelo show-sql do Hibernate
+*.log
+/logs/
+
+# ==========================================
+# STS / ECLIPSE
+# ==========================================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache
+
+# ==========================================
+# INTELLIJ IDEA
+# ==========================================
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# ==========================================
+# NETBEANS
+# ==========================================
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+
+# ==========================================
+# VS CODE
+# ==========================================
+.vscode/
+
+# ==========================================
+# SISTEMA OPERACIONAL
+# ==========================================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ==========================================
+# Arquivos indesejados específicos do projeto
+# ==========================================
+.xml
+node_modules
