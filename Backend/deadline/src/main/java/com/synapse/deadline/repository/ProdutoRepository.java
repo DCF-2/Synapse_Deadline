@@ -7,6 +7,8 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -56,4 +58,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
      * @return Lista contendo os produtos da referida categoria.
      */
     List<Produto> findByCategoriaIdAndAtivoTrue(Long categoriaId);
+
+    /**
+     * Localiza um produto específico garantindo que ele pertence a uma determinada empresa.
+     * Usado para garantir a segurança (Tenant Isolation) nas edições e exclusões.
+     */
+    Optional<Produto> findByIdAndEmpresaId(Long idProduto, Long idEmpresa);
 }

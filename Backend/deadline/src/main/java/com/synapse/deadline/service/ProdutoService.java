@@ -62,10 +62,6 @@ public class ProdutoService {
         return converterParaDetalhesDTO(salvo);
     }
 
-    public List<Produto> listarProdutos() {
-        return produtoRepository.findAllByAtivoTrue();
-    }
-
     public void remover(Long id) {
         // 1. Descobrir quem está a tentar apagar pegando a empresa do contexto
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -82,6 +78,40 @@ public class ProdutoService {
         // 4. Soft Delete
         produto.setAtivo(false);
         produtoRepository.save(produto);
+    }
+
+    /**
+     * Visualiza os detalhes de um produto específico, garantindo que pertence à empresa logada.
+     */
+    public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
+                .orElseThrow(() -> new SecurityException("Produto não encontrado ou acesso negado"));
+        
+        return converterParaDetalhesDTO(produto);
+    }
+
+    /**
+     * Edita um produto existente, validando a propriedade (tenant isolation).
+     */
+    public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
+                .orElseThrow(() -> new SecurityException("Produto não encontrado ou acesso negado"));
+        
+        CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
+                .orElseThrow(() -> new IllegalArgumentException("Categoria inválida"));
+
+        produto.setTituloProduto(dto.getTituloProduto());
+        produto.setCodBarrasEan(dto.getCodBarrasEan());
+        produto.setCategoria(categoria);
+        produto.setDescricao(dto.getDescricao());
+        produto.setPrecoOriginal(dto.getPrecoOriginal());
+        produto.setFoto(dto.getFoto());
+
+        Produto salvo = produtoRepository.save(produto);
+        return converterParaDetalhesDTO(salvo);
     }
 
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
