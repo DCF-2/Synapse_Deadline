@@ -16,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.nio.LongBuffer;
+import java.security.cert.LDAPCertStoreParameters;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -66,12 +68,9 @@ public class ProdutoService {
         return converterParaDetalhesDTO(salvo);
     }
 
-    public List<Produto> listarProdutos() {
-        return produtoRepository.findAll();
+    public List<Produto> listarProdutos(Long empresaId) {
+        return produtoRepository.findByCategoriaIdAndAtivoTrue(empresaId);
     }
-
-    
-   
 
     public void remover(Long id) {
         // 1. Descobrir quem está a tentar apagar

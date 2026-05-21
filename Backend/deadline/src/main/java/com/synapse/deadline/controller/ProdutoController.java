@@ -31,10 +31,13 @@ public class ProdutoController {
         return ResponseEntity.ok(service.cadastrarProduto(dto));
     }
 
+    /**
+     * @return
+     */
     @GetMapping
     public ResponseEntity<List<Produto>> listar() {
         return ResponseEntity.ok(
-                service.listarProdutos()
+                service.listarProdutos(1L)
         );
     }
 
