@@ -1,5 +1,6 @@
 package com.synapse.deadline.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.Arrays;
@@ -19,6 +21,9 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
+
+    @Autowired
+    private SecurityFilter securityFilter;
 
     // Lê os domínios permitidos do application.properties (ex: http://localhost:5173)
     @Value("${cors.allowed.origins:http://localhost:5173,https://synapse-deadline.vercel.app}")
@@ -39,7 +44,7 @@ public class SecurityConfig {
                         .requestMatchers("/h2-console/**").permitAll() // Libera acesso ao console
                         .anyRequest().authenticated()
                 );
-
+            http.addFilterBefore(securityFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
