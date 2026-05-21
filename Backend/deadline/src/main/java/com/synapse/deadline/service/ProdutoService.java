@@ -62,8 +62,8 @@ public class ProdutoService {
         return converterParaDetalhesDTO(salvo);
     }
 
-    public List<Produto> listarProdutos(Long empresaId) {
-        return produtoRepository.findByCategoriaIdAndAtivoTrue(empresaId);
+    public List<Produto> listarProdutos() {
+        return produtoRepository.findAllByAtivoTrue();
     }
 
     public void remover(Long id) {
