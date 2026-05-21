@@ -2,9 +2,12 @@ package com.synapse.deadline.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
-import com.synapse.deadline.dto.EmpresaResponseDTO;
+import com.synapse.deadline.dto.EmpresaPerfilDTO;
+import com.synapse.deadline.dto.EnderecoDTO;
 import com.synapse.deadline.entity.Empresa;
+import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
+import com.synapse.deadline.repository.RamoEmpresaRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -19,16 +22,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.time.LocalTime;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-import org.springframework.http.MediaType;  
 
 @ExtendWith(MockitoExtension.class)
 @SpringBootTest
@@ -49,41 +47,50 @@ public class EmpresaServiceTest {
     private EmpresaRepository empresaRepository;
 
     @Mock
+    private RamoEmpresaRepository ramoRepository; // Adicionado para validação do Ramo
+
+    @Mock
     private PasswordEncoder passwordEncoder;
 
     private EmpresaCadastroDTO dtoPreset;
+    private RamoEmpresa mockRamo;
 
     @BeforeEach
     void setUp() {
-        // PRESET (TC_001) - Ajustado para os novos campos
+        // PRESET adaptado para os novos DTOs aninhados
         dtoPreset = new EmpresaCadastroDTO();
         dtoPreset.setNomeFantasia("Empresa Alpha");
         dtoPreset.setRazaoSocial("Empresa Alpha LTDA");
         dtoPreset.setCnpj("12.345.678/0001-99");
+        dtoPreset.setIdRamo(1L);
         
-        // FIX: Endereço quebrado conforme atualização do QA
-        dtoPreset.setLogradouro("Rua Teste");
-        dtoPreset.setNumero("123");
-        dtoPreset.setBairro("Centro");
-        dtoPreset.setCep("00000-000");
-        dtoPreset.setCidade("Recife");
-        dtoPreset.setUf("PE");
+        EnderecoDTO endereco = new EnderecoDTO();
+        endereco.setLogradouro("Rua Teste");
+        endereco.setNumero("123");
+        endereco.setBairro("Centro");
+        endereco.setCep("00000-000");
+        endereco.setCidade("Recife");
+        endereco.setUf("PE");
+        dtoPreset.setEndereco(endereco);
         
-        dtoPreset.setCoordenadasLocalizacao("-23.5505, -46.6333");
         dtoPreset.setContatoWhatsapp("11999999999");
         dtoPreset.setEmailLogin("login@alpha.com");
         dtoPreset.setSenha("SenhaForte123!");
-        dtoPreset.setDiasFuncionamento("Segunda a Sexta");
-        dtoPreset.setHorarioAbertura(LocalTime.of(8, 0));
-        dtoPreset.setHorarioFechamento(LocalTime.of(18, 0));
+        dtoPreset.setInstrucoesRetirada("Retirar no balcão.");
+        dtoPreset.setHorarioFuncionamento("Seg a Sex - 08:00 as 18:00"); // Substituiu abertura/fechamento
+
+        mockRamo = new RamoEmpresa();
+        mockRamo.setId(1L);
+        mockRamo.setNome("Tecnologia");
     }
 
     @Test
     @DisplayName("TC_001 - Deve cadastrar empresa com todos os dados válidos")
     void deveCadastrarEmpresaComSucesso() {
         // Arrange
-        when(empresaRepository.existsByEmailLogin(dtoPreset.getEmailLogin())).thenReturn(false);
-        when(empresaRepository.existsByCnpj(dtoPreset.getCnpj())).thenReturn(false);
+        when(empresaRepository.findByEmailLogin(dtoPreset.getEmailLogin())).thenReturn(Optional.empty());
+        when(empresaRepository.findByCnpj(dtoPreset.getCnpj())).thenReturn(Optional.empty());
+        when(ramoRepository.findById(dtoPreset.getIdRamo())).thenReturn(Optional.of(mockRamo));
         when(passwordEncoder.encode(dtoPreset.getSenha())).thenReturn("senhaCriptografada");
         
         Empresa empresaSalva = new Empresa();
@@ -94,12 +101,12 @@ public class EmpresaServiceTest {
         
         when(empresaRepository.save(any(Empresa.class))).thenReturn(empresaSalva);
 
-        // Act - FIX: Método correto é 'cadastrar' e retorna 'EmpresaResponseDTO'
-        EmpresaResponseDTO resultado = empresaService.cadastrar(dtoPreset);
+        // Act
+        EmpresaPerfilDTO resultado = empresaService.cadastrar(dtoPreset);
 
         // Assert
         assertNotNull(resultado);
-        assertEquals(1L, resultado.id()); // Pode ser .getId() dependendo de como fizeste o Record/Classe
+        assertEquals("Empresa Alpha", resultado.getNomeFantasia()); 
         verify(passwordEncoder, times(1)).encode("SenhaForte123!"); 
         verify(empresaRepository, times(1)).save(any(Empresa.class));
     }
@@ -108,7 +115,8 @@ public class EmpresaServiceTest {
     @DisplayName("TC_018 - Deve lançar exceção ao cadastrar com CNPJ duplicado")
     void deveLancarExcecaoQuandoCnpjDuplicado() {
         // Arrange
-        when(empresaRepository.existsByCnpj(dtoPreset.getCnpj())).thenReturn(true);
+        when(empresaRepository.findByEmailLogin(dtoPreset.getEmailLogin())).thenReturn(Optional.empty());
+        when(empresaRepository.findByCnpj(dtoPreset.getCnpj())).thenReturn(Optional.of(new Empresa()));
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -123,7 +131,7 @@ public class EmpresaServiceTest {
     @DisplayName("TC_019 - Deve lançar exceção ao cadastrar com Email de login duplicado")
     void deveLancarExcecaoQuandoEmailDuplicado() {
         // Arrange
-        when(empresaRepository.existsByEmailLogin(dtoPreset.getEmailLogin())).thenReturn(true);
+        when(empresaRepository.findByEmailLogin(dtoPreset.getEmailLogin())).thenReturn(Optional.of(new Empresa()));
 
         // Act & Assert
         IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
@@ -133,20 +141,4 @@ public class EmpresaServiceTest {
         assertEquals("E-mail de login já cadastrado", exception.getMessage());
         verify(empresaRepository, never()).save(any(Empresa.class));
     }
-
-    @Test
-    @DisplayName("TC_020 - Deve lançar exceção se horário de fechamento for menor que abertura")
-    void deveLancarExcecaoQuandoHorarioInvalido() {
-        // Arrange
-        dtoPreset.setHorarioAbertura(LocalTime.of(18, 0));
-        dtoPreset.setHorarioFechamento(LocalTime.of(8, 0));
-
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-            empresaService.cadastrar(dtoPreset);
-        });
-
-        assertEquals("Horário de fechamento não pode ser anterior ao horário de abertura", exception.getMessage());
-        verify(empresaRepository, never()).save(any(Empresa.class));
-    }   
 }

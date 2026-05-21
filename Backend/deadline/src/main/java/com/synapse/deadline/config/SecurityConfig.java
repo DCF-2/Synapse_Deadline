@@ -1,5 +1,6 @@
 package com.synapse.deadline.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -12,57 +13,59 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfigurationSource;
 
+import java.util.Arrays;
+import java.util.List;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
+    // Lê os domínios permitidos do application.properties (ex: http://localhost:5173)
+    @Value("${cors.allowed.origins:http://localhost:5173,https://synapse-deadline.vercel.app}")
+    private String allowedOrigins;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                // Configurações de CORS e CSRF
+                .headers(headers -> headers.frameOptions(frame -> frame.disable())) // Permite que o H2 rode num Frame
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // A nossa API é REST (Stateless), não guarda sessão do utilizador
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> authorize
-
-                // Liberar rotas públicas
-                .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
-                .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
-                .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
-                
-                // Qualquer outra rota exigirá o token JWT
-                .anyRequest().authenticated()
-            );
+                        .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
+                        .requestMatchers("/h2-console/**").permitAll() // Libera acesso ao console
+                        .anyRequest().authenticated()
+                );
 
         return http.build();
     }
 
-    // Regista o BCrypt como o codificador oficial de palavras-passe do projeto
-   @Bean
+    @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
-    // ESTE MÉTODO PARA DIZ QUEM PODE ACESSAR A API 
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         org.springframework.web.cors.CorsConfiguration configuration = new org.springframework.web.cors.CorsConfiguration();
         
-        // Libera o acesso para o React
-        configuration.setAllowedOrigins(
-            java.util.List.of(
-                "http://localhost:5173",
-                "https://synapse-deadline.vercel.app"
-            )); 
+         // 1. ORIGENS: Separa a string de domínios por vírgula (vem do application.properties)
+         // Certifique-se de que a variável "allowedOrigins" foi injetada lá em cima com o @Value
+         // O "\\s*,\\s*" usa Regex para quebrar pela vírgula ignorando qualquer espaço que tenha antes ou depois dela!
+        List<String> origins = Arrays.asList(allowedOrigins.split("\\s*,\\s*"));
+        configuration.setAllowedOrigins(origins); 
         
-        // Libera os métodos HTTP (O 'OPTIONS' é o que resolve o seu erro de Preflight!)
-        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS")); 
+        // 2. MÉTODOS: Libera os métodos HTTP (O 'OPTIONS' é vital para requisições do React/Vite!)
+        configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")); 
         
-        // Libera o envio de cabeçalhos (como o Content-Type)
+        // 3. CABEÇALHOS: Libera o envio de cabeçalhos (como o Content-Type e Authorization)
         configuration.setAllowedHeaders(java.util.List.of("*")); 
+        
+        // 4. CREDENCIAIS: Permite tráfego de cookies/tokens de autenticação
+        configuration.setAllowCredentials(true);
         
         org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);

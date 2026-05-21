@@ -1,7 +1,7 @@
 package com.synapse.deadline.controller;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
-import com.synapse.deadline.dto.EmpresaResponseDTO;
+import com.synapse.deadline.dto.EmpresaPerfilDTO;
 import com.synapse.deadline.service.EmpresaService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,9 +17,8 @@ public class EmpresaController {
     private EmpresaService service;
 
     @PostMapping("/cadastro")
-    public ResponseEntity<EmpresaResponseDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
-        EmpresaResponseDTO response = service.cadastrar(dto);
-        // <-- FIX: Retorna 201 Created
+    public ResponseEntity<EmpresaPerfilDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
+        EmpresaPerfilDTO response = service.cadastrar(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 }
