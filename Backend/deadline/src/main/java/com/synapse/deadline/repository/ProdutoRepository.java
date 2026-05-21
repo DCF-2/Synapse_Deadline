@@ -26,19 +26,11 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
     Page<Produto> findByEmpresaId(Long idEmpresa, Pageable pageable);
 
     /**
-     * Procura por todos os produtos do catálogo que possuem ofertas ativas e 
-     * dentro do prazo de validade estipulado em relação à data corrente.
+     * Localiza todos os produtos ativos no sistema (para a vitrine pública).
      *
-     * @param dataAtual Data do dia para corte de segurança de vencidos.
-     * @return Lista de produtos com ofertas vigentes.
+     * @return Lista contendo todos os produtos ativos.
      */
-    @Query("SELECT DISTINCT p FROM Produto p " +
-           "JOIN Oferta o ON o.produto = p " +
-           "WHERE p.ativo = true " +
-           "AND o.ativo = true " +
-           "AND (o.dataFimOferta >= :dataAtual OR o.dataFimOferta IS NULL) " +
-           "AND o.validadeProduto >= :dataAtual")
-    List<Produto> findAllValidos(@Param("dataAtual") LocalDate dataAtual);
+    List<Produto> findAllByAtivoTrue();
 
     /**
      * Verifica se já existe algum produto registado com o mesmo código de barras.
