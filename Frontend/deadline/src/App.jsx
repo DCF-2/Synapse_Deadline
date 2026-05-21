@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import ClienteHome from './pages/ClienteHome';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
-import Dashboard from './pages/Produtos';
+import Produtos from './pages/Produtos';
 
 
 export default function App() {
