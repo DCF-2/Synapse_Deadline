@@ -4,7 +4,7 @@ import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.entity.Produto;
-import com.synapse.deadline.service.ProdutoService;
+import com.synapse.deadline.service.ProdutoEmpresaService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -19,14 +19,15 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/produto")
-public class ProdutoController {
+public class ProdutoEmpresaController {
 
     @Autowired
-    private ProdutoService service;
+    private ProdutoEmpresaService service;
 
-    @PostMapping
+   @PostMapping
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> cadastrar(
-            @Valid @RequestBody ProdutoRequestDTO dto) {
+            @Valid @RequestBody ProdutoRequestDTO dto
+    ) {
         return ResponseEntity.ok(service.cadastrarProduto(dto));
     }
 
@@ -47,9 +48,10 @@ public class ProdutoController {
      * Endpoint GET /produto/empresa
      * Retorna a lista de produtos da empresa autenticada de forma resumida.
      */
-    @GetMapping("/empresa")
+   @GetMapping("/empresa")
     public ResponseEntity<Page<ProdutoEmpresaResumoDTO>> listarPorEmpresa(
-            @PageableDefault(size = 12, sort = "tituloProduto") Pageable pageable) {
+            @PageableDefault(size = 12, sort = "tituloProduto") Pageable pageable
+    ) {
         return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable));
     }
 }

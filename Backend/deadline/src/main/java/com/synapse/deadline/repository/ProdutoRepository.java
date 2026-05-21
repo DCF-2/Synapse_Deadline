@@ -1,14 +1,14 @@
 package com.synapse.deadline.repository;
 
-import com.synapse.deadline.entity.Produto;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
-import org.springframework.stereotype.Repository;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.synapse.deadline.entity.Produto;
 
 /**
  * Repositório de dados para a entidade {@link Produto}.
@@ -56,4 +56,13 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
      * @return Lista contendo os produtos da referida categoria.
      */
     List<Produto> findByCategoriaIdAndAtivoTrue(Long categoriaId);
+/**
+     * Busca um produto específico garantindo que ele pertence a uma empresa específica.
+     * Utilizado para validações de segurança (prevenir IDOR).
+     *
+     * @param idProduto O ID do produto que se deseja buscar.
+     * @param idEmpresa O ID da empresa que deve ser a dona do produto.
+     * @return Um Optional contendo o produto encontrado, ou vazio se não existir/não pertencer à empresa.
+     */
+    Optional<Produto> findByIdAndEmpresaId(Long idProduto, Long idEmpresa);
 }

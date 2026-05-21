@@ -96,6 +96,62 @@ public class ProdutoEmpresaService {
         return produtos.map(this::converterParaResumoDTO);
     }
 
+    public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto, Long idEmpresa) {
+        
+        // 1. Pega a Empresa logada do contexto
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        // 2. Validação de Segurança Secundária (Garante que a rota está sendo acessada pelo dono correto, caso o idEmpresa venha da URL)
+        if (!empresaLogada.getId().equals(idEmpresa)) {
+             throw new SecurityException("Acesso negado. O ID da empresa na requisição não corresponde à empresa autenticada.");
+        }
+
+        // 3. Busca o produto garantindo que ele pertence a esta empresa específica (Previne falha de IDOR)
+        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, idEmpresa)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado ou não pertence a esta empresa."));
+
+        return converterParaDetalhesDTO(produto);
+    }
+
+    public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto, Long idEmpresa) {
+        
+        // 1. Pega a Empresa logada do contexto
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        
+        if (!empresaLogada.getId().equals(idEmpresa)) {
+             throw new SecurityException("Acesso negado. O ID da empresa na requisição não corresponde à empresa autenticada.");
+        }
+
+        // 2. Busca o produto existente
+        Produto produtoExistente = produtoRepository.findByIdAndEmpresaId(idProduto, idEmpresa)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado ou não pertence a esta empresa."));
+
+        // 3. Valida se a categoria informada existe
+        CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
+                .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou não encontrada"));
+
+        // 4. Validação de EAN Duplicado (Ignora se for o mesmo EAN que o produto já tem)
+        if (dto.getCodBarrasEan() != null && !dto.getCodBarrasEan().isBlank()) {
+            if (!dto.getCodBarrasEan().equals(produtoExistente.getCodBarrasEan()) && 
+                produtoRepository.existsByCodBarrasEan(dto.getCodBarrasEan())) {
+                throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
+            }
+        }
+
+        // 5. Atualiza os dados (Você pode adicionar uma validação para não deixar inativar se tiver oferta ativa depois, como no seu teste)
+        produtoExistente.setTituloProduto(dto.getTituloProduto());
+        produtoExistente.setCodBarrasEan(dto.getCodBarrasEan());
+        produtoExistente.setCategoria(categoria);
+        produtoExistente.setDescricao(dto.getDescricao());
+        produtoExistente.setPrecoOriginal(dto.getPrecoOriginal());
+        produtoExistente.setFoto(dto.getFoto());
+        // produtoExistente.setAtivo(dto.getAtivo()); // Caso adicione o campo "ativo" no RequestDTO futuramente
+
+        Produto produtoAtualizado = produtoRepository.save(produtoExistente);
+
+        return converterParaDetalhesDTO(produtoAtualizado);
+    }
+
     // --- MÉTODOS AUXILIARES DE CONVERSÃO ---
 
     private ProdutoEmpresaDetalhesDTO converterParaDetalhesDTO(Produto produto) {
