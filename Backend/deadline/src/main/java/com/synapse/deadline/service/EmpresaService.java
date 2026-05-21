@@ -1,5 +1,9 @@
 package com.synapse.deadline.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
 import com.synapse.deadline.entity.Empresa;
@@ -7,13 +11,13 @@ import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.RamoEmpresaRepository; 
-
 import java.util.UUID;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import com.synapse.deadline.repository.RamoEmpresaRepository;
+
 
 @Service
 public class EmpresaService {
@@ -32,7 +36,7 @@ public class EmpresaService {
      * @param dto Os dados do cadastro da empresa.
      * @return O DTO com os dados do perfil da empresa cadastrada.
      */
-    public EmpresaPerfilDTO cadastrar(EmpresaCadastroDTO dto) {
+    public EmpresaPerfilDTO cadastrarEmpresa(EmpresaCadastroDTO dto) {
         
         if (repository.findByEmailLogin(dto.getEmailLogin()).isPresent()) {
             throw new IllegalArgumentException("E-mail de login já cadastrado");

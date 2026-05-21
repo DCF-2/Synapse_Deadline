@@ -19,7 +19,7 @@ public class EmpresaController {
     /* Cadastrar empresa */
     @PostMapping("/cadastro")
     public ResponseEntity<EmpresaPerfilDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
-        EmpresaPerfilDTO response = service.cadastrar(dto);
+        EmpresaPerfilDTO response = service.cadastrarEmpresa(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
