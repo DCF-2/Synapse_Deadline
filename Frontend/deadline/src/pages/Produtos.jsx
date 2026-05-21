@@ -12,7 +12,7 @@ export default function ProdutosPage() {
   const [erro, setErro] = useState(null);
 
   const handleLogout = () => {
-    const token = localStorage.getItem('token');
+    localStorage.removeItem('deadline_token');
     window.location.href = '/';
   };
 

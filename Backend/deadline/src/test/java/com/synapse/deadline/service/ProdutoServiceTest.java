@@ -65,12 +65,15 @@ public class ProdutoServiceTest {
     }
 
     // Método auxiliar para criar um mock de utilizador logado no Spring Security
-    private void simularUsuarioLogado(String email) {
+    private void simularUsuarioLogado() {
         Authentication authentication = mock(Authentication.class);
         SecurityContext securityContext = mock(SecurityContext.class);
         
         when(securityContext.getAuthentication()).thenReturn(authentication);
-        when(authentication.getName()).thenReturn(email);
+        // O Service faz um cast direto do getPrincipal() para Empresa
+        when(authentication.getPrincipal()).thenReturn(mockEmpresa); 
+        // O Service pega o email do getName() para verificar posse no remover, se necessário. Para o cadastro, o getPrincipal é o essencial.
+        lenient().when(authentication.getName()).thenReturn("empresa@alpha.com");
         
         SecurityContextHolder.setContext(securityContext);
     }
@@ -79,11 +82,10 @@ public class ProdutoServiceTest {
     @DisplayName("TC_055 - Deve cadastrar produto no catálogo com todos os dados válidos")
     void deveCadastrarProdutoComSucesso() {
         // Arrange
-        simularUsuarioLogado("empresa@alpha.com"); // Simula o JWT
+        simularUsuarioLogado(); // Simula o JWT
         
         when(produtoRepository.existsByCodBarrasEan(validDto.getCodBarrasEan())).thenReturn(false);
-        // Alterado de findById para findByEmailLogin, acompanhando o novo padrão de segurança
-        when(empresaRepository.findByEmailLogin("empresa@alpha.com")).thenReturn(Optional.of(mockEmpresa));
+
         when(categoriaRepository.findById(1L)).thenReturn(Optional.of(mockCategoria));
         
         Produto produtoSalvo = new Produto();
