@@ -24,10 +24,9 @@ public class ProdutoController {
     @Autowired
     private ProdutoService service;
 
-   @PostMapping
+    @PostMapping
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> cadastrar(
-            @Valid @RequestBody ProdutoRequestDTO dto
-    ) {
+            @Valid @RequestBody ProdutoRequestDTO dto) {
         return ResponseEntity.ok(service.cadastrarProduto(dto));
     }
 
@@ -51,10 +50,9 @@ public class ProdutoController {
      * Endpoint GET /produto/empresa
      * Retorna a lista de produtos da empresa autenticada de forma resumida.
      */
-   @GetMapping("/empresa")
+    @GetMapping("/empresa")
     public ResponseEntity<Page<ProdutoEmpresaResumoDTO>> listarPorEmpresa(
-            @PageableDefault(size = 12, sort = "tituloProduto") Pageable pageable
-    ) {
+            @PageableDefault(size = 12, sort = "tituloProduto") Pageable pageable) {
         return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable));
     }
 }

@@ -18,6 +18,8 @@ build/
 *.mv.db
 *.trace.db
 
+.next
+
 # ==========================================
 # SEGURANÇA E CHAVES (CRÍTICO PARA MARKETPLACE)
 # ==========================================
@@ -90,3 +92,4 @@ desktop.ini
 # Arquivos indesejados específicos do projeto
 # ==========================================
 .xml
+node_modules
