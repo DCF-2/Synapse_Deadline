@@ -1,18 +1,16 @@
 package com.synapse.deadline.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
-import com.synapse.deadline.repository.RamoEmpresaRepository; 
-
-import java.util.UUID;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
+import com.synapse.deadline.repository.RamoEmpresaRepository;
 
 @Service
 public class EmpresaService {
@@ -26,7 +24,7 @@ public class EmpresaService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public EmpresaPerfilDTO cadastrar(EmpresaCadastroDTO dto) {
+    public EmpresaPerfilDTO cadastrarEmpresa(EmpresaCadastroDTO dto) {
         
         if (repository.findByEmailLogin(dto.getEmailLogin()).isPresent()) {
             throw new IllegalArgumentException("E-mail de login já cadastrado");
@@ -76,16 +74,5 @@ public class EmpresaService {
         // (Setar os demais campos conforme necessidade do retorno)
         
         return retorno;
-    }
-
-    public void recuperarSenha(String email) {
-        Empresa empresa = repository.findByEmailLogin(email)
-            .orElseThrow(() -> new RuntimeException("E-mail não encontrado"));
-
-        String novaSenhaPlana = UUID.randomUUID().toString().substring(0, 8);
-        empresa.setSenhaHash(passwordEncoder.encode(novaSenhaPlana)); // Atualizado
-        repository.save(empresa);
-
-        System.out.println("NOVA SENHA PARA " + email + ": " + novaSenhaPlana);
     }
 }

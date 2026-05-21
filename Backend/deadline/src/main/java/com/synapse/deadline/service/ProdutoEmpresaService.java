@@ -1,8 +1,16 @@
 package com.synapse.deadline.service;
 
-import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO; 
-import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO; 
-import com.synapse.deadline.dto.ProdutoRequestDTO; // O seu DTO de entrada (ajustado)
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page; // O seu DTO de entrada (ajustado)
+import org.springframework.data.domain.Pageable;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Service;
+
+import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
+import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
+import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.entity.CategoriaProduto;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Produto;
@@ -10,20 +18,11 @@ import com.synapse.deadline.repository.CategoriaProdutoRepository;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Serviço responsável por gerir o catálogo base de produtos das empresas (ProdutoEmpresaService no UML).
  */
 @Service
-public class ProdutoService {
+public class ProdutoEmpresaService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
