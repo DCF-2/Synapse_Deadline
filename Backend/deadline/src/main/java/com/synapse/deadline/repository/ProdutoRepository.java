@@ -3,11 +3,10 @@ package com.synapse.deadline.repository;
 import java.util.List;
 import java.util.Optional;
 
-import java.util.Optional;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.synapse.deadline.entity.Produto;
@@ -17,7 +16,7 @@ import com.synapse.deadline.entity.Produto;
  * Controla as consultas relativas ao catálogo geral de produtos cadastrados.
  */
 @Repository
-public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpecificationExecutor<Produto> {
 
     /**
      * Localiza todos os produtos pertencentes a uma determinada empresa parceira.

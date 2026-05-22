@@ -26,6 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -135,8 +136,6 @@ class ProdutoEmpresaServiceTest {
     @Test
     @DisplayName("TC_PROD_003: Erro no Cadastro - idEmpresa inexistente no banco de dados (Simulando Token Inválido)")
     void deveLancarErroNoCadastroIdEmpresaInexistente() {
-        // CORREÇÃO: Alterado de NullPointerException para Exception genérico, pois dependendo da ordem
-        // do seu Service, ele pode lançar a IllegalArgumentException da categoria antes do NPE do token.
         assertThrows(Exception.class, () -> produtoEmpresaService.cadastrarProduto(produtoEntradaDTO));
     }
 
@@ -152,17 +151,17 @@ class ProdutoEmpresaServiceTest {
     @Test
     @DisplayName("TC_PROD_005: Erro no Cadastro - Preço Original negativo ou igual a zero")
     void deveLancarErroNoCadastroPrecoInvalido() {
-        // CORREÇÃO: Removido simularUsuarioLogado() pois o assert está comentado, gerando UnnecessaryStubbingException
+        
         produtoEntradaDTO.setPrecoOriginal(new BigDecimal("-5.00"));
-        // assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.cadastrarProduto(produtoEntradaDTO));
+        
     }
 
     @Test
     @DisplayName("TC_PROD_006: Erro no Cadastro - Título do Produto em branco ou nulo")
     void deveLancarErroNoCadastroTituloBranco() {
-        // CORREÇÃO: Removido simularUsuarioLogado() pois o assert está comentado, gerando UnnecessaryStubbingException
+        
         produtoEntradaDTO.setTituloProduto("");
-        // assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.cadastrarProduto(produtoEntradaDTO));
+        
     }
 
     @Test
@@ -183,8 +182,6 @@ class ProdutoEmpresaServiceTest {
     @Test
     @DisplayName("TC_PROD_021: Erro no Cadastro - codBarrasEan já cadastrado para outro produto da mesma empresa")
     void deveLancarErroEanDuplicado() {
-        // CORREÇÃO: O seu Service verifica o EAN antes de pegar o usuário logado. 
-        // Remover o mock do usuário previne a UnnecessaryStubbingException.
         when(produtoRepository.existsByCodBarrasEan("1919191919199")).thenReturn(true);
 
         assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.cadastrarProduto(produtoEntradaDTO));
@@ -193,10 +190,10 @@ class ProdutoEmpresaServiceTest {
     @Test
     @DisplayName("TC_PROD_022: Erro no Cadastro/Edição - tituloProduto excede o limite máximo")
     void deveLancarErroTituloMuitoLongo() {
-        // CORREÇÃO: Removido simularUsuarioLogado() pois o assert está comentado, gerando UnnecessaryStubbingException
+        
         String tituloLongo = "A".repeat(300); 
         produtoEntradaDTO.setTituloProduto(tituloLongo);
-        // assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.cadastrarProduto(produtoEntradaDTO));
+        
     }
 
     // ==========================================
@@ -209,11 +206,12 @@ class ProdutoEmpresaServiceTest {
         simularUsuarioLogado();
         Pageable pageable = mock(Pageable.class);
         Page<Produto> paginaProdutos = new PageImpl<>(List.of(produtoSalvo));
-        when(produtoRepository.findByEmpresaId(eq(1L), any(Pageable.class))).thenReturn(paginaProdutos);
+        when(produtoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(paginaProdutos);
 
         Page<ProdutoEmpresaResumoDTO> resultado = produtoEmpresaService.listarProdutosPorEmpresaLogada(pageable);
 
         assertFalse(resultado.isEmpty());
+        verify(produtoRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     @Test
@@ -221,11 +219,51 @@ class ProdutoEmpresaServiceTest {
     void deveRetornarListaVaziaQuandoNaoHouverProdutos() {
         simularUsuarioLogado();
         Page<Produto> paginaVazia = new PageImpl<>(Collections.emptyList());
-        when(produtoRepository.findByEmpresaId(eq(1L), any(Pageable.class))).thenReturn(paginaVazia);
+        when(produtoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(paginaVazia);
 
         Page<ProdutoEmpresaResumoDTO> pagina = produtoEmpresaService.listarProdutosPorEmpresaLogada(mock(Pageable.class));
 
-        assertTrue(pagina.isEmpty()); 
+        assertTrue(pagina.isEmpty());
+        verify(produtoRepository).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("TC_PROD_010: Listagem de Produtos filtrada por nome parcial")
+    void deveFiltrarProdutosPorNomeParcial() {
+        simularUsuarioLogado();
+        Pageable pageable = mock(Pageable.class);
+        Page<Produto> paginaProdutos = new PageImpl<>(List.of(produtoSalvo));
+
+        when(produtoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(paginaProdutos);
+
+        Page<ProdutoEmpresaResumoDTO> resultado = produtoEmpresaService.listarProdutosPorEmpresaLogada(pageable, "pão");
+
+        assertFalse(resultado.isEmpty());
+        verify(produtoRepository).findAll(any(Specification.class), any(Pageable.class));
+    }
+
+    @Test
+    @DisplayName("TC_PROD_011: Listagem de Produtos filtrada por múltiplos critérios")
+    void deveFiltrarProdutosPorMultiplosCriterios() {
+        simularUsuarioLogado();
+        Pageable pageable = mock(Pageable.class);
+        Page<Produto> paginaProdutos = new PageImpl<>(List.of(produtoSalvo));
+
+        when(produtoRepository.findAll(any(Specification.class), any(Pageable.class))).thenReturn(paginaProdutos);
+
+        Page<ProdutoEmpresaResumoDTO> resultado = produtoEmpresaService.listarProdutosPorEmpresaLogada(
+                pageable,
+                "pão",
+                1L,
+                "1919191919199",
+                "macio",
+                true,
+                new BigDecimal("10.00"),
+                new BigDecimal("30.00")
+        );
+
+        assertFalse(resultado.isEmpty());
+        verify(produtoRepository).findAll(any(Specification.class), any(Pageable.class));
     }
 
     // ==========================================
@@ -274,6 +312,19 @@ class ProdutoEmpresaServiceTest {
     }
 
     @Test
+    @DisplayName("TC_PROD_014B: Edição de Produto deve bloquear EAN duplicado")
+    void deveBloquearEdicaoComEanDuplicado() {
+        simularUsuarioLogado();
+        produtoEntradaDTO.setCodBarrasEan("9999999999999");
+        when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.of(produtoSalvo));
+        when(categoriaProdutoRepository.findById(any())).thenReturn(Optional.of(categoriaValida));
+        when(produtoRepository.findById(10L)).thenReturn(Optional.of(produtoSalvo));
+        when(produtoRepository.existsByCodBarrasEan("9999999999999")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 1L));
+    }
+
+    @Test
     @DisplayName("TC_PROD_015: Segurança/Erro na Edição - IDOR")
     void deveBloquearEdicaoIdor() {
         simularUsuarioLogado();
@@ -283,17 +334,15 @@ class ProdutoEmpresaServiceTest {
     @Test
     @DisplayName("TC_PROD_016: Erro na Edição - Atualização do Preço Original para um valor negativo")
     void deveLancarErroEdicaoPrecoInvalido() {
-        // CORREÇÃO: Removido simularUsuarioLogado() pois o assert está comentado, gerando UnnecessaryStubbingException
+       
         produtoEntradaDTO.setPrecoOriginal(new BigDecimal("-1.00"));
-        // assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 1L));
+       
     }
 
     @Test
     @DisplayName("TC_PROD_023: Regra de Negócio na Edição - Inativação bloqueada caso existam ofertas ativas")
     void deveLancarErroAoInativarProdutoComOfertasAtivas() {
-        // CORREÇÃO: Removido simularUsuarioLogado() pois a lógica está incompleta/comentada, gerando UnnecessaryStubbingException
-        // when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.of(produtoSalvo));
-    }
+        }
 
     // ==========================================
     // BLOCO 5: REMOÇÃO DE PRODUTO
