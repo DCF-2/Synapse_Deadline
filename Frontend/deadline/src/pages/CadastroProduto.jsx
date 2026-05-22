@@ -4,14 +4,10 @@ import { useNavigate, Link } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 const CATEGORIAS = [
-  { id: 1, nome: 'Medicamento' },
-  { id: 2, nome: 'Cosmético' },
-  { id: 3, nome: 'Suplemento' },
-  { id: 4, nome: 'Higiene Pessoal' },
-  { id: 5, nome: 'Dermocosmético' },
-  { id: 6, nome: 'Fitoterápico' },
-  { id: 7, nome: 'Veterinário' },
-  { id: 8, nome: 'Outro' },
+  { id: 1, nome: 'Alimentos e Bebidas' },
+  { id: 2, nome: 'Higiene e Beleza' },
+  { id: 3, nome: 'Medicamentos' },
+  { id: 4, nome: 'Outro' },
 ];
 
 export default function CadastroProduto() {

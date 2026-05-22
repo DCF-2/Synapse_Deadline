@@ -198,7 +198,7 @@ export default function AuthPage() {
                         <option value="" disabled>Selecione da lista...</option>
                         <option value="1">Farmácia / Medicamentos</option>
                         <option value="2">Cosméticos / Perfumaria</option>
-                        <option value="3">Suplementos Alimentares</option>
+                        <option value="3">Alimentos</option>
                       </select>
                       <button type="button" onClick={() => { setShowNovoRamo(!showNovoRamo); setCad({...cad, idRamo: '', novoRamo: ''}); }} className="ds-add-btn" style={{ background: showNovoRamo ? '#E2E8F0' : 'var(--dl-primary)', color: showNovoRamo ? '#475569' : '#FFF' }}>
                         {showNovoRamo ? '✕' : '+'}
