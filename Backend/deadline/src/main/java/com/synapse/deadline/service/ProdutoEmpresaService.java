@@ -10,13 +10,13 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
+import com.synapse.deadline.dto.ProdutoEmpresaFiltroDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.entity.CategoriaProduto;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.CategoriaProdutoRepository;
-import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
 import com.synapse.deadline.repository.ProdutoSpecifications;
 
@@ -102,6 +102,8 @@ public class ProdutoEmpresaService {
         CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new IllegalArgumentException("Categoria inválida"));
 
+        validarEanDuplicado(dto.getCodBarrasEan(), produto.getId());
+
         produto.setTituloProduto(dto.getTituloProduto());
         produto.setCodBarrasEan(dto.getCodBarrasEan());
         produto.setCategoria(categoria);
@@ -114,11 +116,13 @@ public class ProdutoEmpresaService {
     }
 
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
-        return listarProdutosPorEmpresaLogada(pageable, null, null, null, null, null, null, null);
+        return listarProdutosPorEmpresaLogada(pageable, new ProdutoEmpresaFiltroDTO());
     }
 
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable, String nome) {
-        return listarProdutosPorEmpresaLogada(pageable, nome, null, null, null, null, null, null);
+        ProdutoEmpresaFiltroDTO filtro = new ProdutoEmpresaFiltroDTO();
+        filtro.setNome(nome);
+        return listarProdutosPorEmpresaLogada(pageable, filtro);
     }
 
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(
@@ -131,41 +135,39 @@ public class ProdutoEmpresaService {
             BigDecimal precoMin,
             BigDecimal precoMax
     ) {
-        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String termoBusca = nome == null ? null : nome.trim();
+        ProdutoEmpresaFiltroDTO filtro = new ProdutoEmpresaFiltroDTO();
+        filtro.setNome(nome);
+        filtro.setCategoriaId(categoriaId);
+        filtro.setCodBarrasEan(codBarrasEan);
+        filtro.setDescricao(descricao);
+        filtro.setAtivo(ativo);
+        filtro.setPrecoMin(precoMin);
+        filtro.setPrecoMax(precoMax);
+        return listarProdutosPorEmpresaLogada(pageable, filtro);
+    }
 
-        return buscarProdutosComFiltros(
-                empresaLogada.getId(),
-                pageable,
-                termoBusca,
-                categoriaId,
-                codBarrasEan,
-                descricao,
-                ativo,
-                precoMin,
-                precoMax
-        ).map(this::converterParaResumoDTO);
+    public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable, ProdutoEmpresaFiltroDTO filtro) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        return buscarProdutosComFiltros(empresaLogada.getId(), pageable, filtro).map(this::converterParaResumoDTO);
     }
 
     private Page<Produto> buscarProdutosComFiltros(
             Long empresaId,
             Pageable pageable,
-            String nome,
-            Long categoriaId,
-            String codBarrasEan,
-            String descricao,
-            Boolean ativo,
-            BigDecimal precoMin,
-            BigDecimal precoMax
+            ProdutoEmpresaFiltroDTO filtro
     ) {
+        String nome = filtro != null && filtro.getNome() != null ? filtro.getNome().trim() : null;
+        BigDecimal precoMin = filtro != null ? filtro.getPrecoMin() : null;
+        BigDecimal precoMax = filtro != null ? filtro.getPrecoMax() : null;
+
         return produtoRepository.findAll(
                 ProdutoSpecifications.filtrarPorEmpresaEParametros(
                         empresaId,
                         nome,
-                        categoriaId,
-                        codBarrasEan,
-                        descricao,
-                        ativo,
+                        filtro != null ? filtro.getCategoriaId() : null,
+                        filtro != null ? filtro.getCodBarrasEan() : null,
+                        filtro != null ? filtro.getDescricao() : null,
+                        filtro != null ? filtro.getAtivo() : null,
                         precoMin,
                         precoMax
                 ),
@@ -208,12 +210,7 @@ public class ProdutoEmpresaService {
                 .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou não encontrada"));
 
         // 4. Validação de EAN Duplicado (Ignora se for o mesmo EAN que o produto já tem)
-        if (dto.getCodBarrasEan() != null && !dto.getCodBarrasEan().isBlank()) {
-            if (!dto.getCodBarrasEan().equals(produtoExistente.getCodBarrasEan()) && 
-                produtoRepository.existsByCodBarrasEan(dto.getCodBarrasEan())) {
-                throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
-            }
-        }
+        validarEanDuplicado(dto.getCodBarrasEan(), produtoExistente.getId());
 
         // 5. Atualiza os dados (Você pode adicionar uma validação para não deixar inativar se tiver oferta ativa depois, como no seu teste)
         produtoExistente.setTituloProduto(dto.getTituloProduto());
@@ -255,5 +252,19 @@ public class ProdutoEmpresaService {
         dto.setFoto(produto.getFoto());
         dto.setAtivo(produto.getAtivo());
         return dto;
+    }
+
+    private void validarEanDuplicado(String codBarrasEan, Long idProdutoAtual) {
+        if (codBarrasEan == null || codBarrasEan.isBlank()) {
+            return;
+        }
+
+        String codAtual = produtoRepository.findById(idProdutoAtual)
+                .map(Produto::getCodBarrasEan)
+                .orElse(null);
+
+        if (!codBarrasEan.equals(codAtual) && produtoRepository.existsByCodBarrasEan(codBarrasEan)) {
+            throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
+        }
     }
 }

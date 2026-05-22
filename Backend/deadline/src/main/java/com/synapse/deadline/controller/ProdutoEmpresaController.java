@@ -1,6 +1,7 @@
 package com.synapse.deadline.controller;
 
 import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
+import com.synapse.deadline.dto.ProdutoEmpresaFiltroDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.service.ProdutoEmpresaService;
@@ -11,8 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.math.BigDecimal;
 
 @RestController
 @RequestMapping("/produto")
@@ -53,25 +52,8 @@ public class ProdutoEmpresaController {
    @GetMapping("/empresa")
     public ResponseEntity<Page<ProdutoEmpresaResumoDTO>> listarPorEmpresa(
             @PageableDefault(size = 12, sort = "tituloProduto") Pageable pageable,
-            @RequestParam(name = "nome", required = false) String nome,
-            @RequestParam(name = "categoriaId", required = false) Long categoriaId,
-            @RequestParam(name = "codBarrasEan", required = false) String codBarrasEan,
-            @RequestParam(name = "descricao", required = false) String descricao,
-            @RequestParam(name = "ativo", required = false) Boolean ativo,
-            @RequestParam(name = "precoMin", required = false) BigDecimal precoMin,
-            @RequestParam(name = "precoMax", required = false) BigDecimal precoMax
+            @ModelAttribute ProdutoEmpresaFiltroDTO filtro
     ) {
-        return ResponseEntity.ok(
-                service.listarProdutosPorEmpresaLogada(
-                        pageable,
-                        nome,
-                        categoriaId,
-                        codBarrasEan,
-                        descricao,
-                        ativo,
-                        precoMin,
-                        precoMax
-                )
-        );
+        return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable, filtro));
     }
 }

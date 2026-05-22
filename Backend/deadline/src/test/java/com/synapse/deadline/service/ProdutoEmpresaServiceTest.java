@@ -312,6 +312,19 @@ class ProdutoEmpresaServiceTest {
     }
 
     @Test
+    @DisplayName("TC_PROD_014B: Edição de Produto deve bloquear EAN duplicado")
+    void deveBloquearEdicaoComEanDuplicado() {
+        simularUsuarioLogado();
+        produtoEntradaDTO.setCodBarrasEan("9999999999999");
+        when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.of(produtoSalvo));
+        when(categoriaProdutoRepository.findById(any())).thenReturn(Optional.of(categoriaValida));
+        when(produtoRepository.findById(10L)).thenReturn(Optional.of(produtoSalvo));
+        when(produtoRepository.existsByCodBarrasEan("9999999999999")).thenReturn(true);
+
+        assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 1L));
+    }
+
+    @Test
     @DisplayName("TC_PROD_015: Segurança/Erro na Edição - IDOR")
     void deveBloquearEdicaoIdor() {
         simularUsuarioLogado();
