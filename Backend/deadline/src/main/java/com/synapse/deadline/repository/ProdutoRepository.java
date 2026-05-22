@@ -7,7 +7,9 @@ import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
 
 import com.synapse.deadline.entity.Produto;
@@ -17,7 +19,7 @@ import com.synapse.deadline.entity.Produto;
  * Controla as consultas relativas ao catálogo geral de produtos cadastrados.
  */
 @Repository
-public interface ProdutoRepository extends JpaRepository<Produto, Long> {
+public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpecificationExecutor<Produto> {
 
     /**
      * Localiza todos os produtos pertencentes a uma determinada empresa parceira.
@@ -26,6 +28,16 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long> {
      * @return Lista contendo os produtos da referida empresa.
      */
     Page<Produto> findByEmpresaId(Long idEmpresa, Pageable pageable);
+
+    /**
+     * Localiza produtos pertencentes a uma determinada empresa filtrando pelo título de forma parcial e case-insensitive.
+     *
+     * @param idEmpresa Identificador único da empresa proprietária.
+     * @param tituloProduto Termo de busca parcial do título.
+     * @param pageable Objeto para paginação dos resultados.
+     * @return Página contendo os produtos filtrados.
+     */
+    Page<Produto> findByEmpresaIdAndTituloProdutoContainingIgnoreCase(Long idEmpresa, String tituloProduto, Pageable pageable);
 
     /**
      * Localiza todos os produtos ativos no sistema (para a vitrine pública).

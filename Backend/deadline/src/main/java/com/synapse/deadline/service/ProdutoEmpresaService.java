@@ -1,5 +1,6 @@
 package com.synapse.deadline.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +18,7 @@ import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.CategoriaProdutoRepository;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
+import com.synapse.deadline.repository.ProdutoSpecifications;
 
 /**
  * Serviço responsável por gerir o catálogo base de produtos das empresas (ProdutoEmpresaService no UML).
@@ -26,10 +28,6 @@ public class ProdutoEmpresaService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
-
-    // Você pode até remover essa injeção se não usar em outros métodos não mostrados aqui
-    @Autowired
-    private EmpresaRepository empresaRepository; 
 
     @Autowired
     private CategoriaProdutoRepository categoriaRepository;
@@ -116,14 +114,63 @@ public class ProdutoEmpresaService {
     }
 
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
-        
-        // 1. Pega a Empresa que já foi autenticada e injetada pelo nosso SecurityFilter
+        return listarProdutosPorEmpresaLogada(pageable, null, null, null, null, null, null, null);
+    }
+
+    public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable, String nome) {
+        return listarProdutosPorEmpresaLogada(pageable, nome, null, null, null, null, null, null);
+    }
+
+    public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(
+            Pageable pageable,
+            String nome,
+            Long categoriaId,
+            String codBarrasEan,
+            String descricao,
+            Boolean ativo,
+            BigDecimal precoMin,
+            BigDecimal precoMax
+    ) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String termoBusca = nome == null ? null : nome.trim();
 
-        // 2. Busca os produtos diretamente pelo ID da empresa logada
-        Page<Produto> produtos = produtoRepository.findByEmpresaId(empresaLogada.getId(), pageable);
+        return buscarProdutosComFiltros(
+                empresaLogada.getId(),
+                pageable,
+                termoBusca,
+                categoriaId,
+                codBarrasEan,
+                descricao,
+                ativo,
+                precoMin,
+                precoMax
+        ).map(this::converterParaResumoDTO);
+    }
 
-        return produtos.map(this::converterParaResumoDTO);
+    private Page<Produto> buscarProdutosComFiltros(
+            Long empresaId,
+            Pageable pageable,
+            String nome,
+            Long categoriaId,
+            String codBarrasEan,
+            String descricao,
+            Boolean ativo,
+            BigDecimal precoMin,
+            BigDecimal precoMax
+    ) {
+        return produtoRepository.findAll(
+                ProdutoSpecifications.filtrarPorEmpresaEParametros(
+                        empresaId,
+                        nome,
+                        categoriaId,
+                        codBarrasEan,
+                        descricao,
+                        ativo,
+                        precoMin,
+                        precoMax
+                ),
+                pageable
+        );
     }
 
     public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto, Long idEmpresa) {
