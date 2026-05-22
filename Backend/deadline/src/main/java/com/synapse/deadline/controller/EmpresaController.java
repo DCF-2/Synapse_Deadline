@@ -16,9 +16,22 @@ public class EmpresaController {
     @Autowired
     private EmpresaService service;
 
+    /* Cadastrar empresa */
     @PostMapping("/cadastro")
     public ResponseEntity<EmpresaPerfilDTO> cadastrar(@Valid @RequestBody EmpresaCadastroDTO dto) {
-        EmpresaPerfilDTO response = service.cadastrar(dto);
+        EmpresaPerfilDTO response = service.cadastrarEmpresa(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    /* Visualizar perfil da empresa */
+    @GetMapping("/perfil")
+    public ResponseEntity<EmpresaPerfilDTO> visualizarMeuPerfil() {
+        return ResponseEntity.ok(service.visualizarPerfil());
+    }
+
+    /* Editar perfil da empresa */
+    @PutMapping("/perfil")
+    public ResponseEntity<EmpresaPerfilDTO> editarMeuPerfil(@Valid @RequestBody EmpresaPerfilDTO dto) {
+        return ResponseEntity.ok(service.editarPerfil(dto));
     }
 }

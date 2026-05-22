@@ -40,7 +40,6 @@ public class SecurityConfig {
                         .requestMatchers("/login.html", "/css/**", "/js/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/produtos").permitAll()
                         .requestMatchers("/h2-console/**").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                         .anyRequest().authenticated()
