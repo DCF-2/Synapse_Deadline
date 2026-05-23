@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page; // O seu DTO de entrada (ajustado)
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaFiltroDTO;
@@ -32,6 +33,7 @@ public class ProdutoEmpresaService {
     @Autowired
     private CategoriaProdutoRepository categoriaRepository;
 
+    @Transactional
     public ProdutoEmpresaDetalhesDTO cadastrarProduto(ProdutoRequestDTO dto) {
         
         if (dto.getCodBarrasEan() != null && !dto.getCodBarrasEan().isBlank()) {
@@ -61,6 +63,7 @@ public class ProdutoEmpresaService {
         return converterParaDetalhesDTO(salvo);
     }
 
+    @Transactional
     public void remover(Long id) {
         // 1. Descobrir quem está a tentar apagar pegando a empresa do contexto
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -82,6 +85,7 @@ public class ProdutoEmpresaService {
     /**
      * Visualiza os detalhes de um produto específico, garantindo que pertence à empresa logada.
      */
+    @Transactional(readOnly = true)
     public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
@@ -93,6 +97,7 @@ public class ProdutoEmpresaService {
     /**
      * Edita um produto existente, validando a propriedade (tenant isolation).
      */
+    @Transactional
     public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
@@ -115,16 +120,19 @@ public class ProdutoEmpresaService {
         return converterParaDetalhesDTO(salvo);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable) {
         return listarProdutosPorEmpresaLogada(pageable, new ProdutoEmpresaFiltroDTO());
     }
 
+    @Transactional(readOnly = true)
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable, String nome) {
         ProdutoEmpresaFiltroDTO filtro = new ProdutoEmpresaFiltroDTO();
         filtro.setNome(nome);
         return listarProdutosPorEmpresaLogada(pageable, filtro);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(
             Pageable pageable,
             String nome,
@@ -146,6 +154,7 @@ public class ProdutoEmpresaService {
         return listarProdutosPorEmpresaLogada(pageable, filtro);
     }
 
+    @Transactional(readOnly = true)
     public Page<ProdutoEmpresaResumoDTO> listarProdutosPorEmpresaLogada(Pageable pageable, ProdutoEmpresaFiltroDTO filtro) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return buscarProdutosComFiltros(empresaLogada.getId(), pageable, filtro).map(this::converterParaResumoDTO);
@@ -175,6 +184,7 @@ public class ProdutoEmpresaService {
         );
     }
 
+    @Transactional(readOnly = true)
     public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto, Long idEmpresa) {
         
         // 1. Pega a Empresa logada do contexto
@@ -192,6 +202,7 @@ public class ProdutoEmpresaService {
         return converterParaDetalhesDTO(produto);
     }
 
+    @Transactional
     public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto, Long idEmpresa) {
         
         // 1. Pega a Empresa logada do contexto
