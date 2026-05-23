@@ -21,6 +21,7 @@
 // import static org.mockito.Mockito.*;
 
 // @ExtendWith(MockitoExtension.class)
+//@ActiveProfiles("test")
 // class OfertaEmpresaServiceTest {
 
 //     @InjectMocks

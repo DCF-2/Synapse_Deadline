@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.synapse.deadline.dto.AuthResponseDTO;
 import com.synapse.deadline.dto.LoginDTO;
@@ -28,6 +29,7 @@ import com.synapse.deadline.exceptions.CredenciaisInvalidasException; // IMPORT 
 import com.synapse.deadline.repository.EmpresaRepository;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class AuthServiceTest {
 
     @InjectMocks

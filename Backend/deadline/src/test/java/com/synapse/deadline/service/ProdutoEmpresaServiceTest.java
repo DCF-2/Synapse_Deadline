@@ -29,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
@@ -42,6 +43,8 @@ import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("Teste Unitário - ProdutoEmpresaService")
+@ActiveProfiles("test")
 class ProdutoEmpresaServiceTest {
 
     @InjectMocks

@@ -19,6 +19,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.context.ActiveProfiles;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
@@ -29,6 +30,7 @@ import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.RamoEmpresaRepository;
 
 @ExtendWith(MockitoExtension.class)
+@ActiveProfiles("test")
 class EmpresaServiceTest {
 
     @InjectMocks
