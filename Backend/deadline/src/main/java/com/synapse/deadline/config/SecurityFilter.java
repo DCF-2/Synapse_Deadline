@@ -34,20 +34,27 @@ public class SecurityFilter extends OncePerRequestFilter {
         if (token != null) {
             // 2. Valida o token e pega o e-mail (subject)
             String email = tokenService.validarToken(token);
-            
-            // 3. Se o e-mail for válido, busca a empresa e autentica no Spring Security
-            if (!email.isEmpty()) {
-                var empresa = repository.findByEmailLogin(email)
-                        .orElseThrow(() -> new RuntimeException("Empresa não encontrada no token"));
-                
-                // Cria o objeto de autenticação do Spring (sem roles/permissões por enquanto)
-                var authentication = new UsernamePasswordAuthenticationToken(empresa, null, Collections.emptyList());
-                
-                // Salva a autenticação no contexto do Spring para essa requisição
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+
+            if (email.isEmpty()) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
+                return;
             }
+
+            // 3. Se o e-mail for válido, busca a empresa e autentica no Spring Security
+            var empresa = repository.findByEmailLogin(email).orElse(null);
+
+            if (empresa == null) {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Empresa não encontrada no token");
+                return;
+            }
+
+            // Cria o objeto de autenticação do Spring (sem roles/permissões por enquanto)
+            var authentication = new UsernamePasswordAuthenticationToken(empresa, null, Collections.emptyList());
+
+            // Salva a autenticação no contexto do Spring para essa requisição
+            SecurityContextHolder.getContext().setAuthentication(authentication);
         }
-        
+
         // 4. Continua o fluxo normal da requisição
         filterChain.doFilter(request, response);
     }
