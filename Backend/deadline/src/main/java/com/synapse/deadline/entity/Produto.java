@@ -3,10 +3,17 @@ package com.synapse.deadline.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import java.util.List;
+import jakarta.persistence.OneToMany;
+
 /**
  * Entidade que representa o catálogo base de produtos de uma empresa.
  * Não contém dados efêmeros de promoção, os quais ficam sob responsabilidade da entidade Oferta.
  */
+
+
 @Entity
 @Table(name = "produto")
 public class Produto {
@@ -19,6 +26,11 @@ public class Produto {
      * Empresa dona do produto.
      * Requisito de Integridade: Um produto não pode existir de forma órfã no banco.
      */
+    @OneToMany(mappedBy = "produto")
+    private List<Oferta> ofertas;
+
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "empresa_id", nullable = false)
     private Empresa empresa;
@@ -40,6 +52,7 @@ public class Produto {
      * Relacionamento com a Categoria padronizada.
      * Requisito de Integridade: Produto deve sempre pertencer a uma categoria catalogada.
      */
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "categoria_id", nullable = false)
     private CategoriaProduto categoria;
