@@ -33,6 +33,22 @@ public interface OfertaRepository extends JpaRepository<Oferta, Long> {
     List<Oferta> findByProdutoId(Long idProduto);
 
     /**
+     * Filtra todas as ofertas associadas a um determinado produto do catálogo e que estejam ativas.
+     *
+     * @param produtoId O identificador único do produto base.
+     * @return Lista de ofertas ativas geradas para este produto.
+     */
+    List<Oferta> findByProdutoIdAndAtivoTrue(Long produtoId);
+
+    /**
+     * Filtra todas as ofertas associadas a produtos de uma empresa específica.
+     *
+     * @param empresaId O identificador único da empresa.
+     * @return Lista de ofertas vinculadas à empresa.
+     */
+    List<Oferta> findByProdutoEmpresaId(Long empresaId);
+
+    /**
      * Filtra todas as ofertas associadas a um determinado produto do catálogo e que tenham data de término após uma determinada data.
      *
      * @param produtoId O identificador único do produto base.
