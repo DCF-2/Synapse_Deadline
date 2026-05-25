@@ -4,6 +4,48 @@ import { Link } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function Oferta(){
+
+  export default function OfertasPage() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [ofertas, setOferta] = useState([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
+  const [ofertaSelecionado, setOfertaSelecionado] = useState(null);
+
+  const handleLogout = () => {
+    localStorage.removeItem('deadline_token');
+    window.location.href = '/';
+  };
+
+  useEffect(() => {
+    const carregarOfertas = async () => {
+      try {
+        setCarregando(true);
+        setErro(null);
+        const token = localStorage.getItem('deadline_token');
+        if (!token) { handleLogout(); return; }
+
+        const res = await fetch(`${API_URL}/oferta/empresa`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.status === 401 || res.status === 403) { handleLogout(); return; }
+        if (!res.ok) throw new Error(`Erro ${res.status}: Ocorreu um problema ao buscar as ofertas.`);
+
+        const data = await res.json();
+        setProdutos(data && data.content ? data.content : []);
+      } catch (error) {
+        setErro(error.message);
+      } finally {
+        setCarregando(false);
+      }
+    };
+    carregarOfertas();
+  }, []);
     return(
             <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
         
@@ -97,13 +139,13 @@ export default function Oferta(){
                   {carregando && (
                     <div className="text-center my-5 text-muted">
                       <div className="spinner-border text-success mb-2" role="status"></div>
-                      <p>Buscando produtos no banco de dados...</p>
+                      <p>Buscando ofertas no banco de dados...</p>
                     </div>
                   )}
         
                   {erro && (
                     <div className="alert alert-danger shadow-sm rounded-3" role="alert">
-                      ⚠️ <strong>Não foi possível carregar os produtos:</strong> {erro}
+                      ⚠️ <strong>Não foi possível carregar as ofertas:</strong> {erro}
                     </div>
                   )}
         
@@ -118,4 +160,5 @@ export default function Oferta(){
               </div>
             </div>
     );
+}
 }

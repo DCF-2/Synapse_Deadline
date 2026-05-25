@@ -4,8 +4,6 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Produtos from './pages/Produtos';
 import CadastroProduto from './pages/CadastroProduto';
-import Oferta from './pages/Oferta';
-import NovaOfereta from './pages/NovaOferta';
 
 export default function App() {
   return (
@@ -24,8 +22,6 @@ export default function App() {
       <Route path='/produtos' element={<Produtos />} />
       <Route path='/cadastro-produto' element={<CadastroProduto />} />
       // Rota para a página de ofertas e criação de novas ofertas
-      <Route path='/ofertas' element={<Oferta />} />
-      <Route path='/nova-oferta' element={<NovaOfereta />} />
     </Routes>
   );
 }
