@@ -6,10 +6,16 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 export default function ProdutosPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Estados para gerenciar os dados da API
+  // Estados principais da API
   const [produtos, setProdutos] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
+
+  // ESTADOS DE FILTRO, BUSCA E ORDENAÇÃO
+  const [buscaInput, setBuscaInput] = useState('');
+  const [buscaAtiva, setBuscaAtiva] = useState('');
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  const [ordenacao, setOrdenacao] = useState('');
 
   const handleLogout = () => {
     localStorage.removeItem('deadline_token');
@@ -24,13 +30,33 @@ export default function ProdutosPage() {
 
         const token = localStorage.getItem('deadline_token');
 
-        // Proteção 1: Se não tiver token salvo, já redireciona pro login
         if (!token) {
           handleLogout();
           return;
         }
 
-        const res = await fetch(`${API_URL}/produto/empresa`, {
+        // CONSTRUÇÃO DA URL COM PARÂMETROS DINÂMICOS
+        const url = new URL(`${API_URL}/produto/empresa`);
+        
+        // 1. Busca por Nome
+        if (buscaAtiva) {
+          url.searchParams.append('nome', buscaAtiva); // Ajuste 'nome' se o seu back-end usar outro termo (ex: 'busca' ou 'titulo')
+        }
+        
+        // 2. Filtro por Categoria
+        if (categoriaSelecionada) {
+          url.searchParams.append('categoriaId', categoriaSelecionada);
+        }
+
+        // 3. Ordenação (Padrão Spring Data: sort=campo,direcao)
+        if (ordenacao) {
+          url.searchParams.append('sort', ordenacao);
+        }
+
+        // Padrão de paginação (opcional)
+        url.searchParams.append('size', '20');
+
+        const res = await fetch(url.toString(), {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -38,7 +64,6 @@ export default function ProdutosPage() {
           }
         });
 
-        // Proteção 2: Se o token for inválido ou estiver expirado (401/403), força o logout
         if (res.status === 401 || res.status === 403) {
           handleLogout();
           return;
@@ -50,7 +75,6 @@ export default function ProdutosPage() {
 
         const data = await res.json();
 
-        // O Spring Data encapsula os registros dentro de 'content' devido à paginação
         if (data && data.content) {
           setProdutos(data.content);
         } else {
@@ -66,7 +90,19 @@ export default function ProdutosPage() {
     };
 
     carregarProdutos();
-  }, []);
+  }, [buscaAtiva, categoriaSelecionada, ordenacao]); // O fetch é refeito sempre que um desses 3 estados mudar
+
+  // Disparado ao clicar em "Buscar" ou dar Enter no campo de texto
+  const handleBuscar = (e) => {
+    e.preventDefault();
+    setBuscaAtiva(buscaInput);
+  };
+
+  // Limpa a busca por texto
+  const limparBusca = () => {
+    setBuscaInput('');
+    setBuscaAtiva('');
+  };
 
   return (
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
@@ -83,14 +119,8 @@ export default function ProdutosPage() {
 
         {/* MENU LATERAL FIXO */}
         <nav className={`col-md-3 col-lg-2 p-3 d-md-flex flex-column justify-content-between ${isMenuOpen ? 'd-flex' : 'd-none d-md-flex'}`}
-          style={{
-            backgroundColor: '#3aad77',
-            height: '100vh',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1030
-          }}>
-
+          style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
+          
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
               <h4 className="fw-bold d-flex align-items-center gap-2">
@@ -129,20 +159,15 @@ export default function ProdutosPage() {
                 Vender com 50% de desconto ainda é melhor do que descartar e ter prejuízo total?
               </p>
             </div>
-
             <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}>
               <span>🚪</span> Sair
             </button>
           </div>
         </nav>
 
-        {/* CONTEÚDO PRINCIPAL COM ROLAGEM INDEPENDENTE */}
+        {/* CONTEÚDO PRINCIPAL */}
         <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 p-4"
-          style={{
-            height: '100vh',
-            overflowY: 'auto',
-            backgroundColor: '#f8f9fa'
-          }}>
+          style={{ height: '100vh', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
 
           <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
             <div>
@@ -156,11 +181,68 @@ export default function ProdutosPage() {
             </div>
           </div>
 
-          {/* Feedbacks Visuais */}
+          {/* PAINEL DE BUSCA E FILTROS */}
+          <div className="row mb-4 bg-white p-3 rounded-4 shadow-sm mx-0 align-items-center g-3">
+            
+            {/* 1. Busca por Nome */}
+            <div className="col-12 col-md-5">
+              <form onSubmit={handleBuscar} className="d-flex gap-2">
+                <input 
+                  type="text" 
+                  className="form-control form-control-sm bg-light border-0" 
+                  placeholder="Buscar por nome..." 
+                  value={buscaInput}
+                  onChange={(e) => setBuscaInput(e.target.value)}
+                />
+                <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#52b788' }}>
+                  Buscar
+                </button>
+                {buscaAtiva && (
+                  <button type="button" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#eeab45' }} onClick={limparBusca}>
+                    Limpar
+                  </button>
+                )}
+              </form>
+            </div>
+            
+            {/* 2. Filtro por Categoria */}
+            <div className="col-12 col-md-3">
+              <select 
+                className="form-select form-select-sm bg-light border-0 text-muted" 
+                value={categoriaSelecionada} 
+                onChange={(e) => setCategoriaSelecionada(e.target.value)}
+              >
+                <option value="">Todas as Categorias</option>
+                {/* Lembre-se de ajustar estes Values (IDs) conforme seu banco de dados */}
+                <option value="1">Medicamentos</option>
+                <option value="2">Higiene Pessoal</option>
+                <option value="3">Dermocosméticos</option>
+                <option value="4">Suplementos</option>
+              </select>
+            </div>
+
+            {/* 3. Ordenação */}
+            <div className="col-12 col-md-4">
+              <select 
+                className="form-select form-select-sm bg-light border-0 text-muted" 
+                value={ordenacao} 
+                onChange={(e) => setOrdenacao(e.target.value)}
+              >
+                <option value="">Ordenar por (Padrão)</option>
+                <option value="tituloProduto,asc">Nome (A - Z)</option>
+                <option value="tituloProduto,desc">Nome (Z - A)</option>
+                <option value="precoOriginal,asc">Menor Preço</option>
+                <option value="precoOriginal,desc">Maior Preço</option>
+              </select>
+            </div>
+
+          </div>
+
+          {/* FEEDBACKS VISUAIS */}
           {carregando && (
             <div className="text-center my-5 text-muted">
               <div className="spinner-border text-success mb-2" role="status"></div>
-              <p>Buscando produtos no banco de dados...</p>
+              <p>Buscando produtos...</p>
             </div>
           )}
 
@@ -173,14 +255,14 @@ export default function ProdutosPage() {
           {!carregando && !erro && produtos.length === 0 && (
             <div className="text-center my-5 text-muted">
               <p style={{ fontSize: '3rem' }}>📦</p>
-              <p className="fw-medium">Nenhum produto cadastrado para esta empresa.</p>
+              <p className="fw-medium">Nenhum produto encontrado com esses filtros.</p>
             </div>
           )}
 
           {/* GRID DE PRODUTOS */}
           <div className="row g-3">
             {!carregando && !erro && produtos.map((produto) => (
-              <div className="col-12 col-sm-6 col-md-4 col-lg-2" key={produto.id}>
+              <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" key={produto.id}>
                 <div className="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden" style={{ minHeight: '260px' }}>
 
                   <span className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold small"
