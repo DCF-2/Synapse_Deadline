@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -19,6 +19,7 @@ export default function ProdutosPage() {
   const [buscaAtiva, setBuscaAtiva] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [ordenacao, setOrdenacao] = useState('');
+  const debounceTimer = useRef(null);
 
   const navigate = useNavigate();
 
@@ -27,7 +28,7 @@ export default function ProdutosPage() {
     window.location.href = '/';
   };
 
-  const carregarProdutos = async () => {
+  const carregarProdutos = async (nomeBusca = buscaAtiva, categoria = categoriaSelecionada, ord = ordenacao) => {
     try {
       setCarregando(true);
       setErro(null);
@@ -43,18 +44,18 @@ export default function ProdutosPage() {
       const url = new URL(`${API_URL}/produto/empresa`);
 
       // 1. Busca por Nome
-      if (buscaAtiva) {
-        url.searchParams.append('nome', buscaAtiva); 
+      if (nomeBusca && nomeBusca.trim()) {
+        url.searchParams.append('nome', nomeBusca.trim()); 
       }
 
       // 2. Filtro por Categoria
-      if (categoriaSelecionada) {
-        url.searchParams.append('categoriaId', categoriaSelecionada);
+      if (categoria) {
+        url.searchParams.append('categoriaId', categoria);
       }
 
       // 3. Ordenação
-      if (ordenacao) {
-        url.searchParams.append('sort', ordenacao);
+      if (ord) {
+        url.searchParams.append('sort', ord);
       }
 
       url.searchParams.append('size', '20');
@@ -87,14 +88,32 @@ export default function ProdutosPage() {
     }
   };
 
+  // Inicial load
   useEffect(() => {
-    carregarProdutos();
-  }, [buscaAtiva, categoriaSelecionada, ordenacao]); // O fetch é refeito sempre que um desses 3 mudar
+    carregarProdutos('', '', '');
+  }, []);
 
-  const handleBuscar = (e) => {
-    e.preventDefault();
-    setBuscaAtiva(buscaInput);
-  };
+  // Live search com debounce
+  useEffect(() => {
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+
+    debounceTimer.current = setTimeout(() => {
+      setBuscaAtiva(buscaInput);
+    }, 500); // Aguarda 500ms após o usuário parar de digitar
+
+    return () => {
+      if (debounceTimer.current) {
+        clearTimeout(debounceTimer.current);
+      }
+    };
+  }, [buscaInput]);
+
+  // Refaz o fetch quando busca ativa muda (após debounce)
+  useEffect(() => {
+    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
+  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
 
   const limparBusca = () => {
     setBuscaInput('');
@@ -197,9 +216,9 @@ export default function ProdutosPage() {
           {/* PAINEL DE BUSCA E FILTROS */}
           <div className="row mb-4 bg-white p-3 rounded-4 shadow-sm mx-0 align-items-center g-3">
             
-            {/* 1. Busca por Nome */}
+            {/* 1. Busca em Tempo Real (Live Search) */}
             <div className="col-12 col-md-5">
-              <form onSubmit={handleBuscar} className="d-flex gap-2">
+              <div className="d-flex gap-2 align-items-center">
                 <input 
                   type="text" 
                   className="form-control form-control-sm bg-light border-0" 
@@ -207,15 +226,15 @@ export default function ProdutosPage() {
                   value={buscaInput}
                   onChange={(e) => setBuscaInput(e.target.value)}
                 />
-                <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#52b788' }}>
-                  Buscar
-                </button>
                 {buscaAtiva && (
                   <button type="button" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#eeab45' }} onClick={limparBusca}>
-                    Limpar
+                    ✕ Limpar
                   </button>
                 )}
-              </form>
+              </div>
+              {buscaInput && buscaInput.trim().length > 0 && (
+                <small className="text-muted d-block mt-1">🔍 Buscando por: <strong>{buscaInput}</strong></small>
+              )}
             </div>
             
             {/* 2. Filtro por Categoria */}
@@ -226,10 +245,10 @@ export default function ProdutosPage() {
                 onChange={(e) => setCategoriaSelecionada(e.target.value)}
               >
                 <option value="">Todas as Categorias</option>
-                <option value="1">Medicamentos</option>
-                <option value="2">Higiene Pessoal</option>
-                <option value="3">Dermocosméticos</option>
-                <option value="4">Suplementos</option>
+                <option value="1">Alimentos e Bebidas</option>
+                <option value="2">Higiene e Beleza</option>
+                <option value="3">Medicamentos</option>
+                <option value="4">Outro</option>
               </select>
             </div>
 
@@ -323,6 +342,9 @@ export default function ProdutosPage() {
               <div className="modal-footer border-0 pt-0 d-flex flex-column gap-2 align-items-stretch">
                 <button className="btn btn-success fw-bold rounded-3 py-2" onClick={() => navigate(`/nova-oferta?produtoId=${produtoSelecionado.id}`)}>
                   ➕ Criar Oferta
+                </button>
+                <button className="btn btn-primary fw-bold rounded-3 py-2" onClick={() => { navigate(`/editar-produto/${produtoSelecionado.id}`); setProdutoSelecionado(null); }}>
+                  ✏️ Editar Produto
                 </button>
                 <button className="btn btn-outline-danger fw-bold rounded-3" onClick={() => removerProduto(produtoSelecionado.id)} disabled={removendo}>
                   {removendo ? 'Removendo...' : '🗑 Remover Produto'}
