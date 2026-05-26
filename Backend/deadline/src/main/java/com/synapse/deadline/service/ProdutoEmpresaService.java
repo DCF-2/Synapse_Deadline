@@ -16,8 +16,11 @@ import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.entity.CategoriaProduto;
 import com.synapse.deadline.entity.Empresa;
+import com.synapse.deadline.entity.Endereco;
+import com.synapse.deadline.entity.Oferta;
 import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.CategoriaProdutoRepository;
+import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
 import com.synapse.deadline.repository.ProdutoSpecifications;
 
@@ -32,6 +35,9 @@ public class ProdutoEmpresaService {
 
     @Autowired
     private CategoriaProdutoRepository categoriaRepository;
+
+    @Autowired
+    private OfertaRepository ofertaRepository;
 
     @Transactional
     public ProdutoEmpresaDetalhesDTO cadastrarProduto(ProdutoRequestDTO dto) {
@@ -118,6 +124,23 @@ public class ProdutoEmpresaService {
 
         Produto salvo = produtoRepository.save(produto);
         return converterParaDetalhesDTO(salvo);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProdutoEmpresaResumoDTO> listarProdutosPublicos(Pageable pageable) {
+        return produtoRepository.findAllByAtivoTrue(pageable).map(this::converterParaResumoDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public ProdutoEmpresaDetalhesDTO visualizarProdutoPublico(Long idProduto) {
+        Produto produto = produtoRepository.findById(idProduto)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+
+        if (!Boolean.TRUE.equals(produto.getAtivo())) {
+            throw new IllegalArgumentException("Produto não encontrado");
+        }
+
+        return converterParaDetalhesDTO(produto);
     }
 
     @Transactional(readOnly = true)
@@ -241,8 +264,14 @@ public class ProdutoEmpresaService {
 
     private ProdutoEmpresaDetalhesDTO converterParaDetalhesDTO(Produto produto) {
         ProdutoEmpresaDetalhesDTO dto = new ProdutoEmpresaDetalhesDTO();
+        Empresa empresa = produto.getEmpresa();
+        Oferta ofertaAtiva = ofertaRepository.findByProdutoIdAndAtivoTrue(produto.getId())
+                .stream()
+                .findFirst()
+                .orElse(null);
+
         dto.setId(produto.getId());
-        dto.setIdEmpresa(produto.getEmpresa().getId());
+        dto.setIdEmpresa(empresa != null ? empresa.getId() : null);
         dto.setTituloProduto(produto.getTituloProduto());
         dto.setCodBarrasEan(produto.getCodBarrasEan());
         dto.setNomeCategoria(produto.getCategoria().getNome());
@@ -250,6 +279,18 @@ public class ProdutoEmpresaService {
         dto.setPrecoOriginal(produto.getPrecoOriginal());
         dto.setFoto(produto.getFoto());
         dto.setAtivo(produto.getAtivo());
+        dto.setNomeEmpresa(empresa != null ? empresa.getNomeFantasia() : null);
+        dto.setEnderecoEmpresa(formatarEndereco(empresa));
+        dto.setInstrucoesRetirada(empresa != null ? empresa.getInstrucoesRetirada() : null);
+        dto.setHorarioFuncionamento(empresa != null ? empresa.getHorarioFuncionamento() : null);
+
+        if (ofertaAtiva != null) {
+            dto.setPrecoPromocional(ofertaAtiva.getPrecoPromocional());
+            dto.setPercentualDesconto(ofertaAtiva.getPercentualDesconto());
+            dto.setValidadeProduto(ofertaAtiva.getValidadeProduto());
+            dto.setDataFimOferta(ofertaAtiva.getDataFimOferta());
+        }
+
         return dto;
     }
 
@@ -263,6 +304,53 @@ public class ProdutoEmpresaService {
         dto.setFoto(produto.getFoto());
         dto.setAtivo(produto.getAtivo());
         return dto;
+    }
+
+    private String formatarEndereco(Empresa empresa) {
+        if (empresa == null || empresa.getEndereco() == null) {
+            return null;
+        }
+
+        Endereco endereco = empresa.getEndereco();
+        StringBuilder builder = new StringBuilder();
+
+        if (endereco.getLogradouro() != null) {
+            builder.append(endereco.getLogradouro());
+        }
+
+        if (endereco.getNumero() != null && !endereco.getNumero().isBlank()) {
+            builder.append(", ").append(endereco.getNumero());
+        }
+
+        if (endereco.getBairro() != null && !endereco.getBairro().isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(" - ");
+            }
+            builder.append(endereco.getBairro());
+        }
+
+        if (endereco.getCidade() != null && !endereco.getCidade().isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(" - ");
+            }
+            builder.append(endereco.getCidade());
+        }
+
+        if (endereco.getUf() != null && !endereco.getUf().isBlank()) {
+            if (builder.length() > 0) {
+                builder.append("/");
+            }
+            builder.append(endereco.getUf());
+        }
+
+        if (endereco.getCep() != null && !endereco.getCep().isBlank()) {
+            if (builder.length() > 0) {
+                builder.append(" - CEP ");
+            }
+            builder.append(endereco.getCep());
+        }
+
+        return builder.length() > 0 ? builder.toString() : null;
     }
 
     private void validarEanDuplicado(String codBarrasEan, Long idProdutoAtual) {

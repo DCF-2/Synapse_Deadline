@@ -1,32 +1,64 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
 import '../styles/theme.css';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function ClienteHome() {
   const [produtos, setProdutos] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [erro, setErro] = useState(null);
 
   useEffect(() => {
-    axios.get('https://synapse-deadline.onrender.com/produto') 
-      .then(response => {
-        const data = response.data.content || response.data;
-        setProdutos(data);
-      })
-      .catch(error => console.error("Erro ao buscar produtos:", error))
-      .finally(() => setLoading(false));
+    let ativo = true;
+
+    const carregarProdutos = async () => {
+      try {
+        setLoading(true);
+        setErro(null);
+
+        const response = await fetch(`${API_URL}/produto/publico`);
+
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: não foi possível carregar a vitrine.`);
+        }
+
+        const data = await response.json();
+        const lista = data?.content ?? data ?? [];
+
+        if (ativo) {
+          setProdutos(lista);
+        }
+      } catch (error) {
+        if (ativo) {
+          setErro(error.message);
+          setProdutos([]);
+        }
+      } finally {
+        if (ativo) {
+          setLoading(false);
+        }
+      }
+    };
+
+    carregarProdutos();
+
+    return () => {
+      ativo = false;
+    };
   }, []);
 
   const formatarMoeda = (valor) => {
-    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+    if (valor === null || valor === undefined || Number.isNaN(Number(valor))) {
+      return '—';
+    }
+
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   };
 
   return (
     <div className="dl-vitrine-container dl-animate-in">
-      
-      {/* HEADER REFATORADO - Layout Profissional */}
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3rem', paddingBottom: '1rem', borderBottom: '1px solid var(--dl-border)' }}>
-        {/* Esquerda: Logo e Marca */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '45px' }} />
           <div>
@@ -35,17 +67,15 @@ export default function ClienteHome() {
           </div>
         </div>
 
-        {/* Centro: Barra de Busca */}
         <div style={{ flex: 1, maxWidth: '400px', margin: '0 2rem' }}>
-          <input 
-            type="text" 
-            placeholder="Buscar por produtos ou categorias..." 
+          <input
+            type="text"
+            placeholder="Buscar por produtos ou categorias..."
             className="dl-input"
             style={{ width: '100%', borderRadius: '20px', padding: '10px 16px' }}
           />
         </div>
 
-        {/* Direita: Acesso Restrito (Botão Sou Lojista Elegante) */}
         <div>
           <Link to="/auth" className="dl-btn-secondary" style={{ textDecoration: 'none', borderRadius: '20px', padding: '8px 20px', fontSize: '0.9rem' }}>
             Acesso Lojista
@@ -53,7 +83,6 @@ export default function ClienteHome() {
         </div>
       </header>
 
-      {/* Título da Seção */}
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ color: 'var(--dl-secondary)', margin: 0 }}>Promoções em Destaque</h2>
         <p style={{ color: 'var(--dl-text-muted)' }}>Aproveite descontos exclusivos antes que o tempo acabe.</p>
@@ -63,28 +92,41 @@ export default function ClienteHome() {
         <div style={{ textAlign: 'center', padding: '4rem', color: 'var(--dl-text-muted)' }}>
           A carregar catálogo de ofertas...
         </div>
+      ) : erro ? (
+        <div className="alert alert-danger rounded-4" role="alert">
+          ⚠️ {erro}
+        </div>
       ) : (
         <main className="dl-vitrine-grid">
           {produtos.length === 0 ? (
             <p style={{ color: 'var(--dl-text-muted)' }}>Nenhuma oferta disponível no momento.</p>
           ) : (
-            produtos.map(produto => (
-              <div className="dl-product-card" key={produto.id}>
-                <div className="dl-product-img-wrapper">
-                  <img src={produto.foto || "https://via.placeholder.com/300x250?text=Sem+Imagem"} alt={produto.tituloProduto} className="dl-product-img" />
-                  <span className="dl-badge-discount">-40%</span>
-                </div>
-                <div className="dl-product-info">
-                  <span className="dl-product-cat">{produto.nomeCategoria || "Categoria"}</span>
-                  <h3 className="dl-product-title">{produto.tituloProduto}</h3>
-                  <div className="dl-price-box">
-                    <span className="dl-price-old">{formatarMoeda(produto.precoOriginal)}</span>
-                    <span className="dl-price-new">{formatarMoeda(produto.precoOriginal * 0.6)}</span>
+            produtos.map(produto => {
+              const desconto = produto.percentualDesconto ?? (produto.precoPromocional && produto.precoOriginal
+                ? Math.round(((Number(produto.precoOriginal) - Number(produto.precoPromocional)) / Number(produto.precoOriginal)) * 100)
+                : 0);
+              const precoPromocional = produto.precoPromocional ?? produto.precoOriginal;
+
+              return (
+                <div className="dl-product-card" key={produto.id}>
+                  <div className="dl-product-img-wrapper">
+                    <img src={produto.foto || 'https://via.placeholder.com/300x250?text=Sem+Imagem'} alt={produto.tituloProduto} className="dl-product-img" />
+                    <span className="dl-badge-discount">{desconto > 0 ? `-${desconto}%` : 'Oferta'}</span>
                   </div>
-                  <button className="dl-btn-primary" style={{ marginTop: '1rem', width: '100%', borderRadius: '20px' }}>Garantir Oferta</button>
+                  <div className="dl-product-info">
+                    <span className="dl-product-cat">{produto.nomeCategoria || 'Categoria'}</span>
+                    <h3 className="dl-product-title">{produto.tituloProduto}</h3>
+                    <div className="dl-price-box">
+                      <span className="dl-price-old">{formatarMoeda(produto.precoOriginal)}</span>
+                      <span className="dl-price-new">{formatarMoeda(precoPromocional)}</span>
+                    </div>
+                    <Link to={`/produto/${produto.id}`} state={{ produto }} className="dl-btn-primary" style={{ marginTop: '1rem', width: '100%', borderRadius: '20px', textAlign: 'center', textDecoration: 'none' }}>
+                      Ver detalhes
+                    </Link>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           )}
         </main>
       )}

@@ -27,6 +27,18 @@ public class ProdutoEmpresaController {
         return ResponseEntity.ok(service.cadastrarProduto(dto));
     }
 
+    @GetMapping("/publico")
+    public ResponseEntity<org.springframework.data.domain.Page<ProdutoEmpresaResumoDTO>> listarPublico(
+            @org.springframework.data.web.PageableDefault(size = 12, sort = "tituloProduto") org.springframework.data.domain.Pageable pageable
+    ) {
+        return ResponseEntity.ok(service.listarProdutosPublicos(pageable));
+    }
+
+    @GetMapping("/publico/{id}")
+    public ResponseEntity<ProdutoEmpresaDetalhesDTO> visualizarProdutoPublico(@PathVariable Long id) {
+        return ResponseEntity.ok(service.visualizarProdutoPublico(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> visualizarProduto(@PathVariable Long id) {
         return ResponseEntity.ok(service.visualizarProdutoDaEmpresa(id));

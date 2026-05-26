@@ -112,4 +112,5 @@ class ProdutoEmpresaServiceIntegrationTest {
         assertEquals("Pão de Forma", pagina.getContent().get(0).getTituloProduto());
         assertEquals("Padaria", pagina.getContent().get(0).getNomeCategoria());
     }
+
 }

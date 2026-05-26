@@ -69,9 +69,9 @@ export default function DashboardPage() {
                 </Link>
               </li>
               <li className="nav-item">
-                <span className="nav-link text-white opacity-75 d-flex align-items-center gap-2" style={{ cursor: 'not-allowed' }}>
+                  <Link to="/ofertas" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
                   <span>📢</span> Minhas Ofertas
-                </span>
+                </Link>
               </li>
               <li className="nav-item">
                 <span className="nav-link text-white opacity-75 d-flex align-items-center gap-2" style={{ cursor: 'not-allowed' }}>
