@@ -34,6 +34,14 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpec
     List<Produto> findAllByAtivoTrue();
 
     /**
+     * Localiza todos os produtos ativos no sistema com suporte à paginação.
+     *
+     * @param pageable Parâmetros de paginação.
+     * @return Página contendo os produtos ativos.
+     */
+    Page<Produto> findAllByAtivoTrue(Pageable pageable);
+
+    /**
      * Verifica se já existe algum produto registado com o mesmo código de barras.
      * Utilizado para garantir que não haja duplicação de itens no catálogo.
      * * @param codBarrasEan O código de barras a ser validado.
