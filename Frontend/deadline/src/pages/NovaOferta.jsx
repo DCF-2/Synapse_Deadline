@@ -196,7 +196,7 @@ export default function NovaOferta() {
 
   return (
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
+      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#23a889' }}>
         <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
         <button className="navbar-toggler border-0" type="button" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span className="navbar-toggler-icon"></span>
@@ -205,7 +205,7 @@ export default function NovaOferta() {
 
       <div className="row g-0 flex-grow-1" style={{ overflow: 'hidden' }}>
         <nav className={`col-md-3 col-lg-2 p-3 d-md-flex flex-column justify-content-between ${isMenuOpen ? 'd-flex' : 'd-none d-md-flex'}`}
-          style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
+          style={{ backgroundColor: '#23a889', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
               <h4 className="fw-bold d-flex align-items-center gap-2"><span>⏱️</span> Deadline</h4>
@@ -312,7 +312,7 @@ export default function NovaOferta() {
                   )}
                 </div>
 
-                <button type="submit" className="btn w-100 fw-bold py-3 text-white mt-2" style={{ backgroundColor: '#3aad77', borderRadius: '10px' }} disabled={loading}>
+                <button type="submit" className="btn w-100 fw-bold py-3 text-white mt-2" style={{ backgroundColor: '#23a889', borderRadius: '10px' }} disabled={loading}>
                   {loading ? 'Salvando oferta...' : 'Criar oferta'}
                 </button>
               </form>

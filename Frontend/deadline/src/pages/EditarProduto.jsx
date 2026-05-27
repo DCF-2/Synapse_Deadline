@@ -202,7 +202,7 @@ export default function EditarProduto() {
 
       {/* SIDEBAR */}
       <nav className="col-md-3 col-lg-2 p-3 d-flex flex-column justify-content-between"
-        style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
+        style={{ backgroundColor: '#23a889', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
         <div>
           <div className="text-white my-3 ps-2">
             <h4 className="fw-bold d-flex align-items-center gap-2">
@@ -337,7 +337,7 @@ export default function EditarProduto() {
             </div>
 
             <button type="submit" disabled={loading || uploadandoImagem} className="btn w-100 fw-bold py-3 text-white"
-              style={{ backgroundColor: '#3aad77', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
+              style={{ backgroundColor: '#23a889', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
               {loading ? 'Salvando no catálogo...' : 'Atualizar Produto'}
             </button>
           </form>

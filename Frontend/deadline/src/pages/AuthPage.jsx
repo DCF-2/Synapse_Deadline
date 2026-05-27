@@ -335,7 +335,7 @@ export default function AuthPage() {
             {erro && isLogin && <div className="ds-alert-error">{erro}</div>}
 
             {/* Mensagem de Sucesso */}
-            {success && isLogin && <div className="ds-alert-success" style={{ backgroundColor: '#dcfce3', color: '#166534', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{success}</div>}
+            {success && isLogin && <div className="ds-alert-success" style={{ backgroundColor: '#dcfce3', color: '#23a889', padding: '10px', borderRadius: '8px', marginBottom: '15px', textAlign: 'center', fontSize: '14px' }}>{success}</div>}
 
             <form onSubmit={handleLogin}>
               <div className="ds-input-group">
