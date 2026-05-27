@@ -2,16 +2,13 @@ package com.synapse.deadline.repository;
 
 import com.synapse.deadline.entity.Produto;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
+
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProdutoSpecifications {
 public class ProdutoSpecifications {
 
     public static Specification<Produto> filtrarPorEmpresaEParametros(
@@ -47,6 +44,10 @@ public class ProdutoSpecifications {
             if (ativo != null) {
                 predicates.add(cb.equal(root.get("ativo"), ativo));
                 predicates.add(cb.equal(root.get("ativo"), ativo));
+            }
+             // 5. FILTRO POR EAN (Exato)
+            if (codBarrasEan != null && !codBarrasEan.trim().isEmpty()) {
+                predicates.add(cb.equal(root.get("codBarrasEan"), codBarrasEan));
             }
 
             // Junta as regras principais com AND

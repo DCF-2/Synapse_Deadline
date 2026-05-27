@@ -318,7 +318,7 @@ public class ProdutoEmpresaService {
         }
     }
 
-    public List<CategoriaProduto> listarCategorias() {
-        return categoriaRepository.findByAtivoTrue();
-    }
+       public List<CategoriaProduto> listarCategorias() {
+            return categoriaRepository.findByAtivoTrue();
+        }
 }

@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -8,9 +7,7 @@ export default function ProdutosPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estados da API
-  // Estados da API
   const [produtos, setProdutos] = useState([]);
-  const [categorias, setCategorias] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -22,7 +19,6 @@ export default function ProdutosPage() {
   const [removendo, setRemovendo] = useState(false);
   const [feedbackRemocao, setFeedbackRemocao] = useState(null);
 
-  // Estados de Filtro
   // Estados de Filtro
   const [buscaInput, setBuscaInput] = useState('');
   const [buscaAtiva, setBuscaAtiva] = useState('');
@@ -61,52 +57,26 @@ export default function ProdutosPage() {
   }, []);
 
   const carregarProdutos = async (nomeBusca, categoria, ord) => {
-  // BUSCA CATEGORIAS DINÂMICAS
-  useEffect(() => {
-    const fetchCategorias = async () => {
-      try {
-        const token = localStorage.getItem('deadline_token');
-        if (!token) return;
-        const res = await fetch(`${API_URL}/produto/categorias`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setCategorias(data);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar categorias:", error);
-      }
-    };
-    fetchCategorias();
-  }, []);
-
-  const carregarProdutos = async (nomeBusca, categoria, ord) => {
     try {
       setCarregando(true);
       setErro(null);
 
       const token = localStorage.getItem('deadline_token');
       if (!token) { handleLogout(); return; }
-      if (!token) { handleLogout(); return; }
 
       const url = new URL(`${API_URL}/produto/empresa`);
 
-       if (nomeBusca) url.searchParams.append('nome', nomeBusca);
+      if (nomeBusca) url.searchParams.append('nome', nomeBusca);
       if (categoria) url.searchParams.append('categoriaId', categoria);
       if (status !== '') url.searchParams.append('ativo', status); 
       if (ord) url.searchParams.append('sort', ord);
 
       url.searchParams.append('size', '50');
-      url.searchParams.append('size', '50');
 
       const res = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
-        headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (res.status === 401 || res.status === 403) { handleLogout(); return; }
-      if (!res.ok) throw new Error(`Erro ao buscar os produtos.`);
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
       if (!res.ok) throw new Error(`Erro ao buscar os produtos.`);
 
@@ -137,34 +107,6 @@ export default function ProdutosPage() {
     return () => clearTimeout(debounceTimer.current);
   }, [buscaInput]);
 
-  // Dispara a busca sempre que os filtros reais (Ativos) mudarem
-  // ==========================================
-  // LÓGICA 1: BUSCA ASSÍNCRONA (A PARTIR DE 3 CARACTERES)
-  // ==========================================
-  useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-
-    debounceTimer.current = setTimeout(() => {
-      const inputLimpo = buscaInput.trim();
-      // Só dispara automaticamente se tiver 3+ caracteres ou se estiver vazio
-      if (inputLimpo.length >= 3 || inputLimpo === '') {
-        setBuscaAtiva(inputLimpo);
-      }
-    }, 600); // 600ms de delay para evitar requisições demais
-
-    return () => clearTimeout(debounceTimer.current);
-  }, [buscaInput]);
-
-  // Dispara a busca sempre que os filtros reais (Ativos) mudarem
-  useEffect(() => {
-    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
-  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
-    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
-  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
-
-  // ==========================================
-  // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
-  // ==========================================
   // ==========================================
   // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
   // ==========================================
@@ -198,7 +140,7 @@ export default function ProdutosPage() {
       const res = await fetch(`${API_URL}/produto/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
-        headers: { 'Authorization': `Bearer ${token}` }
+        
       });
 
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
@@ -326,7 +268,6 @@ export default function ProdutosPage() {
           {!carregando && !erro && produtos.length === 0 && (
             <div className="text-center my-5 text-muted">
               <p style={{ fontSize: '3rem' }}>📦</p>
-              <p className="fw-medium">Nenhum produto encontrado.</p>
               <p className="fw-medium">Nenhum produto encontrado.</p>
             </div>
           )}
