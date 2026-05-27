@@ -1,5 +1,6 @@
 package com.synapse.deadline.config;
 
+import com.synapse.deadline.controller.ProdutoEmpresaController;
 import java.util.Arrays;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -21,13 +22,16 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 @EnableWebSecurity
 public class SecurityConfig {
 
+    private final ProdutoEmpresaController produtoEmpresaController;
+
     private final SecurityFilter securityFilter;
 
     @Value("${cors.allowed.origins}")
     private String allowedOrigins;
 
-    public SecurityConfig(SecurityFilter securityFilter) {
+    public SecurityConfig(SecurityFilter securityFilter, ProdutoEmpresaController produtoEmpresaController) {
         this.securityFilter = securityFilter;
+        this.produtoEmpresaController = produtoEmpresaController;
     }
 
     @Bean
@@ -39,7 +43,8 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
-                .requestMatchers(HttpMethod.GET, "/produto/publico", "/produto/publico/**").permitAll()
+                .requestMatchers(HttpMethod.GET, "/oferta/publico").permitAll()
+                .requestMatchers(HttpMethod.GET, "/empresa/ramo/publico").permitAll()
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()

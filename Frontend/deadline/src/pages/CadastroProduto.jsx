@@ -1,21 +1,18 @@
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // IMPORT CORRIGIDO
 import { useNavigate, Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
-const CATEGORIAS = [
-  { id: 1, nome: 'Alimentos e Bebidas' },
-  { id: 2, nome: 'Higiene e Beleza' },
-  { id: 3, nome: 'Medicamentos' },
-  { id: 4, nome: 'Outro' },
-];
-
 export default function CadastroProduto() {
   const [nome, setNome] = useState('');
   const [codigoBarrasEan, setCodigoBarrasEan] = useState('');
-  const [idCategoria, setIdCategoria] = useState('');
+  
+  // ESTADOS DE CATEGORIA CORRIGIDOS
+  const [categorias, setCategorias] = useState([]);
+  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
+  
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState(null);
@@ -26,6 +23,29 @@ export default function CadastroProduto() {
   const [uploadandoImagem, setUploadandoImagem] = useState(false);
 
   const navigate = useNavigate();
+
+  // O USE EFFECT DEVE FICAR DENTRO DO COMPONENTE
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const token = localStorage.getItem('deadline_token');
+        if (!token) return;
+        
+        const res = await fetch(`${API_URL}/produto/categorias`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (res.ok) {
+          const data = await res.json();
+          setCategorias(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar categorias:", error);
+      }
+    };
+    
+    fetchCategorias();
+  }, []); // Executa apenas uma vez quando a página carrega
 
   // Upload de imagem para Cloudinary
   const uploadarImagemCloudinary = async (arquivo) => {
@@ -84,7 +104,7 @@ export default function CadastroProduto() {
     }
 
     const preco = Number.parseFloat(precoOriginal);
-    const categoriaId = Number.parseInt(idCategoria, 10);
+    const categoriaId = Number.parseInt(categoriaSelecionada, 10);
 
     if (!nome.trim()) {
       setErro('Informe o nome do produto.');
@@ -111,6 +131,7 @@ export default function CadastroProduto() {
         precoOriginal: preco,
         foto: imagemUrl || null,
       };
+      
       const response = await fetch(`${API_URL}/produto`, {
         method: 'POST',
         headers: {
@@ -124,7 +145,7 @@ export default function CadastroProduto() {
         setSucesso(true);
         setNome('');
         setCodigoBarrasEan('');
-        setIdCategoria('');
+        setCategoriaSelecionada('');
         setPrecoOriginal('');
         setDescricao('');
         setImagem(null);
@@ -148,7 +169,6 @@ export default function CadastroProduto() {
 
   return (
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
-
       {/* SIDEBAR */}
       <nav className="col-md-3 col-lg-2 p-3 d-flex flex-column justify-content-between"
         style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
@@ -174,11 +194,6 @@ export default function CadastroProduto() {
               <Link to="/ofertas" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
                 <span>📢</span> Minhas Ofertas
               </Link>
-            </li>
-            <li className="nav-item">
-              <span className="nav-link text-white opacity-75 d-flex align-items-center gap-2" style={{ cursor: 'not-allowed' }}>
-                <span>👤</span> Meu Perfil
-              </span>
             </li>
           </ul>
         </div>
@@ -245,9 +260,10 @@ export default function CadastroProduto() {
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label fw-medium">Categoria</label>
-                <select className="form-select" value={idCategoria} onChange={e => setIdCategoria(e.target.value)} required>
-                  <option value="">Selecione</option>
-                  {CATEGORIAS.map(cat => (
+                <select className="form-select bg-light border-0 text-muted" 
+                  value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
+                  <option value="">Selecione uma Categoria</option>
+                  {categorias.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.nome}</option>
                   ))}
                 </select>

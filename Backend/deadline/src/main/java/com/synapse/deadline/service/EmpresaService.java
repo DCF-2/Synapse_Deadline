@@ -10,7 +10,9 @@ import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
-import com.synapse.deadline.repository.RamoEmpresaRepository; 
+import com.synapse.deadline.repository.RamoEmpresaRepository;
+
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -137,5 +139,10 @@ public class EmpresaService {
         dto.setInstrucoesRetirada(e.getInstrucoesRetirada());
         dto.setHorarioFuncionamento(e.getHorarioFuncionamento());
         return dto;
+    }
+
+    /* Listar ramos de empresa públicos */
+    public List<RamoEmpresa> listarRamosPublicos() {
+        return ramoRepository.findByAtivoTrue();
     }
 }

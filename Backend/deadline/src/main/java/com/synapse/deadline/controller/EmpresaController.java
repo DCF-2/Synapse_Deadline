@@ -2,12 +2,18 @@ package com.synapse.deadline.controller;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
+import com.synapse.deadline.entity.RamoEmpresa;
+import com.synapse.deadline.repository.RamoEmpresaRepository;
 import com.synapse.deadline.service.EmpresaService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/empresa")
@@ -15,6 +21,8 @@ public class EmpresaController {
 
     @Autowired
     private EmpresaService service;
+
+    
 
     /* Cadastrar empresa */
     @PostMapping("/cadastro")
@@ -34,4 +42,10 @@ public class EmpresaController {
     public ResponseEntity<EmpresaPerfilDTO> editarMeuPerfil(@Valid @RequestBody EmpresaPerfilDTO dto) {
         return ResponseEntity.ok(service.editarPerfil(dto));
     }
+
+    /* Listar ramos de empresa públicos */
+   @GetMapping("/ramo/publico")
+    public ResponseEntity<List<RamoEmpresa>> listarRamosPublicos() {
+        return ResponseEntity.ok(service.listarRamosPublicos());
+}
 }
