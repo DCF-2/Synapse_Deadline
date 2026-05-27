@@ -18,14 +18,11 @@ build/
 *.mv.db
 *.trace.db
 
-.next
-
 # ==========================================
 # SEGURANÇA E CHAVES (CRÍTICO PARA MARKETPLACE)
 # ==========================================
 # Nunca suba senhas de banco de dados ou chaves de API de pagamento (Stripe, Mercado Pago)
 .env
-.env.*
 applications.properties
 application-local.yml
 application-local.properties
@@ -93,3 +90,12 @@ desktop.ini
 # ==========================================
 .xml
 node_modules
+
+# ==========================================
+# Node.js
+# ==========================================
+node_modules/
+npm-debug.log
+yarn-error.log
+dist/
+.next

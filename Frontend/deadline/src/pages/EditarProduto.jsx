@@ -1,18 +1,33 @@
-import React, { useState, useEffect } from 'react'; // IMPORT CORRIGIDO
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link, useParams } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
-export default function CadastroProduto() {
+const CATEGORIAS = [
+  { id: 1, nome: 'Alimentos e Bebidas' },
+  { id: 2, nome: 'Higiene e Beleza' },
+  { id: 3, nome: 'Medicamentos' },
+  { id: 4, nome: 'Outro' },
+];
+
+const mapearCategoriaId = (nomeCategoria) => {
+  if (!nomeCategoria) {
+    return '';
+  }
+
+  const categoria = CATEGORIAS.find((item) => item.nome === nomeCategoria);
+  return categoria ? categoria.id : '';
+};
+
+export default function EditarProduto() {
+  const { id } = useParams();
+  const navigate = useNavigate();
+
   const [nome, setNome] = useState('');
   const [codigoBarrasEan, setCodigoBarrasEan] = useState('');
-  
-  // ESTADOS DE CATEGORIA CORRIGIDOS
-  const [categorias, setCategorias] = useState([]);
-  const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
-  
+  const [idCategoria, setIdCategoria] = useState('');
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState(null);
@@ -20,32 +35,43 @@ export default function CadastroProduto() {
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [carregandoDados, setCarregandoDados] = useState(true);
   const [uploadandoImagem, setUploadandoImagem] = useState(false);
 
-  const navigate = useNavigate();
-
-  // O USE EFFECT DEVE FICAR DENTRO DO COMPONENTE
+  // Carregar dados do produto
   useEffect(() => {
-    const fetchCategorias = async () => {
+    const carregarProduto = async () => {
       try {
         const token = localStorage.getItem('deadline_token');
-        if (!token) return;
-        
-        const res = await fetch(`${API_URL}/produto/categorias`, {
+        if (!token) {
+          navigate('/auth');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/produto/${id}`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
-        if (res.ok) {
-          const data = await res.json();
-          setCategorias(data);
+
+        if (!response.ok) {
+          throw new Error('Erro ao carregar dados do produto');
         }
-      } catch (error) {
-        console.error("Erro ao buscar categorias:", error);
+
+        const data = await response.json();
+        setNome(data.tituloProduto || '');
+        setCodigoBarrasEan(data.codBarrasEan || '');
+        setIdCategoria(mapearCategoriaId(data.nomeCategoria));
+        setPrecoOriginal(data.precoOriginal || '');
+        setDescricao(data.descricao || '');
+        setImagemUrl(data.foto || '');
+      } catch (err) {
+        setErro(err.message);
+      } finally {
+        setCarregandoDados(false);
       }
     };
-    
-    fetchCategorias();
-  }, []); // Executa apenas uma vez quando a página carrega
+
+    carregarProduto();
+  }, [id, navigate]);
 
   // Upload de imagem para Cloudinary
   const uploadarImagemCloudinary = async (arquivo) => {
@@ -91,7 +117,7 @@ export default function CadastroProduto() {
     }
   };
 
-  async function handleCadastrar(e) {
+  async function handleAtualizar(e) {
     e.preventDefault();
     setErro(null);
     setSucesso(false);
@@ -104,7 +130,7 @@ export default function CadastroProduto() {
     }
 
     const preco = Number.parseFloat(precoOriginal);
-    const categoriaId = Number.parseInt(categoriaSelecionada, 10);
+    const categoriaId = Number.parseInt(idCategoria, 10);
 
     if (!nome.trim()) {
       setErro('Informe o nome do produto.');
@@ -131,9 +157,9 @@ export default function CadastroProduto() {
         precoOriginal: preco,
         foto: imagemUrl || null,
       };
-      
-      const response = await fetch(`${API_URL}/produto`, {
-        method: 'POST',
+
+      const response = await fetch(`${API_URL}/produto/${id}`, {
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
@@ -143,13 +169,6 @@ export default function CadastroProduto() {
 
       if (response.ok) {
         setSucesso(true);
-        setNome('');
-        setCodigoBarrasEan('');
-        setCategoriaSelecionada('');
-        setPrecoOriginal('');
-        setDescricao('');
-        setImagem(null);
-        setImagemUrl('');
         setTimeout(() => navigate('/produtos'), 2000);
       } else {
         if (response.status === 403 || response.status === 401) {
@@ -158,7 +177,7 @@ export default function CadastroProduto() {
           return;
         }
         const data = await response.json().catch(() => ({}));
-        setErro(data.message || 'Erro ao cadastrar produto. Verifique os campos.');
+        setErro(data.message || 'Erro ao atualizar produto. Verifique os campos.');
       }
     } catch (err) {
       setErro('Não foi possível conectar ao servidor.');
@@ -167,8 +186,20 @@ export default function CadastroProduto() {
     }
   }
 
+  if (carregandoDados) {
+    return (
+      <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#f8f9fa' }}>
+        <div className="text-center">
+          <div className="spinner-border text-success mb-3" role="status"></div>
+          <p className="text-muted">Carregando dados do produto...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
+
       {/* SIDEBAR */}
       <nav className="col-md-3 col-lg-2 p-3 d-flex flex-column justify-content-between"
         style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
@@ -222,14 +253,13 @@ export default function CadastroProduto() {
           <div className="d-flex align-items-center justify-content-center mb-3"
             style={{ width: '60px', height: '60px', backgroundColor: '#f0fdf4', borderRadius: '16px', border: '1px solid #bbf7d0', margin: '0 auto 16px auto' }}>
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3aad77" strokeWidth="2">
-              <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
-              <path d="m8.5 8.5 7 7"/>
+              <path d="M12 5v14M5 12h14"/>
             </svg>
           </div>
 
-          <h2 className="fw-bold text-center text-dark mb-2">Cadastro do Produto</h2>
+          <h2 className="fw-bold text-center text-dark mb-2">Editar Produto</h2>
           <p className="text-muted text-center small mb-4">
-            Cadastre o produto aqui e, depois, use “Minhas Ofertas” para criar a promoção quando quiser.
+            Atualize os dados do seu produto.
           </p>
 
           {erro && (
@@ -239,11 +269,11 @@ export default function CadastroProduto() {
           )}
           {sucesso && (
             <div className="alert alert-success rounded-3">
-              ✓ Produto cadastrado com sucesso! Você pode criar uma oferta depois na área “Minhas Ofertas”.
+              ✓ Produto atualizado com sucesso!
             </div>
           )}
 
-          <form onSubmit={handleCadastrar}>
+          <form onSubmit={handleAtualizar}>
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label fw-medium">Nome</label>
@@ -260,10 +290,9 @@ export default function CadastroProduto() {
             <div className="row g-3 mb-3">
               <div className="col-md-6">
                 <label className="form-label fw-medium">Categoria</label>
-                <select className="form-select bg-light border-0 text-muted" 
-                  value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
-                  <option value="">Selecione uma Categoria</option>
-                  {categorias.map(cat => (
+                <select className="form-select" value={idCategoria} onChange={e => setIdCategoria(e.target.value)} required>
+                  <option value="">Selecione</option>
+                  {CATEGORIAS.map(cat => (
                     <option key={cat.id} value={cat.id}>{cat.nome}</option>
                   ))}
                 </select>
@@ -292,7 +321,7 @@ export default function CadastroProduto() {
                 ) : imagemUrl ? (
                   <>
                     <img src={imagemUrl} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px', marginBottom: '10px' }} />
-                    <span className="text-success">✓ {imagem?.name || 'Imagem carregada'}</span>
+                    <span className="text-success">✓ Imagem atualizada</span>
                   </>
                 ) : (
                   <>
@@ -309,7 +338,7 @@ export default function CadastroProduto() {
 
             <button type="submit" disabled={loading || uploadandoImagem} className="btn w-100 fw-bold py-3 text-white"
               style={{ backgroundColor: '#3aad77', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
-              {loading ? 'Salvando no catálogo...' : 'Cadastrar Produto'}
+              {loading ? 'Salvando no catálogo...' : 'Atualizar Produto'}
             </button>
           </form>
         </div>

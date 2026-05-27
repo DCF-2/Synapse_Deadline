@@ -6,6 +6,7 @@ import Produtos from './pages/Produtos';
 import Oferta from './pages/Oferta';
 import NovaOferta from './pages/NovaOferta';
 import CadastroProduto from './pages/CadastroProduto';
+import EditarProduto from './pages/EditarProduto';
 import ProdutoDetalhes from './pages/ProdutoDetalhes';
 
 
@@ -28,6 +29,7 @@ export default function App() {
         {/* Rota para Meus Produtos */}
       <Route path="/produtos" element={<Produtos />} />
       <Route path="/cadastro-produto" element={<CadastroProduto />} />
+      <Route path="/editar-produto/:id" element={<EditarProduto />} />
       <Route path="/produto/:id" element={<ProdutoDetalhes />} />
 
       {/* Rota para Minhas Ofertas */}

@@ -5,34 +5,34 @@ import '../styles/theme.css';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function ClienteHome() {
-  const [produtos, setProdutos] = useState([]);
+  const [ofertas, setOfertas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
 
   useEffect(() => {
     let ativo = true;
 
-    const carregarProdutos = async () => {
+    const carregarOfertas = async () => {
       try {
         setLoading(true);
         setErro(null);
 
-        const response = await fetch(`${API_URL}/produto/publico`);
+        const response = await fetch(`${API_URL}/oferta/publico`);
 
         if (!response.ok) {
           throw new Error(`Erro ${response.status}: não foi possível carregar a vitrine.`);
         }
 
         const data = await response.json();
-        const lista = data?.content ?? data ?? [];
+        const lista = Array.isArray(data) ? data : data?.content ?? [];
 
         if (ativo) {
-          setProdutos(lista);
+          setOfertas(lista);
         }
       } catch (error) {
         if (ativo) {
           setErro(error.message);
-          setProdutos([]);
+          setOfertas([]);
         }
       } finally {
         if (ativo) {
@@ -41,7 +41,7 @@ export default function ClienteHome() {
       }
     };
 
-    carregarProdutos();
+    carregarOfertas(); // CORREÇÃO: "c" minúsculo para chamar a função corretamente
 
     return () => {
       ativo = false;
@@ -98,29 +98,30 @@ export default function ClienteHome() {
         </div>
       ) : (
         <main className="dl-vitrine-grid">
-          {produtos.length === 0 ? (
+          {ofertas.length === 0 ? (
             <p style={{ color: 'var(--dl-text-muted)' }}>Nenhuma oferta disponível no momento.</p>
           ) : (
-            produtos.map(produto => {
-              const desconto = produto.percentualDesconto ?? (produto.precoPromocional && produto.precoOriginal
-                ? Math.round(((Number(produto.precoOriginal) - Number(produto.precoPromocional)) / Number(produto.precoOriginal)) * 100)
+            ofertas.map(oferta => {
+              const desconto = oferta.percentualDesconto ?? (oferta.precoPromocional && oferta.precoOriginal
+                ? Math.round(((Number(oferta.precoOriginal) - Number(oferta.precoPromocional)) / Number(oferta.precoOriginal)) * 100)
                 : 0);
-              const precoPromocional = produto.precoPromocional ?? produto.precoOriginal;
+              const precoPromocional = oferta.precoPromocional ?? oferta.precoOriginal;
 
               return (
-                <div className="dl-product-card" key={produto.id}>
+                <div className="dl-product-card" key={oferta.id}>
                   <div className="dl-product-img-wrapper">
-                    <img src={produto.foto || 'https://via.placeholder.com/300x250?text=Sem+Imagem'} alt={produto.tituloProduto} className="dl-product-img" />
+                    <img src={oferta.foto || 'https://via.placeholder.com/300x250?text=Sem+Imagem'} alt={oferta.tituloProduto} className="dl-product-img" />
                     <span className="dl-badge-discount">{desconto > 0 ? `-${desconto}%` : 'Oferta'}</span>
                   </div>
                   <div className="dl-product-info">
-                    <span className="dl-product-cat">{produto.nomeCategoria || 'Categoria'}</span>
-                    <h3 className="dl-product-title">{produto.tituloProduto}</h3>
+                    <span className="dl-product-cat">{oferta.nomeCategoria || 'Categoria'}</span>
+                    <h3 className="dl-product-title">{oferta.tituloProduto}</h3>
                     <div className="dl-price-box">
-                      <span className="dl-price-old">{formatarMoeda(produto.precoOriginal)}</span>
+                      <span className="dl-price-old">{formatarMoeda(oferta.precoOriginal)}</span>
                       <span className="dl-price-new">{formatarMoeda(precoPromocional)}</span>
                     </div>
-                    <Link to={`/produto/${produto.id}`} state={{ produto }} className="dl-btn-primary" style={{ marginTop: '1rem', width: '100%', borderRadius: '20px', textAlign: 'center', textDecoration: 'none' }}>
+                    {/* Alterado para manter compatibilidade com o fluxo que tínhamos de produto.id */}
+                    <Link to={`/produto/${oferta.produtoId}`} state={{ oferta }} className="dl-btn-primary" style={{ marginTop: '1rem', width: '100%', borderRadius: '20px', textAlign: 'center', textDecoration: 'none', display: 'block' }}>
                       Ver detalhes
                     </Link>
                   </div>

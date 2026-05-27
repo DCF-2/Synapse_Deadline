@@ -66,4 +66,12 @@ public class OfertaService {
         dto.setAtivo(oferta.getAtivo());
         return dto;
     }
+
+    @Transactional(readOnly = true)
+    public List<OfertaResponseDTO> listarOfertasPublicas() {
+        return ofertaRepository.findOfertasAtivas()
+                .stream()
+                .map(this::converterParaResponseDTO)
+                .toList();
+    }
 }

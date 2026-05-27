@@ -366,4 +366,8 @@ public class ProdutoEmpresaService {
             throw new IllegalArgumentException("Produto com este código de barras já cadastrado");
         }
     }
+
+        public List<CategoriaProduto> listarCategorias() {
+            return categoriaRepository.findByAtivoTrue();
+        }
 }

@@ -26,4 +26,9 @@ public class OfertaController {
     public ResponseEntity<List<OfertaResponseDTO>> listarDaEmpresa() {
         return ResponseEntity.ok(ofertaService.listarOfertasDaEmpresa());
     }
+
+    @GetMapping("/publico")
+    public ResponseEntity<List<OfertaResponseDTO>> listarPublico() {
+        return ResponseEntity.ok(ofertaService.listarOfertasPublicas());
+    }
 }

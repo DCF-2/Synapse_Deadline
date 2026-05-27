@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../styles/auth.css';
 
@@ -18,12 +18,31 @@ export default function AuthPage() {
   const [step, setStep] = useState(1);
   const [showNovoRamo, setShowNovoRamo] = useState(false);
   
+  // ESTADO PARA ARMAZENAR OS RAMOS DE ATUAÇÃO VINDOS DA API
+  const [ramos, setRamos] = useState([]);
+  
   const [cad, setCad] = useState({
     nomeFantasia: '', razaoSocial: '', cnpj: '', logotipo: '', idRamo: '', novoRamo: '',
     cep: '', logradouro: '', numero: '', complemento: '', bairro: '', cidade: '', uf: '',
     horarioFuncionamento: '', instrucoesRetirada: '', contatoWhatsapp: '', contato1: '', contato2: '', emailContato: '',
     emailLogin: '', senha: '', confirmarSenha: ''
   });
+
+  // BUSCA OS RAMOS DE ATUAÇÃO AO CARREGAR O COMPONENTE (CORRIGIDO)
+  useEffect(() => {
+    const fetchRamos = async () => {
+      try {
+        const res = await fetch(`${API_URL}/empresa/ramo/publico`);
+        if (res.ok) {
+          const data = await res.json();
+          setRamos(data);
+        }
+      } catch (e) {
+        console.error("Erro ao buscar ramos de atuação:", e);
+      }
+    };
+    fetchRamos();
+  }, []);
 
   const maskCNPJ = (v) => v.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
   const maskCEP = (v) => v.replace(/\D/g, '').replace(/^(\d{5})(\d)/, '$1-$2').slice(0, 9);
@@ -141,10 +160,8 @@ export default function AuthPage() {
       });
       
       if (res.ok) {
-        //setSuccess('Cadastro efetuado com sucesso! Faça login para acessar o painel.');
-        // Alert chato da porra
-        //alert("Cadastro efetuado com sucesso!");
-        toggleView(true);
+        setSuccess('Cadastro realizado com sucesso! Faça login para acessar o painel.');
+        setIsLogin(true);
       } else {
         const data = await res.json();
         setErro(data.message || 'Erro ao processar o cadastro.');
@@ -191,25 +208,23 @@ export default function AuthPage() {
                   <div className="ds-input-group"><label className="ds-label">Nome Fantasia *</label><input className="ds-input" type="text" placeholder="Ex: Drogaria Popular" value={cad.nomeFantasia} onChange={e => setCad({...cad, nomeFantasia: e.target.value})} required /></div>
                   <div className="ds-input-group"><label className="ds-label">Razão Social *</label><input className="ds-input" type="text" placeholder="Ex: Comercial LTDA" value={cad.razaoSocial} onChange={e => setCad({...cad, razaoSocial: e.target.value})} required /></div>
                   <div className="ds-input-group"><label className="ds-label">CNPJ *</label><input className="ds-input" type="text" placeholder="00.000.000/0000-00" value={cad.cnpj} onChange={e => setCad({...cad, cnpj: maskCNPJ(e.target.value)})} required /></div>
+                  
                   <div className="ds-input-group">
                     <label className="ds-label">Ramo de Atuação *</label>
-                    <div className="ds-row">
-                      <select className="ds-input" value={cad.idRamo} onChange={e => setCad({...cad, idRamo: e.target.value})} required={!showNovoRamo} disabled={showNovoRamo} style={{ opacity: showNovoRamo ? 0.6 : 1, marginBottom: 0 }}>
-                        <option value="" disabled>Selecione da lista...</option>
-                        <option value="1">Farmácia / Medicamentos</option>
-                        <option value="2">Cosméticos / Perfumaria</option>
-                        <option value="3">Suplementos Alimentares</option>
-                      </select>
-                      <button type="button" onClick={() => { setShowNovoRamo(!showNovoRamo); setCad({...cad, idRamo: '', novoRamo: ''}); }} className="ds-add-btn" style={{ background: showNovoRamo ? '#E2E8F0' : 'var(--dl-primary)', color: showNovoRamo ? '#475569' : '#FFF' }}>
-                        {showNovoRamo ? '✕' : '+'}
-                      </button>
-                    </div>
-                    {showNovoRamo && (
-                      <div className="dl-animate-in" style={{ marginTop: '10px' }}>
-                        <input className="ds-input" type="text" placeholder="Digite o novo ramo *" value={cad.novoRamo} onChange={e => setCad({...cad, novoRamo: e.target.value})} required autoFocus />
-                      </div>
-                    )}
+                    <select 
+                      className="dl-input w-100 ds-input" 
+                      style={{ marginBottom: '1.5rem', borderRadius: '12px' }}
+                      value={cad.idRamo} 
+                      onChange={(e) => setCad({...cad, idRamo: e.target.value})}
+                      required
+                    >
+                      <option value="">Selecione o Ramo de Atuação</option>
+                      {ramos.map(ramo => (
+                        <option key={ramo.id} value={ramo.id}>{ramo.nome}</option>
+                      ))}
+                    </select>
                   </div>
+
                   <button type="submit" className="ds-btn ds-btn-primary">Avançar para Endereço</button>
                 </form>
               )}

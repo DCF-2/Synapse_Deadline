@@ -4,14 +4,19 @@ import com.synapse.deadline.dto.ProdutoEmpresaDetalhesDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaFiltroDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
+import com.synapse.deadline.entity.CategoriaProduto;
 import com.synapse.deadline.service.ProdutoEmpresaService;
 import jakarta.validation.Valid;
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/produto")
@@ -37,6 +42,11 @@ public class ProdutoEmpresaController {
     @GetMapping("/publico/{id}")
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> visualizarProdutoPublico(@PathVariable Long id) {
         return ResponseEntity.ok(service.visualizarProdutoPublico(id));
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoriaProduto>> listarCategorias() {
+        return ResponseEntity.ok(service.listarCategorias());
     }
 
     @GetMapping("/{id}")
@@ -68,4 +78,5 @@ public class ProdutoEmpresaController {
     ) {
         return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable, filtro));
     }
+    
 }
