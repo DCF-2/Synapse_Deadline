@@ -151,7 +151,7 @@ export default function ProdutosPage() {
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
       {/* HEADER MOBILE */}
-      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
+      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#23a889' }}>
         <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
         <button className="navbar-toggler border-0" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span className="navbar-toggler-icon"></span>
@@ -161,7 +161,7 @@ export default function ProdutosPage() {
       <div className="row g-0 flex-grow-1">
         {/* SIDEBAR FIXA */}
         <nav className={`col-md-3 col-lg-2 p-3 d-md-flex flex-column justify-content-between ${isMenuOpen ? 'd-flex' : 'd-none d-md-flex'}`}
-          style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
+          style={{ backgroundColor: '#23a889', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
               <h4 className="fw-bold d-flex align-items-center gap-2">⏱️ Deadline</h4>
@@ -193,7 +193,7 @@ export default function ProdutosPage() {
               <h2 className="fw-bold text-dark m-0">Meus Produtos</h2>
               <p className="text-muted small m-0 mt-1">Gerencie todo o catálogo de itens cadastrados</p>
             </div>
-            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#52b788', borderRadius: '10px' }}>
+            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#23a889', borderRadius: '10px' }}>
               <span>➕</span> Novo Produto
             </Link>
           </div>
@@ -210,7 +210,7 @@ export default function ProdutosPage() {
                   value={buscaInput}
                   onChange={(e) => setBuscaInput(e.target.value)}
                 />
-                <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#52b788' }}>
+                <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#23a889' }}>
                   Buscar
                 </button>
                 {buscaAtiva && (
@@ -275,7 +275,7 @@ export default function ProdutosPage() {
                     <p className="fw-bold text-success mb-3">R$ {produto.precoOriginal?.toFixed(2)}</p>
                     <button 
                       className="btn w-100 fw-medium" 
-                      style={{ backgroundColor: '#f0fdf4', color: '#3aad77', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
+                      style={{ backgroundColor: '#f0fdf4', color: '#23a889', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
                       onClick={() => setProdutoSelecionado(produto)}>
                       👁 Visualizar
                     </button>
