@@ -4,7 +4,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page; // O seu DTO de entrada (ajustado)
+import org.springframework.data.domain.Page; 
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -48,7 +48,6 @@ public class ProdutoEmpresaService {
             }
         }
 
-        // 1. Extração segura (pegamos o objeto Empresa diretamente do contexto do Spring)
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
@@ -61,7 +60,7 @@ public class ProdutoEmpresaService {
         produto.setDescricao(dto.getDescricao());
         produto.setPrecoOriginal(dto.getPrecoOriginal());
         produto.setFoto(dto.getFoto());
-        produto.setEmpresa(empresaLogada); // Usamos a empresa recuperada diretamente
+        produto.setEmpresa(empresaLogada); 
         produto.setAtivo(true);
 
         Produto salvo = produtoRepository.save(produto);
@@ -71,58 +70,60 @@ public class ProdutoEmpresaService {
 
     @Transactional
     public void remover(Long id) {
-        // 1. Descobrir quem está a tentar apagar pegando a empresa do contexto
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         
-        // 2. Buscar o produto
         Produto produto = produtoRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
                 
-        // 3. Validação de Propriedade (Comparando o ID da empresa do produto com o ID da empresa logada)
         if (!produto.getEmpresa().getId().equals(empresaLogada.getId())) {
             throw new SecurityException("Acesso negado. Não tem permissão para alterar este produto.");
         }
 
-        // 4. Soft Delete
         produto.setAtivo(false);
         produtoRepository.save(produto);
     }
 
-    /**
-     * Visualiza os detalhes de um produto específico, garantindo que pertence à empresa logada.
+   /**
+     * Visualizar detalhes: usa apenas o idProduto.
+     * A empresa é identificada pelo SecurityContext.
      */
     @Transactional(readOnly = true)
     public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
+
+        return produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
+                .map(this::converterParaDetalhesDTO)
                 .orElseThrow(() -> new SecurityException("Produto não encontrado ou acesso negado"));
-        
-        return converterParaDetalhesDTO(produto);
-    }
+}
 
     /**
-     * Edita um produto existente, validando a propriedade (tenant isolation).
+     * Editar: usa apenas idProduto e o DTO.
+     * A empresa é identificada pelo SecurityContext.
      */
     @Transactional
     public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
-                .orElseThrow(() -> new SecurityException("Produto não encontrado ou acesso negado"));
-        
+
+        Produto produtoExistente = produtoRepository.findByIdAndEmpresaId(idProduto, empresaLogada.getId())
+            .orElseThrow(() -> new SecurityException("Produto não encontrado ou acesso negado"));
+
         CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
                 .orElseThrow(() -> new IllegalArgumentException("Categoria inválida"));
 
-        validarEanDuplicado(dto.getCodBarrasEan(), produto.getId());
+        validarEanDuplicado(dto.getCodBarrasEan(), produtoExistente.getId());
 
-        produto.setTituloProduto(dto.getTituloProduto());
-        produto.setCodBarrasEan(dto.getCodBarrasEan());
-        produto.setCategoria(categoria);
-        produto.setDescricao(dto.getDescricao());
-        produto.setPrecoOriginal(dto.getPrecoOriginal());
-        produto.setFoto(dto.getFoto());
+        produtoExistente.setTituloProduto(dto.getTituloProduto());
+        produtoExistente.setCodBarrasEan(dto.getCodBarrasEan());
+        produtoExistente.setCategoria(categoria);
+        produtoExistente.setDescricao(dto.getDescricao());
+        produtoExistente.setPrecoOriginal(dto.getPrecoOriginal());
+        produtoExistente.setFoto(dto.getFoto());
+        
+        if (dto.getAtivo() != null) {
+            produtoExistente.setAtivo(dto.getAtivo());
+        }
 
-        Produto salvo = produtoRepository.save(produto);
+        Produto salvo = produtoRepository.save(produtoExistente);
         return converterParaDetalhesDTO(salvo);
     }
 
@@ -207,59 +208,6 @@ public class ProdutoEmpresaService {
         );
     }
 
-    @Transactional(readOnly = true)
-    public ProdutoEmpresaDetalhesDTO visualizarProdutoDaEmpresa(Long idProduto, Long idEmpresa) {
-        
-        // 1. Pega a Empresa logada do contexto
-        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        // 2. Validação de Segurança Secundária (Garante que a rota está sendo acessada pelo dono correto, caso o idEmpresa venha da URL)
-        if (!empresaLogada.getId().equals(idEmpresa)) {
-             throw new SecurityException("Acesso negado. O ID da empresa na requisição não corresponde à empresa autenticada.");
-        }
-
-        // 3. Busca o produto garantindo que ele pertence a esta empresa específica (Previne falha de IDOR)
-        Produto produto = produtoRepository.findByIdAndEmpresaId(idProduto, idEmpresa)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado ou não pertence a esta empresa."));
-
-        return converterParaDetalhesDTO(produto);
-    }
-
-    @Transactional
-    public ProdutoEmpresaDetalhesDTO editarProduto(Long idProduto, ProdutoRequestDTO dto, Long idEmpresa) {
-        
-        // 1. Pega a Empresa logada do contexto
-        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        if (!empresaLogada.getId().equals(idEmpresa)) {
-             throw new SecurityException("Acesso negado. O ID da empresa na requisição não corresponde à empresa autenticada.");
-        }
-
-        // 2. Busca o produto existente
-        Produto produtoExistente = produtoRepository.findByIdAndEmpresaId(idProduto, idEmpresa)
-                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado ou não pertence a esta empresa."));
-
-        // 3. Valida se a categoria informada existe
-        CategoriaProduto categoria = categoriaRepository.findById(dto.getIdCategoria())
-                .orElseThrow(() -> new IllegalArgumentException("Categoria inválida ou não encontrada"));
-
-        // 4. Validação de EAN Duplicado (Ignora se for o mesmo EAN que o produto já tem)
-        validarEanDuplicado(dto.getCodBarrasEan(), produtoExistente.getId());
-
-        // 5. Atualiza os dados (Você pode adicionar uma validação para não deixar inativar se tiver oferta ativa depois, como no seu teste)
-        produtoExistente.setTituloProduto(dto.getTituloProduto());
-        produtoExistente.setCodBarrasEan(dto.getCodBarrasEan());
-        produtoExistente.setCategoria(categoria);
-        produtoExistente.setDescricao(dto.getDescricao());
-        produtoExistente.setPrecoOriginal(dto.getPrecoOriginal());
-        produtoExistente.setFoto(dto.getFoto());
-        // produtoExistente.setAtivo(dto.getAtivo()); // Caso adicione o campo "ativo" no RequestDTO futuramente
-
-        Produto produtoAtualizado = produtoRepository.save(produtoExistente);
-
-        return converterParaDetalhesDTO(produtoAtualizado);
-    }
-
     // --- MÉTODOS AUXILIARES DE CONVERSÃO ---
 
     private ProdutoEmpresaDetalhesDTO converterParaDetalhesDTO(Produto produto) {
@@ -275,7 +223,10 @@ public class ProdutoEmpresaService {
         dto.setTituloProduto(produto.getTituloProduto());
         dto.setCodBarrasEan(produto.getCodBarrasEan());
         dto.setNomeCategoria(produto.getCategoria().getNome());
+        
+        // CORREÇÃO: Descrição adicionada ao DTO
         dto.setDescricao(produto.getDescricao());
+        
         dto.setPrecoOriginal(produto.getPrecoOriginal());
         dto.setFoto(produto.getFoto());
         dto.setAtivo(produto.getAtivo());
@@ -367,7 +318,7 @@ public class ProdutoEmpresaService {
         }
     }
 
-        public List<CategoriaProduto> listarCategorias() {
-            return categoriaRepository.findByAtivoTrue();
-        }
+    public List<CategoriaProduto> listarCategorias() {
+        return categoriaRepository.findByAtivoTrue();
+    }
 }

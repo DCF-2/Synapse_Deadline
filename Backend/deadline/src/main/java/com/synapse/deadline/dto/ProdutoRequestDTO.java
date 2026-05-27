@@ -28,6 +28,9 @@ public class ProdutoRequestDTO {
 
     private String foto;
 
+    private Boolean ativo; // Por padrão, o produto é criado como ativo
+
+
     // --- GETTERS E SETTERS ---
     public String getTituloProduto() { return tituloProduto; }
     public void setTituloProduto(String tituloProduto) { this.tituloProduto = tituloProduto; }
@@ -46,4 +49,7 @@ public class ProdutoRequestDTO {
     
     public String getFoto() { return foto; }
     public void setFoto(String foto) { this.foto = foto; }
+
+   public Boolean getAtivo() { return ativo; }
+   public void setAtivo(Boolean ativo) { this.ativo = ativo; }
 }

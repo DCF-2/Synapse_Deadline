@@ -1,29 +1,15 @@
-import { useEffect, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-const formatarMoeda = (valor) => {
-  if (valor === null || valor === undefined || Number.isNaN(Number(valor))) {
-    return '—';
-  }
-
-  return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
-};
-
-const formatarData = (valor) => {
-  if (!valor) {
-    return 'Aguardando oferta';
-  }
-
-  return new Date(`${valor}T00:00:00`).toLocaleDateString('pt-BR');
-};
-
 export default function ProdutoDetalhes() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [produto, setProduto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -32,9 +18,22 @@ export default function ProdutoDetalhes() {
       try {
         setLoading(true);
         setErro(null);
-        const response = await fetch(`${API_URL}/produto/publico/${id}`);
+
+        const token = localStorage.getItem('deadline_token');
+        if (!token) {
+          navigate('/auth');
+          return;
+        }
+
+        const response = await fetch(`${API_URL}/produto/${id}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
 
         if (!response.ok) {
+           if(response.status === 401 || response.status === 403){
+               navigate('/auth');
+               return;
+           }
           throw new Error(`Erro ${response.status}: não foi possível carregar os detalhes.`);
         }
 
@@ -59,111 +58,175 @@ export default function ProdutoDetalhes() {
     return () => {
       ativo = false;
     };
-  }, [id]);
+  }, [id, navigate]);
+
+  const formatarMoeda = (valor) => {
+    if (valor === null || valor === undefined || Number.isNaN(Number(valor))) return '—';
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
+  };
+
+  const formatarData = (valor) => {
+    if (!valor) return 'Não aplicável';
+    return new Date(`${valor}T00:00:00`).toLocaleDateString('pt-BR');
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('deadline_token');
+    navigate('/auth');
+  };
 
   return (
-    <div className="container-fluid p-0" style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
-      <div className="container py-4 py-md-5">
-        <div className="mb-4">
-          <Link to="/" className="btn btn-link text-decoration-none ps-0">
-            ← Voltar para a vitrine
-          </Link>
-        </div>
+    <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+      
+      {/* HEADER MOBILE */}
+      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
+        <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
+        <button className="navbar-toggler border-0" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <span className="navbar-toggler-icon"></span>
+        </button>
+      </header>
 
-        {loading && (
-          <div className="text-center py-5 text-muted">
-            <div className="spinner-border text-success mb-3" role="status"></div>
-            <p className="mb-0">Carregando detalhes do produto...</p>
-          </div>
-        )}
-
-        {erro && (
-          <div className="alert alert-danger rounded-4 shadow-sm">
-            ⚠️ {erro}
-          </div>
-        )}
-
-        {!loading && !erro && produto && (
-          <div className="row g-4 align-items-start">
-            <div className="col-lg-5">
-              <div className="card border-0 shadow-sm rounded-4 overflow-hidden">
-                {produto.foto ? (
-                  <img src={produto.foto} alt={produto.tituloProduto} style={{ width: '100%', height: '320px', objectFit: 'cover' }} />
-                ) : (
-                  <div className="d-flex align-items-center justify-content-center" style={{ height: '320px', background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)' }}>
-                    <span style={{ fontSize: '5rem' }}>📦</span>
-                  </div>
-                )}
-              </div>
+      <div className="row g-0 flex-grow-1">
+        {/* SIDEBAR FIXA */}
+        <nav className={`col-md-3 col-lg-2 p-3 d-md-flex flex-column justify-content-between ${isMenuOpen ? 'd-flex' : 'd-none d-md-flex'}`}
+          style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
+          <div>
+            <div className="d-none d-md-block text-white my-3 ps-2">
+              <h4 className="fw-bold d-flex align-items-center gap-2">⏱️ Deadline</h4>
             </div>
+            <ul className="nav flex-column mt-4">
+              <li><Link to="/dashboard" className="nav-link text-white opacity-75">📊 Dashboard</Link></li>
+              <li><Link to="/produtos" className="nav-link text-white fw-bold">📦 Meus Produtos</Link></li>
+              <li><Link to="/ofertas" className="nav-link text-white opacity-75">📢 Minhas Ofertas</Link></li>
+            </ul>
+          </div>
+          <div className="mt-4">
+            <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}>
+              <span>🚪</span> Sair
+            </button>
+          </div>
+        </nav>
 
-            <div className="col-lg-7">
-              <div className="card border-0 shadow-sm rounded-4 p-4">
-                <span className="badge bg-success-subtle text-success fw-semibold mb-3" style={{ width: 'fit-content' }}>
-                  {produto.nomeCategoria || 'Categoria não informada'}
-                </span>
-                <h1 className="fw-bold text-dark mb-3">{produto.tituloProduto}</h1>
-                <p className="text-muted mb-4" style={{ lineHeight: 1.7 }}>
-                  {produto.descricao || 'Nenhuma descrição detalhada foi enviada para esta oferta.'}
-                </p>
+        {/* CONTEÚDO PRINCIPAL */}
+        <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 p-4" style={{ height: '100vh', overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
+          
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <button onClick={() => navigate('/produtos')} className="btn btn-link text-muted text-decoration-none ps-0 fw-bold">
+              ← Voltar para produtos
+            </button>
+          </div>
 
-                <div className="row g-3 mb-4">
-                  <div className="col-md-6">
-                    <div className="p-3 rounded-4" style={{ backgroundColor: '#f8f9fa' }}>
-                      <div className="text-muted small">Preço original</div>
-                      <div className="fw-bold h5 mb-0">{formatarMoeda(produto.precoOriginal)}</div>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="p-3 rounded-4" style={{ backgroundColor: '#f0fdf4' }}>
-                      <div className="text-muted small">Preço promocional</div>
-                      <div className="fw-bold h5 text-success mb-0">
-                        {produto.precoPromocional ? formatarMoeda(produto.precoPromocional) : 'Aguardando oferta'}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+          {loading && (
+            <div className="text-center py-5 text-muted">
+              <div className="spinner-border text-success mb-3" role="status"></div>
+              <p className="mb-0">Carregando detalhes do produto...</p>
+            </div>
+          )}
 
-                <div className="row g-3 mb-4">
-                  <div className="col-md-6">
-                    <div className="p-3 rounded-4" style={{ backgroundColor: '#fff7ed' }}>
-                      <div className="text-muted small">Percentual de desconto</div>
-                      <div className="fw-bold h5 mb-0">
-                        {produto.percentualDesconto ? `${produto.percentualDesconto.toFixed(0)}%` : 'Aguardando oferta'}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="col-md-6">
-                    <div className="p-3 rounded-4" style={{ backgroundColor: '#f8fafc' }}>
-                      <div className="text-muted small">Data de validade</div>
-                      <div className="fw-bold h5 mb-0">{formatarData(produto.validadeProduto)}</div>
-                    </div>
-                  </div>
-                </div>
+          {erro && (
+            <div className="alert alert-danger rounded-4 shadow-sm border-0">
+              ⚠️ {erro}
+            </div>
+          )}
 
-                <div className="border-top pt-4">
-                  <h2 className="h5 fw-bold text-dark mb-3">Informações da farmácia</h2>
-                  <div className="mb-3">
-                    <div className="text-muted small">Nome da farmácia</div>
-                    <div className="fw-semibold">{produto.nomeEmpresa || 'Aguardando integração'}</div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="text-muted small">Endereço</div>
-                    <div className="fw-semibold">{produto.enderecoEmpresa || 'Aguardando integração'}</div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="text-muted small">Instruções de retirada</div>
-                    <div className="fw-semibold">{produto.instrucoesRetirada || 'Aguardando integração'}</div>
-                  </div>
-                  <div>
-                    <div className="text-muted small">Horário de funcionamento</div>
-                    <div className="fw-semibold">{produto.horarioFuncionamento || 'Aguardando integração'}</div>
-                  </div>
+          {!loading && !erro && produto && (
+            <div className="row g-4 align-items-start">
+              
+              {/* Coluna da Imagem */}
+              <div className="col-lg-5">
+                <div className="card border-0 shadow-sm rounded-4 overflow-hidden position-relative" style={{ height: '400px' }}>
+                  {!produto.ativo && (
+                    <div className="position-absolute w-100 h-100 d-flex justify-content-center align-items-center" style={{ backgroundColor: 'rgba(255,255,255,0.7)', zIndex: 2 }}>
+                       <span className="badge bg-danger fs-5 px-4 py-2 rounded-pill shadow-sm">INATIVO</span>
+                    </div>
+                  )}
+                  {produto.foto ? (
+                    <img src={produto.foto} alt={produto.tituloProduto} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px' }} />
+                  ) : (
+                    <div className="d-flex align-items-center justify-content-center w-100 h-100" style={{ background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)' }}>
+                      <span style={{ fontSize: '6rem', opacity: 0.3 }}>📦</span>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Coluna dos Detalhes */}
+              <div className="col-lg-7">
+                <div className="card border-0 shadow-sm rounded-4 p-4 p-lg-5 h-100">
+                  <span className="badge bg-success-subtle text-success fw-semibold mb-3 fs-6" style={{ width: 'fit-content' }}>
+                    {produto.nomeCategoria || 'Sem Categoria'}
+                  </span>
+                  
+                  <h1 className="fw-bold text-dark mb-2">{produto.tituloProduto}</h1>
+                  
+                  {produto.codBarrasEan && (
+                     <p className="text-muted small mb-4">EAN: {produto.codBarrasEan}</p>
+                  )}
+
+                  <div className="p-4 rounded-4 mb-4" style={{ backgroundColor: '#f8f9fa', border: '1px solid #e9ecef' }}>
+                    <div className="text-muted small text-uppercase fw-bold tracking-wider mb-1">Preço Original (Base)</div>
+                    <div className="fw-bold text-dark" style={{ fontSize: '2rem' }}>{formatarMoeda(produto.precoOriginal)}</div>
+                  </div>
+
+                  <div className="mb-4">
+                     <h6 className="fw-bold text-dark mb-2">Descrição Completa</h6>
+                     <p className="text-muted bg-light p-3 rounded-3" style={{ lineHeight: 1.6, whiteSpace: 'pre-line' }}>
+                       {produto.descricao || 'Nenhuma descrição detalhada fornecida para este produto.'}
+                     </p>
+                  </div>
+
+                  {/* Detalhes da Oferta (se houver) */}
+                  {produto.precoPromocional && (
+                     <div className="p-4 rounded-4 mb-4 mt-auto" style={{ backgroundColor: '#fff7ed', border: '1px solid #fed7aa' }}>
+                       <div className="d-flex justify-content-between align-items-center mb-3">
+                           <h6 className="fw-bold text-warning-emphasis m-0 d-flex align-items-center gap-2">
+                               <span style={{ fontSize: '1.2rem' }}>📢</span> Oferta Ativa
+                           </h6>
+                           <span className="badge bg-warning text-dark fs-6 rounded-pill">
+                               -{produto.percentualDesconto?.toFixed(0)}%
+                           </span>
+                       </div>
+                       
+                       <div className="row g-3">
+                           <div className="col-sm-6">
+                               <div className="text-warning-emphasis small">Preço Promocional</div>
+                               <div className="fw-bold text-dark fs-4">{formatarMoeda(produto.precoPromocional)}</div>
+                           </div>
+                           <div className="col-sm-6 text-sm-end">
+                               <div className="text-warning-emphasis small">Validade / Fim</div>
+                               <div className="fw-semibold text-dark">
+                                   {formatarData(produto.validadeProduto)}
+                               </div>
+                           </div>
+                       </div>
+                     </div>
+                  )}
+
+                  <div className="d-flex gap-3 mt-4 pt-3 border-top">
+                     <button 
+                        onClick={() => navigate(`/editar-produto/${produto.id}`)} 
+                        className="btn fw-bold px-4 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1" 
+                        style={{ backgroundColor: '#e9ecef', color: '#495057', borderRadius: '10px' }}
+                     >
+                        ✏️ Editar Dados do Produto
+                     </button>
+                     {produto.ativo ? (
+                        <button 
+                            onClick={() => navigate(`/nova-oferta?produtoId=${produto.id}`)} 
+                            className="btn btn-success fw-bold px-4 py-3 rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 shadow-sm"
+                        >
+                            ➕ Nova Oferta
+                        </button>
+                     ) : (
+                         <div className="alert alert-warning small py-2 mb-0 text-center w-50 d-flex align-items-center justify-content-center border-0">⚠️ Reative para criar ofertas.</div>
+                     )}
+                  </div>
+
+                </div>
+              </div>
             </div>
-          </div>
-        )}
+          )}
+        </main>
       </div>
     </div>
   );
