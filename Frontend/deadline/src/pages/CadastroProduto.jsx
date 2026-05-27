@@ -171,7 +171,7 @@ export default function CadastroProduto() {
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
       {/* SIDEBAR */}
       <nav className="col-md-3 col-lg-2 p-3 d-flex flex-column justify-content-between"
-        style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
+        style={{ backgroundColor: '#23a889', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
         <div>
           <div className="text-white my-3 ps-2">
             <h4 className="fw-bold d-flex align-items-center gap-2">
@@ -221,7 +221,7 @@ export default function CadastroProduto() {
         <div className="card border-0 shadow-sm rounded-4 p-4 mx-auto" style={{ maxWidth: '700px' }}>
           <div className="d-flex align-items-center justify-content-center mb-3"
             style={{ width: '60px', height: '60px', backgroundColor: '#f0fdf4', borderRadius: '16px', border: '1px solid #bbf7d0', margin: '0 auto 16px auto' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3aad77" strokeWidth="2">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#23a889" strokeWidth="2">
               <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
               <path d="m8.5 8.5 7 7"/>
             </svg>
@@ -308,7 +308,7 @@ export default function CadastroProduto() {
             </div>
 
             <button type="submit" disabled={loading || uploadandoImagem} className="btn w-100 fw-bold py-3 text-white"
-              style={{ backgroundColor: '#3aad77', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
+              style={{ backgroundColor: '#23a889', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
               {loading ? 'Salvando no catálogo...' : 'Cadastrar Produto'}
             </button>
           </form>

@@ -8,10 +8,15 @@ export default function NovaOferta() {
   const [produtos, setProdutos] = useState([]);
   const [produtoId, setProdutoId] = useState('');
   
+  
   const [validadeProduto, setValidadeProduto] = useState('');
   const [dataFimOferta, setDataFimOferta] = useState(''); 
 
+  const [dataFimOferta, setDataFimOferta] = useState(''); 
+
   const [precoPromocional, setPrecoPromocional] = useState('');
+  const [percentualDesconto, setPercentualDesconto] = useState(''); 
+  
   const [percentualDesconto, setPercentualDesconto] = useState(''); 
   
   const [erro, setErro] = useState(null);
@@ -49,6 +54,29 @@ export default function NovaOferta() {
       }
     } else {
       setPercentualDesconto('');
+  // Se trocar de produto, limpa os inputs numéricos para não dar conflito
+  useEffect(() => {
+    setPrecoPromocional('');
+    setPercentualDesconto('');
+  }, [produtoId]);
+
+  // CÁLCULO BIDIRECIONAL: Quando o lojista digita o PREÇO
+  const handlePrecoChange = (e) => {
+    const novoPreco = e.target.value;
+    setPrecoPromocional(novoPreco);
+
+    if (produtoSelecionado && novoPreco) {
+      const original = Number(produtoSelecionado.precoOriginal);
+      const promocional = Number(novoPreco);
+
+      if (original > 0 && promocional > 0 && promocional <= original) {
+        const perc = Math.max(0, Math.round(((original - promocional) / original) * 100));
+        setPercentualDesconto(perc.toString());
+      } else {
+        setPercentualDesconto('');
+      }
+    } else {
+      setPercentualDesconto('');
     }
   };
 
@@ -60,7 +88,28 @@ export default function NovaOferta() {
     if (produtoSelecionado && novoDesconto) {
       const original = Number(produtoSelecionado.precoOriginal);
       const perc = Number(novoDesconto);
+  };
 
+  // CÁLCULO BIDIRECIONAL: Quando o lojista digita o % DE DESCONTO
+  const handleDescontoChange = (e) => {
+    const novoDesconto = e.target.value;
+    setPercentualDesconto(novoDesconto);
+
+    if (produtoSelecionado && novoDesconto) {
+      const original = Number(produtoSelecionado.precoOriginal);
+      const perc = Number(novoDesconto);
+
+      if (original > 0 && perc >= 0 && perc <= 100) {
+        const precoCalculado = original - (original * (perc / 100));
+        // Arredonda para 2 casas decimais
+        setPrecoPromocional(precoCalculado.toFixed(2));
+      } else {
+        setPrecoPromocional('');
+      }
+    } else {
+      setPrecoPromocional('');
+    }
+  };
       if (original > 0 && perc >= 0 && perc <= 100) {
         const precoCalculado = original - (original * (perc / 100));
         // Arredonda para 2 casas decimais
@@ -89,6 +138,7 @@ export default function NovaOferta() {
 
       const response = await fetch(`${API_URL}/produto/empresa`, {
         headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       if (response.status === 401 || response.status === 403) {
@@ -97,8 +147,10 @@ export default function NovaOferta() {
       }
 
       if (!response.ok) throw new Error(`Erro ${response.status}: não foi possível carregar os produtos.`);
+      if (!response.ok) throw new Error(`Erro ${response.status}: não foi possível carregar os produtos.`);
 
       const data = await response.json();
+      setProdutos(data?.content ?? data ?? []);
       setProdutos(data?.content ?? data ?? []);
     } catch (error) {
       setErro(error.message);
@@ -114,6 +166,7 @@ export default function NovaOferta() {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const produtoSelecionadoViaUrl = params.get('produtoId');
+    if (produtoSelecionadoViaUrl) setProdutoId(produtoSelecionadoViaUrl);
     if (produtoSelecionadoViaUrl) setProdutoId(produtoSelecionadoViaUrl);
   }, [location.search, produtos]);
 
@@ -136,8 +189,14 @@ export default function NovaOferta() {
 
     if (!validadeProduto) {
       setErro('A data de validade do produto é obrigatória.');
+    if (!validadeProduto) {
+      setErro('A data de validade do produto é obrigatória.');
       return;
     }
+
+    // LÓGICA DO FIM DA OFERTA OPCIONAL:
+    // Se o usuário não informou, iguala com a validade do produto.
+    const dataFimFinal = dataFimOferta ? dataFimOferta : validadeProduto;
 
     // LÓGICA DO FIM DA OFERTA OPCIONAL:
     // Se o usuário não informou, iguala com a validade do produto.
@@ -174,7 +233,9 @@ export default function NovaOferta() {
           produtoId: Number(produtoId),
           validadeProduto,
           dataFimOferta: dataFimFinal,
+          dataFimOferta: dataFimFinal,
           precoPromocional: promocional,
+          percentualDesconto: Number(percentualDesconto) || 0,
           percentualDesconto: Number(percentualDesconto) || 0,
           ativo: true,
         }),
@@ -196,7 +257,7 @@ export default function NovaOferta() {
 
   return (
     <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
+      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#23a889' }}>
         <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
         <button className="navbar-toggler border-0" type="button" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span className="navbar-toggler-icon"></span>
@@ -209,20 +270,25 @@ export default function NovaOferta() {
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
               <h4 className="fw-bold d-flex align-items-center gap-2"><span>⏱️</span> Deadline</h4>
+              <h4 className="fw-bold d-flex align-items-center gap-2"><span>⏱️</span> Deadline</h4>
             </div>
             <ul className="nav nav-pills flex-column mb-auto mt-4 gap-1">
               <li className="nav-item">
                 <Link to="/dashboard" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2"><span>📊</span> Dashboard</Link>
+                <Link to="/dashboard" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2"><span>📊</span> Dashboard</Link>
               </li>
               <li className="nav-item">
                 <Link to="/produtos" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2"><span>📦</span> Meus Produtos</Link>
+                <Link to="/produtos" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2"><span>📦</span> Meus Produtos</Link>
               </li>
               <li className="nav-item">
+                <Link to="/ofertas" className="nav-link active text-white fw-medium d-flex align-items-center gap-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '10px' }}><span>📢</span> Minhas Ofertas</Link>
                 <Link to="/ofertas" className="nav-link active text-white fw-medium d-flex align-items-center gap-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '10px' }}><span>📢</span> Minhas Ofertas</Link>
               </li>
             </ul>
           </div>
           <div className="mt-4">
+            <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}><span>🚪</span> Sair</button>
             <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}><span>🚪</span> Sair</button>
           </div>
         </nav>
@@ -234,8 +300,11 @@ export default function NovaOferta() {
               <p className="text-muted small m-0 mt-1">Defina a promoção para um produto do seu catálogo.</p>
             </div>
             <Link to="/ofertas" className="btn btn-light rounded-3">← Voltar para ofertas</Link>
+            <Link to="/ofertas" className="btn btn-light rounded-3">← Voltar para ofertas</Link>
           </div>
 
+          {erro && <div className="alert alert-danger rounded-3">⚠️ {erro}</div>}
+          {sucesso && <div className="alert alert-success rounded-3">✓ Oferta criada com sucesso! Redirecionando...</div>}
           {erro && <div className="alert alert-danger rounded-3">⚠️ {erro}</div>}
           {sucesso && <div className="alert alert-success rounded-3">✓ Oferta criada com sucesso! Redirecionando...</div>}
 
@@ -263,8 +332,14 @@ export default function NovaOferta() {
                   <div className="col-md-6">
                     <label className="form-label fw-medium text-danger">Validade do produto *</label>
                     <input type="date" className="form-control border-danger-subtle" value={validadeProduto} onChange={(event) => setValidadeProduto(event.target.value)} required />
+                    <label className="form-label fw-medium text-danger">Validade do produto *</label>
+                    <input type="date" className="form-control border-danger-subtle" value={validadeProduto} onChange={(event) => setValidadeProduto(event.target.value)} required />
                   </div>
                   <div className="col-md-6">
+                    <label className="form-label fw-medium">Fim da oferta <span className="text-muted small fw-normal">(Opcional)</span></label>
+                    {/* Note que o required foi removido */}
+                    <input type="date" className="form-control" value={dataFimOferta} onChange={(event) => setDataFimOferta(event.target.value)} />
+                    <small className="text-muted">Se vazio, usará a data de validade.</small>
                     <label className="form-label fw-medium">Fim da oferta <span className="text-muted small fw-normal">(Opcional)</span></label>
                     {/* Note que o required foi removido */}
                     <input type="date" className="form-control" value={dataFimOferta} onChange={(event) => setDataFimOferta(event.target.value)} />
@@ -275,6 +350,16 @@ export default function NovaOferta() {
                 <div className="row g-3 mb-3">
                   <div className="col-md-6">
                     <label className="form-label fw-medium">Preço promocional (R$)</label>
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      value={precoPromocional} 
+                      onChange={handlePrecoChange} 
+                      min="0.01" 
+                      step="0.01" 
+                      placeholder="Ex: 19.90"
+                      required 
+                    />
                     <input 
                       type="number" 
                       className="form-control" 
@@ -300,6 +385,19 @@ export default function NovaOferta() {
                       placeholder="Ex: 50"
                       required
                     />
+                    <label className="form-label fw-medium">Desconto (%)</label>
+                    {/* Input editável bidirecional */}
+                    <input 
+                      type="number" 
+                      className="form-control" 
+                      value={percentualDesconto} 
+                      onChange={handleDescontoChange}
+                      min="0"
+                      max="100"
+                      step="1"
+                      placeholder="Ex: 50"
+                      required
+                    />
                   </div>
                 </div>
 
@@ -307,6 +405,7 @@ export default function NovaOferta() {
                   <strong>Resumo:</strong> {produtoSelecionado ? produtoSelecionado.tituloProduto : 'Selecione um produto'}
                   {produtoSelecionado && (
                     <span className="d-block mt-2 text-muted">
+                      Preço original atual: <strong>R$ {Number(produtoSelecionado.precoOriginal).toFixed(2)}</strong>
                       Preço original atual: <strong>R$ {Number(produtoSelecionado.precoOriginal).toFixed(2)}</strong>
                     </span>
                   )}

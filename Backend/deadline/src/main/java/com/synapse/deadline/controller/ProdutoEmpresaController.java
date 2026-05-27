@@ -11,6 +11,9 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -18,6 +21,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+
 
 
 @RestController
@@ -44,6 +48,11 @@ public class ProdutoEmpresaController {
     @GetMapping("/publico/{id}")
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> visualizarProdutoPublico(@PathVariable Long id) {
         return ResponseEntity.ok(service.visualizarProdutoPublico(id));
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoriaProduto>> listarCategorias() {
+        return ResponseEntity.ok(service.listarCategorias());
     }
 
     @GetMapping("/categorias")
@@ -81,5 +90,6 @@ public class ProdutoEmpresaController {
     ) {
         return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable, filtro));
     }
+    
     
 }

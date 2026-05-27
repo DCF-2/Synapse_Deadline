@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -7,7 +8,9 @@ export default function ProdutosPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Estados da API
+  // Estados da API
   const [produtos, setProdutos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(null);
@@ -19,6 +22,7 @@ export default function ProdutosPage() {
   const [removendo, setRemovendo] = useState(false);
   const [feedbackRemocao, setFeedbackRemocao] = useState(null);
 
+  // Estados de Filtro
   // Estados de Filtro
   const [buscaInput, setBuscaInput] = useState('');
   const [buscaAtiva, setBuscaAtiva] = useState('');
@@ -57,11 +61,33 @@ export default function ProdutosPage() {
   }, []);
 
   const carregarProdutos = async (nomeBusca, categoria, ord) => {
+  // BUSCA CATEGORIAS DINÂMICAS
+  useEffect(() => {
+    const fetchCategorias = async () => {
+      try {
+        const token = localStorage.getItem('deadline_token');
+        if (!token) return;
+        const res = await fetch(`${API_URL}/produto/categorias`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCategorias(data);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar categorias:", error);
+      }
+    };
+    fetchCategorias();
+  }, []);
+
+  const carregarProdutos = async (nomeBusca, categoria, ord) => {
     try {
       setCarregando(true);
       setErro(null);
 
       const token = localStorage.getItem('deadline_token');
+      if (!token) { handleLogout(); return; }
       if (!token) { handleLogout(); return; }
 
       const url = new URL(`${API_URL}/produto/empresa`);
@@ -72,11 +98,15 @@ export default function ProdutosPage() {
       if (ord) url.searchParams.append('sort', ord);
 
       url.searchParams.append('size', '50');
+      url.searchParams.append('size', '50');
 
       const res = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
 
+      if (res.status === 401 || res.status === 403) { handleLogout(); return; }
+      if (!res.ok) throw new Error(`Erro ao buscar os produtos.`);
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
       if (!res.ok) throw new Error(`Erro ao buscar os produtos.`);
 
@@ -108,10 +138,33 @@ export default function ProdutosPage() {
   }, [buscaInput]);
 
   // Dispara a busca sempre que os filtros reais (Ativos) mudarem
+  // ==========================================
+  // LÓGICA 1: BUSCA ASSÍNCRONA (A PARTIR DE 3 CARACTERES)
+  // ==========================================
+  useEffect(() => {
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+
+    debounceTimer.current = setTimeout(() => {
+      const inputLimpo = buscaInput.trim();
+      // Só dispara automaticamente se tiver 3+ caracteres ou se estiver vazio
+      if (inputLimpo.length >= 3 || inputLimpo === '') {
+        setBuscaAtiva(inputLimpo);
+      }
+    }, 600); // 600ms de delay para evitar requisições demais
+
+    return () => clearTimeout(debounceTimer.current);
+  }, [buscaInput]);
+
+  // Dispara a busca sempre que os filtros reais (Ativos) mudarem
   useEffect(() => {
     carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
   }, [buscaAtiva, categoriaSelecionada, ordenacao]);
+    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
+  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
 
+  // ==========================================
+  // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
+  // ==========================================
   // ==========================================
   // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
   // ==========================================
@@ -144,6 +197,7 @@ export default function ProdutosPage() {
       const token = localStorage.getItem('deadline_token');
       const res = await fetch(`${API_URL}/produto/${id}`, {
         method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -186,7 +240,7 @@ export default function ProdutosPage() {
             </ul>
           </div>
           <div className="mt-4">
-            <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '13px' }}>
+             <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '13px' }}>
               <p className="fw-bold mb-1">Sabia que...</p>
               <p className="m-0 opacity-90" style={{ lineHeight: '1.4' }}>
                 Vender com 50% de desconto ainda é melhor do que descartar e ter prejuízo total?
@@ -205,7 +259,7 @@ export default function ProdutosPage() {
               <h2 className="fw-bold text-dark m-0">Meus Produtos</h2>
               <p className="text-muted small m-0 mt-1">Gerencie todo o catálogo de itens cadastrados</p>
             </div>
-            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#52b788', borderRadius: '10px' }}>
+            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#23a889', borderRadius: '10px' }}>
               <span>➕</span> Novo Produto
             </Link>
           </div>
@@ -273,6 +327,7 @@ export default function ProdutosPage() {
             <div className="text-center my-5 text-muted">
               <p style={{ fontSize: '3rem' }}>📦</p>
               <p className="fw-medium">Nenhum produto encontrado.</p>
+              <p className="fw-medium">Nenhum produto encontrado.</p>
             </div>
           )}
 
@@ -298,7 +353,7 @@ export default function ProdutosPage() {
                     <p className="fw-bold text-success mb-3">R$ {produto.precoOriginal?.toFixed(2)}</p>
                     <button 
                       className="btn w-100 fw-medium" 
-                      style={{ backgroundColor: '#f0fdf4', color: '#3aad77', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
+                      style={{ backgroundColor: '#f0fdf4', color: '#23a889', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
                       onClick={() => setProdutoSelecionado(produto)}>
                       👁 Visualizar
                     </button>

@@ -2,12 +2,16 @@ package com.synapse.deadline.repository;
 
 import com.synapse.deadline.entity.Produto;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Predicate;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.List;
 
+public class ProdutoSpecifications {
 public class ProdutoSpecifications {
 
     public static Specification<Produto> filtrarPorEmpresaEParametros(
@@ -41,6 +45,7 @@ public class ProdutoSpecifications {
 
             // 4. FILTRO DE STATUS (Ativo/Inativo)
             if (ativo != null) {
+                predicates.add(cb.equal(root.get("ativo"), ativo));
                 predicates.add(cb.equal(root.get("ativo"), ativo));
             }
 
