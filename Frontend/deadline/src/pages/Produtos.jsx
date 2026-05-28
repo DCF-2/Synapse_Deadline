@@ -56,7 +56,7 @@ export default function ProdutosPage() {
     fetchCategorias();
   }, []);
 
-  const carregarProdutos = async (nomeBusca, categoria, ord) => {
+  const carregarProdutos = async (nomeBusca, categoria, status, ord) => {
     try {
       setCarregando(true);
       setErro(null);
@@ -66,9 +66,9 @@ export default function ProdutosPage() {
 
       const url = new URL(`${API_URL}/produto/empresa`);
 
-       if (nomeBusca) url.searchParams.append('nome', nomeBusca);
+      if (nomeBusca) url.searchParams.append('nome', nomeBusca);
       if (categoria) url.searchParams.append('categoriaId', categoria);
-      if (status !== '') url.searchParams.append('ativo', status); 
+      if (status !== undefined && status !== null && status !== '') url.searchParams.append('ativo', status); 
       if (ord) url.searchParams.append('sort', ord);
 
       url.searchParams.append('size', '50');
@@ -109,8 +109,8 @@ export default function ProdutosPage() {
 
   // Dispara a busca sempre que os filtros reais (Ativos) mudarem
   useEffect(() => {
-    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
-  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
+    carregarProdutos(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
+  }, [buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao]);
 
   // ==========================================
   // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
@@ -130,7 +130,27 @@ export default function ProdutosPage() {
     setBuscaInput('');
     setBuscaAtiva('');
     setErro(null);
-  };  
+  };
+
+  // Função para buscar os detalhes completos antes de abrir o modal
+  const abrirModalVisualizar = async (produto) => {
+    try {
+      const token = localStorage.getItem('deadline_token');
+      const res = await fetch(`${API_URL}/produto/${produto.id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const detalhes = await res.json();
+        setProdutoSelecionado(detalhes); // Abre o modal com todos os dados
+      } else {
+        setProdutoSelecionado(produto); // Fallback: usa os dados resumidos se falhar
+      }
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do produto:", error);
+      setProdutoSelecionado(produto);
+    }
+  };
 
   // Disparado ao confirmar a remoção/inativação no Modal
   const confirmarAcaoRemover = async () => {
@@ -296,10 +316,10 @@ export default function ProdutosPage() {
                     <h6 className="fw-bold mb-1 text-truncate" title={produto.tituloProduto}>{produto.tituloProduto}</h6>
                     <p className="text-muted small mb-2">{produto.nomeCategoria || 'Sem Categoria'}</p>
                     <p className="fw-bold text-success mb-3">R$ {produto.precoOriginal?.toFixed(2)}</p>
-                    <button 
+                   <button 
                       className="btn w-100 fw-medium" 
                       style={{ backgroundColor: '#f0fdf4', color: '#3aad77', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
-                      onClick={() => setProdutoSelecionado(produto)}>
+                      onClick={() => abrirModalVisualizar(produto)}> {/* <-- Atualize aqui */}
                       👁 Visualizar
                     </button>
                   </div>
@@ -326,7 +346,7 @@ export default function ProdutosPage() {
                 <button type="button" className="btn-close" onClick={() => setProdutoSelecionado(null)}></button>
               </div>
               
-              <div className="modal-body">
+             <div className="modal-body">
                   <div className="text-center mb-4">
                      {produtoSelecionado.foto ? (
                         <img src={produtoSelecionado.foto} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
@@ -335,17 +355,37 @@ export default function ProdutosPage() {
                      )}
                   </div>
                   
-                  <div className="row g-2 mb-3">
+                  {/* LINHA 1: Categoria e Preço */}
+                  <div className="row g-2 mb-2">
                       <div className="col-6">
-                          <div className="bg-light p-2 rounded-3 text-center">
+                          <div className="bg-light p-2 rounded-3 text-center h-100">
                               <small className="text-muted d-block" style={{fontSize: '0.75rem'}}>Categoria</small>
                               <span className="fw-bold">{produtoSelecionado.nomeCategoria || '—'}</span>
                           </div>
                       </div>
                       <div className="col-6">
-                          <div className="bg-light p-2 rounded-3 text-center">
+                          <div className="bg-light p-2 rounded-3 text-center h-100">
                               <small className="text-muted d-block" style={{fontSize: '0.75rem'}}>Preço Original</small>
-                              <span className="fw-bold text-success">R$ {produtoSelecionado.precoOriginal?.toFixed(2)}</span>
+                              <span className="fw-bold text-success">R$ {produtoSelecionado.precoOriginal?.toFixed(2) || '0.00'}</span>
+                          </div>
+                      </div>
+                  </div>
+
+                  {/* LINHA 2: Código de Barras e Validade Padrão */}
+                  <div className="row g-2 mb-3">
+                      <div className="col-6">
+                          <div className="bg-light p-2 rounded-3 text-center h-100">
+                              <small className="text-muted d-block" style={{fontSize: '0.75rem'}}>Código de Barras</small>
+                              <span className="fw-bold">{produtoSelecionado.codBarrasEan || '—'}</span>
+                          </div>
+                      </div>
+                      <div className="col-6">
+                          <div className="bg-light p-2 rounded-3 text-center h-100">
+                              <small className="text-muted d-block" style={{fontSize: '0.75rem'}}>Validade Padrão</small>
+                              <span className="fw-bold">
+                                {/* Pode precisar ajustar "diasValidade" para "validadePadrao" dependendo do seu DTO */}
+                                {produtoSelecionado.validadeProduto ? `${produtoSelecionado.validadeProduto} dias` : '—'}
+                              </span>
                           </div>
                       </div>
                   </div>
