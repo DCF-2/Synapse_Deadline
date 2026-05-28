@@ -71,4 +71,12 @@ public interface ProdutoRepository extends JpaRepository<Produto, Long>, JpaSpec
      * Usado para garantir a segurança (Tenant Isolation) nas edições e exclusões.
      */
     Optional<Produto> findByIdAndEmpresaId(Long idProduto, Long idEmpresa);
+
+    /**
+     * Conta a quantidade de produtos ativos pertencentes a uma determinada empresa.
+     *
+     * @param empresaId Identificador único da empresa proprietária.
+     * @return Número de produtos ativos da referida empresa.
+     */
+    long countByEmpresaIdAndAtivoTrue(Long empresaId);
 }

@@ -25,4 +25,9 @@ public interface OfertaRepository extends JpaRepository<Oferta, Long>, JpaSpecif
     List<Oferta> findByProdutoId(Long idProduto);
     List<Oferta> findByProdutoIdAndAtivoTrue(Long produtoId);
     List<Oferta> findByProdutoIdAndDataFimOfertaAfter(Long produtoId, LocalDate dataAtual);
+
+    // Conta quantas ofertas ativas a empresa tem
+    long countByProdutoEmpresaIdAndAtivoTrue(Long empresaId);
+
+    long countByProdutoEmpresaIdAndAtivoTrueAndDataFimOfertaBetween(Long empresaId, java.time.LocalDate inicio, java.time.LocalDate fim);
 }
