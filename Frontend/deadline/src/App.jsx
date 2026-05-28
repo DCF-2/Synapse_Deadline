@@ -9,7 +9,8 @@ import CadastroProduto from './pages/CadastroProduto';
 import EditarProduto from './pages/EditarProduto';
 import ProdutoDetalhes from './pages/ProdutoDetalhes';
 import EditarOferta from './pages/EditarOferta'; 
-import Layout from './components/Layout'; // <-- Importe o novo Layout!
+import Layout from './components/Layout';
+import ConfiguracoesPage from "./pages/Configuracoes";
 
 export default function App() {
   return (
@@ -34,8 +35,11 @@ export default function App() {
         <Route path="/ofertas" element={<OfertasPage />} />
         <Route path="/nova-oferta" element={<NovaOferta />} />
         <Route path="/editar-oferta/:id" element={<EditarOferta />} />
-      </Route>
 
+        {/* Configurações */}
+        <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+      </Route>
+      
     </Routes>
   );
 }

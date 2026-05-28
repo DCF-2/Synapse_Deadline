@@ -3,6 +3,7 @@ package com.synapse.deadline.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
@@ -121,6 +122,63 @@ public class EmpresaService {
         return converterParaPerfilDTO(e);
     }
 
+    @Transactional(readOnly = true)
+    public com.synapse.deadline.dto.EmpresaPerfilDTO obterPerfilLogado() {
+        // Pega a empresa do contexto de segurança
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Empresa empresa = repository.findById(empresaLogada.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Empresa não encontrada"));
+
+        return converterParaPerfilDTO(empresa);
+    }
+
+   @Transactional(readOnly = true)
+    public List<com.synapse.deadline.entity.RamoEmpresa> listarTodosRamos() {
+        return ramoRepository.findAll();
+    }
+
+    @Transactional
+    public com.synapse.deadline.dto.EmpresaPerfilDTO atualizarPerfil(com.synapse.deadline.dto.EmpresaPerfilDTO dto) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Empresa empresa = repository.findById(empresaLogada.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Empresa não encontrada"));
+
+        // Atualiza os dados básicos
+        empresa.setNomeFantasia(dto.getNomeFantasia());
+        empresa.setRazaoSocial(dto.getRazaoSocial());
+        empresa.setLogotipo(dto.getLogotipo()); // String recebida como URL do Cloudinary do front
+        empresa.setContatoWhatsapp(dto.getContatoWhatsapp());
+        empresa.setContato1(dto.getContato1());
+        empresa.setContato2(dto.getContato2());
+        empresa.setEmailContato(dto.getEmailContato());
+        empresa.setHorarioFuncionamento(dto.getHorarioFuncionamento());
+        empresa.setInstrucoesRetirada(dto.getInstrucoesRetirada());
+        
+        // VINCULAÇÃO DO RAMO DE FORMA DINÂMICA
+        if (dto.getIdRamo() != null) {
+            com.synapse.deadline.entity.RamoEmpresa ramo = ramoRepository.findById(dto.getIdRamo())
+                    .orElseThrow(() -> new IllegalArgumentException("Ramo da empresa inválido"));
+            empresa.setRamo(ramo);
+        }
+
+        // Atualiza o Endereço (Objeto embutido)
+        if (empresa.getEndereco() == null) {
+            empresa.setEndereco(new com.synapse.deadline.entity.Endereco());
+        }
+        if (dto.getEndereco() != null) {
+            empresa.getEndereco().setLogradouro(dto.getEndereco().getLogradouro());
+            empresa.getEndereco().setNumero(dto.getEndereco().getNumero());
+            empresa.getEndereco().setComplemento(dto.getEndereco().getComplemento());
+            empresa.getEndereco().setBairro(dto.getEndereco().getBairro());
+            empresa.getEndereco().setCep(dto.getEndereco().getCep());
+            empresa.getEndereco().setCidade(dto.getEndereco().getCidade());
+            empresa.getEndereco().setUf(dto.getEndereco().getUf());
+        }
+
+        Empresa atualizada = repository.save(empresa);
+        return converterParaPerfilDTO(atualizada);
+    }
+
     // -- MÉTODOS AUXILIARES ---
 
     /**
@@ -128,16 +186,36 @@ public class EmpresaService {
      * @param e O objeto Empresa a ser convertido.
      * @return O DTO de perfil correspondente.
      */
-    private EmpresaPerfilDTO converterParaPerfilDTO(Empresa e) {
-        EmpresaPerfilDTO dto = new EmpresaPerfilDTO();
-        dto.setNomeFantasia(e.getNomeFantasia());
-        dto.setRazaoSocial(e.getRazaoSocial());
-        dto.setCnpj(e.getCnpj());
-        dto.setLogotipo(e.getLogotipo());
-        dto.setContatoWhatsapp(e.getContatoWhatsapp());
-        dto.setEmailContato(e.getEmailContato());
-        dto.setInstrucoesRetirada(e.getInstrucoesRetirada());
-        dto.setHorarioFuncionamento(e.getHorarioFuncionamento());
+    private com.synapse.deadline.dto.EmpresaPerfilDTO converterParaPerfilDTO(Empresa empresa) {
+        com.synapse.deadline.dto.EmpresaPerfilDTO dto = new com.synapse.deadline.dto.EmpresaPerfilDTO();
+        
+        // Mapeamento Completo baseado no seu DTO
+        dto.setNomeFantasia(empresa.getNomeFantasia());
+        dto.setRazaoSocial(empresa.getRazaoSocial());
+        dto.setCnpj(empresa.getCnpj());
+        dto.setLogotipo(empresa.getLogotipo());
+        dto.setIdRamo(empresa.getRamo() != null ? empresa.getRamo().getId() : null);
+        dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
+        dto.setContato1(empresa.getContato1());
+        dto.setContato2(empresa.getContato2());
+        dto.setEmailContato(empresa.getEmailContato());
+        dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
+        dto.setEmailLogin(empresa.getEmailLogin());
+        dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
+
+        // Endereço
+        com.synapse.deadline.dto.EnderecoDTO endDto = new com.synapse.deadline.dto.EnderecoDTO();
+        if (empresa.getEndereco() != null) {
+            endDto.setLogradouro(empresa.getEndereco().getLogradouro());
+            endDto.setNumero(empresa.getEndereco().getNumero());
+            endDto.setComplemento(empresa.getEndereco().getComplemento());
+            endDto.setBairro(empresa.getEndereco().getBairro());
+            endDto.setCep(empresa.getEndereco().getCep());
+            endDto.setCidade(empresa.getEndereco().getCidade());
+            endDto.setUf(empresa.getEndereco().getUf());
+        }
+        dto.setEndereco(endDto);
+        
         return dto;
     }
 

@@ -31,16 +31,19 @@ public class EmpresaController {
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /* Visualizar perfil da empresa */
     @GetMapping("/perfil")
-    public ResponseEntity<EmpresaPerfilDTO> visualizarMeuPerfil() {
-        return ResponseEntity.ok(service.visualizarPerfil());
+    public ResponseEntity<EmpresaPerfilDTO> obterPerfil() {
+        return ResponseEntity.ok(service.obterPerfilLogado());
     }
 
-    /* Editar perfil da empresa */
     @PutMapping("/perfil")
-    public ResponseEntity<EmpresaPerfilDTO> editarMeuPerfil(@Valid @RequestBody EmpresaPerfilDTO dto) {
-        return ResponseEntity.ok(service.editarPerfil(dto));
+    public ResponseEntity<EmpresaPerfilDTO> atualizarPerfil(@Valid @RequestBody EmpresaPerfilDTO dto) {
+        return ResponseEntity.ok(service.atualizarPerfil(dto));
+    }
+
+    @GetMapping("/ramos")
+    public ResponseEntity<List<com.synapse.deadline.entity.RamoEmpresa>> listarRamos() {
+        return ResponseEntity.ok(service.listarTodosRamos());
     }
 
     /* Listar ramos de empresa públicos */
