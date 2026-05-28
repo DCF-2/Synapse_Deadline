@@ -3,11 +3,12 @@ import ClienteHome from './pages/ClienteHome';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Produtos from './pages/Produtos';
-import OfertasPage from './pages/Ofertas'; // 1. Corrigido o nome do arquivo para Ofertas (plural) e a função para OfertasPage
+import OfertasPage from './pages/Ofertas'; 
 import NovaOferta from './pages/NovaOferta';
 import CadastroProduto from './pages/CadastroProduto';
 import EditarProduto from './pages/EditarProduto';
 import ProdutoDetalhes from './pages/ProdutoDetalhes';
+import EditarOferta from './pages/EditarOferta'; 
 
 export default function App() {
   return (
@@ -32,8 +33,9 @@ export default function App() {
       <Route path="/produto/:id" element={<ProdutoDetalhes />} />
 
       {/* Rota para Minhas Ofertas */}
-      <Route path="/ofertas" element={<OfertasPage />} /> {/* 2. Corrigido o componente para <OfertasPage /> */}
+     <Route path="/ofertas" element={<OfertasPage />} />
       <Route path="/nova-oferta" element={<NovaOferta />} />
+      <Route path="/editar-oferta/:id" element={<EditarOferta />} />
 
     </Routes>
   );
