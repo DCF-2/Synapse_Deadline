@@ -66,7 +66,7 @@ export default function ProdutosPage() {
 
       const url = new URL(`${API_URL}/produto/empresa`);
 
-      if (nomeBusca) url.searchParams.append('nome', nomeBusca);
+       if (nomeBusca) url.searchParams.append('nome', nomeBusca);
       if (categoria) url.searchParams.append('categoriaId', categoria);
       if (status !== '') url.searchParams.append('ativo', status); 
       if (ord) url.searchParams.append('sort', ord);
@@ -107,6 +107,11 @@ export default function ProdutosPage() {
     return () => clearTimeout(debounceTimer.current);
   }, [buscaInput]);
 
+  // Dispara a busca sempre que os filtros reais (Ativos) mudarem
+  useEffect(() => {
+    carregarProdutos(buscaAtiva, categoriaSelecionada, ordenacao);
+  }, [buscaAtiva, categoriaSelecionada, ordenacao]);
+
   // ==========================================
   // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (QUALQUER QUANTIDADE DE CARACTERES)
   // ==========================================
@@ -140,7 +145,6 @@ export default function ProdutosPage() {
       const res = await fetch(`${API_URL}/produto/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
-        
       });
 
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
@@ -182,7 +186,7 @@ export default function ProdutosPage() {
             </ul>
           </div>
           <div className="mt-4">
-             <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '13px' }}>
+            <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '13px' }}>
               <p className="fw-bold mb-1">Sabia que...</p>
               <p className="m-0 opacity-90" style={{ lineHeight: '1.4' }}>
                 Vender com 50% de desconto ainda é melhor do que descartar e ter prejuízo total?
@@ -201,7 +205,7 @@ export default function ProdutosPage() {
               <h2 className="fw-bold text-dark m-0">Meus Produtos</h2>
               <p className="text-muted small m-0 mt-1">Gerencie todo o catálogo de itens cadastrados</p>
             </div>
-            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#23a889', borderRadius: '10px' }}>
+            <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#52b788', borderRadius: '10px' }}>
               <span>➕</span> Novo Produto
             </Link>
           </div>
@@ -294,7 +298,7 @@ export default function ProdutosPage() {
                     <p className="fw-bold text-success mb-3">R$ {produto.precoOriginal?.toFixed(2)}</p>
                     <button 
                       className="btn w-100 fw-medium" 
-                      style={{ backgroundColor: '#f0fdf4', color: '#23a889', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
+                      style={{ backgroundColor: '#f0fdf4', color: '#3aad77', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
                       onClick={() => setProdutoSelecionado(produto)}>
                       👁 Visualizar
                     </button>
