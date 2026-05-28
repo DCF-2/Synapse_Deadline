@@ -4,7 +4,7 @@ import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
 import Produtos from './pages/Produtos';
 import OfertasPage from './pages/Ofertas'; 
-import NovaOferta from './pages/NovaOferta';
+import NovaOferta from './pages/CadastroOferta';
 import CadastroProduto from './pages/CadastroProduto';
 import EditarProduto from './pages/EditarProduto';
 import ProdutoDetalhes from './pages/ProdutoDetalhes';

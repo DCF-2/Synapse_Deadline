@@ -58,10 +58,15 @@ public class OfertaController {
         return ResponseEntity.ok(ofertaService.buscarPorId(id));
     }
 
-    @GetMapping("/publico")
+   @GetMapping("/publico")
     public ResponseEntity<Page<OfertaResponseDTO>> listarPublico(
-            @PageableDefault(size = 12, sort = "dataFimOferta") Pageable pageable) {
-        
-        return ResponseEntity.ok(ofertaService.listarOfertasPublicas(pageable));
+            @ModelAttribute com.synapse.deadline.dto.FiltroOfertasConsumidorDTO filtro,
+            @PageableDefault(size = 20, sort = "validadeProduto") Pageable pageable) { // Padrão: Vence primeiro
+        return ResponseEntity.ok(ofertaService.listarOfertasPublicas(filtro, pageable));
+    }
+
+    @GetMapping("/publico/{id}")
+    public ResponseEntity<com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO> detalhesPublicos(@PathVariable Long id) {
+        return ResponseEntity.ok(ofertaService.buscarDetalhesPublicos(id));
     }
 }

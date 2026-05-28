@@ -41,12 +41,24 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(authorize -> authorize
+
+                // --- ENDPOINTS PÚBLICOS DO FRONTEND ---
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.POST, "/empresa/cadastro").permitAll()
-                .requestMatchers(HttpMethod.GET, "/oferta/publico").permitAll()
+
+                // --- ENDPOINTS PÚBLICOS DO CONSUMIDOR ---
+                // O asterisco duplo (/**) garante que /oferta/publico/1 (detalhes) também fica aberto
+                .requestMatchers(HttpMethod.GET, "/oferta/publico/**").permitAll() 
                 .requestMatchers(HttpMethod.GET, "/empresa/ramo/publico").permitAll()
+                
+                // Permite que o frontend busque a lista de categorias sem token!
+                .requestMatchers(HttpMethod.GET, "/categoria").permitAll() 
+                
+                // Ferramentas de Dev
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                // Qualquer outra requisição precisa de autenticação
                 .anyRequest().authenticated()
             )
             .headers(headers -> headers.frameOptions(frame -> frame.disable()))

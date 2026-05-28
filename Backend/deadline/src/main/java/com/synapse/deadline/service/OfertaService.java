@@ -159,4 +159,54 @@ public class OfertaService {
 
         return converterParaResponseDTO(oferta);
     }
+
+    @Transactional(readOnly = true)
+    public Page<OfertaResponseDTO> listarOfertasPublicas(com.synapse.deadline.dto.FiltroOfertasConsumidorDTO filtro, Pageable pageable) {
+        // [RF01, RF02, RF03] Lista filtrada e ordenada (Spring Data Pageable já resolve o ORDER BY do RF02)
+        return ofertaRepository.findAll(com.synapse.deadline.repository.OfertaSpecifications.filtroVitrinePublica(filtro), pageable)
+                .map(this::converterParaResponseDTO);
+    }
+
+    @Transactional(readOnly = true)
+    public com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO buscarDetalhesPublicos(Long id) {
+        // [RF04] Detalhes ricos da oferta
+        Oferta oferta = ofertaRepository.findById(id)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Oferta não encontrada."));
+
+        // Validação de segurança: Oferta tem de estar ativa e não expirada
+        if (!oferta.getAtivo() || !oferta.getProduto().getAtivo() || oferta.getDataFimOferta().isBefore(java.time.LocalDate.now())) {
+            throw new IllegalArgumentException("Esta oferta já não está disponível.");
+        }
+
+        com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO dto = new com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO();
+        dto.setId(oferta.getId());
+        dto.setTituloProduto(oferta.getProduto().getTituloProduto());
+        dto.setDescricao(oferta.getProduto().getDescricao());
+        dto.setFoto(oferta.getProduto().getFoto());
+        dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
+        dto.setPrecoPromocional(oferta.getPrecoPromocional());
+        dto.setPercentualDesconto(oferta.getPercentualDesconto());
+        dto.setValidadeProduto(oferta.getValidadeProduto());
+        dto.setDataFimOferta(oferta.getDataFimOferta());
+
+        Empresa empresa = oferta.getProduto().getEmpresa();
+        dto.setNomeFantasiaEmpresa(empresa.getNomeFantasia());
+        dto.setLogotipoEmpresa(empresa.getLogotipo());
+        dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
+        dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
+
+        if (empresa.getEndereco() != null) {
+            com.synapse.deadline.dto.EnderecoDTO endDto = new com.synapse.deadline.dto.EnderecoDTO();
+            endDto.setLogradouro(empresa.getEndereco().getLogradouro());
+            endDto.setNumero(empresa.getEndereco().getNumero());
+            endDto.setComplemento(empresa.getEndereco().getComplemento());
+            endDto.setBairro(empresa.getEndereco().getBairro());
+            endDto.setCidade(empresa.getEndereco().getCidade());
+            endDto.setUf(empresa.getEndereco().getUf());
+            endDto.setCep(empresa.getEndereco().getCep());
+            dto.setEnderecoEmpresa(endDto);
+        }
+
+        return dto;
+    }
 }

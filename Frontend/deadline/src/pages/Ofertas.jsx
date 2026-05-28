@@ -42,14 +42,21 @@ export default function OfertasPage() {
   }, []);
 
   // Lógica de Busca Assíncrona
+  // Lógica de Busca Assíncrona (Debounce com regra de 3 caracteres)
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    
     debounceTimer.current = setTimeout(() => {
-      setBuscaAtiva(buscaInput.trim());
-    }, 600);
+      const termo = buscaInput.trim();
+      // Dispara a busca apenas se tiver 3+ caracteres ou se estiver vazio (para limpar)
+      if (termo.length >= 3 || termo.length === 0) {
+        setBuscaAtiva(termo);
+      }
+    }, 600); // Aguarda 600ms após o último toque na tecla
+    
     return () => clearTimeout(debounceTimer.current);
   }, [buscaInput]);
-
+  
   // Função central de carregamento de ofertas
   const carregarOfertas = async () => {
     try {
