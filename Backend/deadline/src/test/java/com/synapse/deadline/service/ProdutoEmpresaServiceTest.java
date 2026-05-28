@@ -278,8 +278,7 @@ class ProdutoEmpresaServiceTest {
     void deveVisualizarDetalhesComSucesso() {
         simularUsuarioLogado();
         when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.of(produtoSalvo));
-
-        ProdutoEmpresaDetalhesDTO dto = produtoEmpresaService.visualizarProdutoDaEmpresa(10L, 1L);
+        ProdutoEmpresaDetalhesDTO dto = produtoEmpresaService.visualizarProdutoDaEmpresa(10L);
         assertNotNull(dto);
     }
 
@@ -287,15 +286,8 @@ class ProdutoEmpresaServiceTest {
     @DisplayName("TC_PROD_012: Segurança/Erro na Visualização - IDOR")
     void deveBloquearVisualizacaoIdor() {
         simularUsuarioLogado();
-        assertThrows(SecurityException.class, () -> produtoEmpresaService.visualizarProdutoDaEmpresa(10L, 2L));
-    }
-
-    @Test
-    @DisplayName("TC_PROD_013: Erro na Visualização - idProduto inexistente")
-    void deveLancarErroNaVisualizacaoDeProdutoInexistente() {
-        simularUsuarioLogado();
-        when(produtoRepository.findByIdAndEmpresaId(99L, 1L)).thenReturn(Optional.empty());
-        assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.visualizarProdutoDaEmpresa(99L, 1L));
+        when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.empty());
+        assertThrows(SecurityException.class, () -> produtoEmpresaService.visualizarProdutoDaEmpresa(10L));
     }
 
     // ==========================================
@@ -309,8 +301,7 @@ class ProdutoEmpresaServiceTest {
         when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.of(produtoSalvo));
         when(categoriaProdutoRepository.findById(any())).thenReturn(Optional.of(categoriaValida));
         when(produtoRepository.save(any(Produto.class))).thenReturn(produtoSalvo);
-
-        ProdutoEmpresaDetalhesDTO dto = produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 1L);
+        ProdutoEmpresaDetalhesDTO dto = produtoEmpresaService.editarProduto(10L, produtoEntradaDTO);
         assertNotNull(dto);
     }
 
@@ -323,29 +314,16 @@ class ProdutoEmpresaServiceTest {
         when(categoriaProdutoRepository.findById(any())).thenReturn(Optional.of(categoriaValida));
         when(produtoRepository.findById(10L)).thenReturn(Optional.of(produtoSalvo));
         when(produtoRepository.existsByCodBarrasEan("9999999999999")).thenReturn(true);
-
-        assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 1L));
+        assertThrows(IllegalArgumentException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO));
     }
 
     @Test
     @DisplayName("TC_PROD_015: Segurança/Erro na Edição - IDOR")
     void deveBloquearEdicaoIdor() {
         simularUsuarioLogado();
-        assertThrows(SecurityException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO, 2L));
+        when(produtoRepository.findByIdAndEmpresaId(10L, 1L)).thenReturn(Optional.empty());
+        assertThrows(SecurityException.class, () -> produtoEmpresaService.editarProduto(10L, produtoEntradaDTO));
     }
-
-    @Test
-    @DisplayName("TC_PROD_016: Erro na Edição - Atualização do Preço Original para um valor negativo")
-    void deveLancarErroEdicaoPrecoInvalido() {
-       
-        produtoEntradaDTO.setPrecoOriginal(new BigDecimal("-1.00"));
-       
-    }
-
-    @Test
-    @DisplayName("TC_PROD_023: Regra de Negócio na Edição - Inativação bloqueada caso existam ofertas ativas")
-    void deveLancarErroAoInativarProdutoComOfertasAtivas() {
-        }
 
     // ==========================================
     // BLOCO 5: REMOÇÃO DE PRODUTO

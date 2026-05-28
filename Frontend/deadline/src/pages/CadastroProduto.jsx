@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // IMPORT CORRIGIDO
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -8,15 +8,13 @@ const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'you
 export default function CadastroProduto() {
   const [nome, setNome] = useState('');
   const [codigoBarrasEan, setCodigoBarrasEan] = useState('');
-  
-  // ESTADOS DE CATEGORIA CORRIGIDOS
   const [categorias, setCategorias] = useState([]);
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
-  
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [descricao, setDescricao] = useState('');
   const [imagem, setImagem] = useState(null);
   const [imagemUrl, setImagemUrl] = useState('');
+  
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -24,17 +22,14 @@ export default function CadastroProduto() {
 
   const navigate = useNavigate();
 
-  // O USE EFFECT DEVE FICAR DENTRO DO COMPONENTE
   useEffect(() => {
     const fetchCategorias = async () => {
       try {
         const token = localStorage.getItem('deadline_token');
         if (!token) return;
-        
-        const res = await fetch(`${API_URL}/produto/categorias`, {
+        const res = await fetch(`${API_URL}/categoria`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        
         if (res.ok) {
           const data = await res.json();
           setCategorias(data);
@@ -43,11 +38,9 @@ export default function CadastroProduto() {
         console.error("Erro ao buscar categorias:", error);
       }
     };
-    
     fetchCategorias();
-  }, []); // Executa apenas uma vez quando a página carrega
+  }, []);
 
-  // Upload de imagem para Cloudinary
   const uploadarImagemCloudinary = async (arquivo) => {
     setUploadandoImagem(true);
     try {
@@ -55,18 +48,11 @@ export default function CadastroProduto() {
       formData.append('file', arquivo);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        {
-          method: 'POST',
-          body: formData
-        }
-      );
+      const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST', body: formData
+      });
 
-      if (!response.ok) {
-        throw new Error('Erro ao fazer upload da imagem');
-      }
-
+      if (!response.ok) throw new Error('Erro ao fazer upload da imagem');
       const data = await response.json();
       return data.secure_url;
     } catch (err) {
@@ -80,10 +66,7 @@ export default function CadastroProduto() {
   const handleImagemChange = async (e) => {
     const arquivo = e.target.files?.[0];
     if (!arquivo) return;
-
     setImagem(arquivo);
-    
-    // Upload automático para Cloudinary
     const url = await uploadarImagemCloudinary(arquivo);
     if (url) {
       setImagemUrl(url);
@@ -97,29 +80,14 @@ export default function CadastroProduto() {
     setSucesso(false);
 
     const token = localStorage.getItem('deadline_token');
-    if (!token) {
-      setErro('Sua sessão expirou. Por favor, faça login novamente.');
-      navigate('/auth');
-      return;
-    }
+    if (!token) { navigate('/auth'); return; }
 
     const preco = Number.parseFloat(precoOriginal);
     const categoriaId = Number.parseInt(categoriaSelecionada, 10);
 
-    if (!nome.trim()) {
-      setErro('Informe o nome do produto.');
-      return;
-    }
-
-    if (!Number.isInteger(categoriaId) || categoriaId <= 0) {
-      setErro('Selecione uma categoria válida.');
-      return;
-    }
-
-    if (!Number.isFinite(preco) || preco <= 0) {
-      setErro('Informe um preço original válido.');
-      return;
-    }
+    if (!nome.trim()) { setErro('Informe o nome do produto.'); return; }
+    if (!Number.isInteger(categoriaId) || categoriaId <= 0) { setErro('Selecione uma categoria válida.'); return; }
+    if (!Number.isFinite(preco) || preco <= 0) { setErro('Informe um preço original válido.'); return; }
 
     setLoading(true);
     try {
@@ -134,29 +102,14 @@ export default function CadastroProduto() {
       
       const response = await fetch(`${API_URL}/produto`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(corpo),
       });
 
       if (response.ok) {
         setSucesso(true);
-        setNome('');
-        setCodigoBarrasEan('');
-        setCategoriaSelecionada('');
-        setPrecoOriginal('');
-        setDescricao('');
-        setImagem(null);
-        setImagemUrl('');
         setTimeout(() => navigate('/produtos'), 2000);
       } else {
-        if (response.status === 403 || response.status === 401) {
-          setErro('Sua sessão expirou. Por favor, faça login novamente.');
-          navigate('/auth');
-          return;
-        }
         const data = await response.json().catch(() => ({}));
         setErro(data.message || 'Erro ao cadastrar produto. Verifique os campos.');
       }
@@ -168,152 +121,78 @@ export default function CadastroProduto() {
   }
 
   return (
-    <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', overflow: 'hidden' }}>
-      {/* SIDEBAR */}
-      <nav className="col-md-3 col-lg-2 p-3 d-flex flex-column justify-content-between"
-        style={{ backgroundColor: '#23a889', height: '100vh', position: 'sticky', top: 0, zIndex: 1030, minWidth: '200px' }}>
+    <>
+      <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
         <div>
-          <div className="text-white my-3 ps-2">
-            <h4 className="fw-bold d-flex align-items-center gap-2">
-              <span>⏱️</span> Deadline
-            </h4>
-          </div>
-          <ul className="nav nav-pills flex-column mb-auto mt-4 gap-1">
-            <li className="nav-item">
-              <Link to="/dashboard" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
-                <span>📊</span> Dashboard
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/produtos" className="nav-link text-white fw-medium d-flex align-items-center gap-2"
-                style={{ backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: '10px' }}>
-                <span>📦</span> Meus Produtos
-              </Link>
-            </li>
-            <li className="nav-item">
-              <Link to="/ofertas" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
-                <span>📢</span> Minhas Ofertas
-              </Link>
-            </li>
-          </ul>
+          <h2 className="fw-bold text-dark m-0">Novo Produto</h2>
+          <p className="text-muted small m-0 mt-1">Adicione um novo item ao seu catálogo.</p>
         </div>
-        <div className="mt-4">
-          <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255,255,255,0.15)', fontSize: '13px' }}>
-            <p className="fw-bold mb-1">Sabia que...</p>
-            <p className="m-0 opacity-90" style={{ lineHeight: '1.4' }}>
-              Vender com 50% de desconto ainda é melhor do que descartar e ter prejuízo total?
-            </p>
-          </div>
-          <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0"
-            onClick={() => { localStorage.removeItem('deadline_token'); navigate('/auth'); }}>
-            <span>🚪</span> Sair
-          </button>
-        </div>
-      </nav>
+        <Link to="/produtos" className="btn btn-outline-secondary fw-bold rounded-3">← Voltar</Link>
+      </div>
 
-      {/* CONTEÚDO PRINCIPAL */}
-      <main className="flex-grow-1 p-4" style={{ overflowY: 'auto', backgroundColor: '#f8f9fa' }}>
-        <button onClick={() => navigate('/produtos')}
-          className="btn btn-link text-muted text-decoration-none mb-3 ps-0">
-          ← Voltar para produtos
-        </button>
+      <div className="card border-0 shadow-sm rounded-4 p-4 mx-auto" style={{ maxWidth: '800px' }}>
+        
+        {erro && <div className="alert alert-danger rounded-3 shadow-sm">⚠️ {erro}</div>}
+        {sucesso && <div className="alert alert-success rounded-3 shadow-sm">✓ Produto cadastrado com sucesso!</div>}
 
-        <div className="card border-0 shadow-sm rounded-4 p-4 mx-auto" style={{ maxWidth: '700px' }}>
-          <div className="d-flex align-items-center justify-content-center mb-3"
-            style={{ width: '60px', height: '60px', backgroundColor: '#f0fdf4', borderRadius: '16px', border: '1px solid #bbf7d0', margin: '0 auto 16px auto' }}>
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#23a889" strokeWidth="2">
-              <path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/>
-              <path d="m8.5 8.5 7 7"/>
-            </svg>
+        <form onSubmit={handleCadastrar}>
+          <div className="row g-3 mb-4">
+            <div className="col-md-6">
+              <label className="form-label fw-bold text-muted small">Nome do Produto</label>
+              <input type="text" className="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="Ex: Leite Integral" value={nome} onChange={e => setNome(e.target.value)} required />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label fw-bold text-muted small">Código de barras (EAN)</label>
+              <input type="text" className="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="Opcional" value={codigoBarrasEan} onChange={e => setCodigoBarrasEan(e.target.value)} maxLength={13} />
+            </div>
           </div>
 
-          <h2 className="fw-bold text-center text-dark mb-2">Cadastro do Produto</h2>
-          <p className="text-muted text-center small mb-4">
-            Cadastre o produto aqui e, depois, use “Minhas Ofertas” para criar a promoção quando quiser.
-          </p>
-
-          {erro && (
-            <div className="alert alert-danger d-flex align-items-center gap-2 rounded-3">
-              ⚠️ {erro}
+          <div className="row g-3 mb-4">
+            <div className="col-md-6">
+              <label className="form-label fw-bold text-muted small">Categoria</label>
+              <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
+                <option value="">Selecione...</option>
+                {categorias.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
+              </select>
             </div>
-          )}
-          {sucesso && (
-            <div className="alert alert-success rounded-3">
-              ✓ Produto cadastrado com sucesso! Você pode criar uma oferta depois na área “Minhas Ofertas”.
+            <div className="col-md-6">
+              <label className="form-label fw-bold text-muted small">Preço Base (R$)</label>
+              <input type="number" className="form-control form-control-lg bg-light border-0 shadow-sm fw-bold text-success" placeholder="0.00" value={precoOriginal} onChange={e => setPrecoOriginal(e.target.value)} required min="0.01" step="0.01" />
             </div>
-          )}
+          </div>
 
-          <form onSubmit={handleCadastrar}>
-            <div className="row g-3 mb-3">
-              <div className="col-md-6">
-                <label className="form-label fw-medium">Nome</label>
-                <input type="text" className="form-control" placeholder="Nome do produto"
-                  value={nome} onChange={e => setNome(e.target.value)} required />
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-medium">Código de barras</label>
-                <input type="text" className="form-control" placeholder="EAN (Opcional)"
-                  value={codigoBarrasEan} onChange={e => setCodigoBarrasEan(e.target.value)} maxLength={13} />
-              </div>
-            </div>
+          <div className="mb-4">
+            <label className="form-label fw-bold text-muted small">Descrição Detalhada</label>
+            <textarea className="form-control bg-light border-0 shadow-sm" placeholder="Detalhes do produto..." value={descricao} onChange={e => setDescricao(e.target.value)} rows={3} />
+          </div>
 
-            <div className="row g-3 mb-3">
-              <div className="col-md-6">
-                <label className="form-label fw-medium">Categoria</label>
-                <select className="form-select bg-light border-0 text-muted" 
-                  value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
-                  <option value="">Selecione uma Categoria</option>
-                  {categorias.map(cat => (
-                    <option key={cat.id} value={cat.id}>{cat.nome}</option>
-                  ))}
-                </select>
-              </div>
-              <div className="col-md-6">
-                <label className="form-label fw-medium">Preço original (R$)</label>
-                <input type="number" className="form-control" placeholder="0.00"
-                  value={precoOriginal} onChange={e => setPrecoOriginal(e.target.value)}
-                  required min="0.01" step="0.01" />
-              </div>
-            </div>
+          <div className="mb-4">
+            <label className="form-label fw-bold text-muted small">Imagem do Produto</label>
+            <label className="d-flex flex-column align-items-center justify-content-center rounded-4 p-4 shadow-sm bg-light" style={{ border: '2px dashed #d1d5db', cursor: 'pointer', transition: 'all 0.3s' }}>
+              <input type="file" accept="image/*" onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
+              {uploadandoImagem ? (
+                <span className="text-info fw-bold">⏳ Enviando...</span>
+              ) : imagemUrl ? (
+                <>
+                  <img src={imagemUrl} alt="Preview" className="rounded shadow-sm mb-2" style={{ maxWidth: '120px', maxHeight: '120px' }} />
+                  <span className="text-success fw-bold">✓ Imagem carregada</span>
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: '2rem', opacity: 0.4 }}>📷</span>
+                  <span className="text-muted small fw-bold mt-2">Clique para enviar uma foto</span>
+                </>
+              )}
+            </label>
+          </div>
 
-            <div className="mb-3">
-              <label className="form-label fw-medium">Descrição</label>
-              <textarea className="form-control" placeholder="Descreva as especificações do produto..."
-                value={descricao} onChange={e => setDescricao(e.target.value)} rows={4} />
-            </div>
-
-            <div className="mb-4">
-              <label className="form-label fw-medium">Imagem do produto</label>
-              <label className="d-flex flex-column align-items-center justify-content-center rounded-3 p-4"
-                style={{ border: '2px dashed #d1d5db', cursor: 'pointer' }}>
-                <input type="file" accept="image/*" onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
-                {uploadandoImagem ? (
-                  <span className="text-info">⏳ Enviando imagem...</span>
-                ) : imagemUrl ? (
-                  <>
-                    <img src={imagemUrl} alt="Preview" style={{ maxWidth: '100px', maxHeight: '100px', marginBottom: '10px' }} />
-                    <span className="text-success">✓ {imagem?.name || 'Imagem carregada'}</span>
-                  </>
-                ) : (
-                  <>
-                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="1.5">
-                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                      <polyline points="17 8 12 3 7 8"/>
-                      <line x1="12" y1="3" x2="12" y2="15"/>
-                    </svg>
-                    <span className="text-muted small mt-2">Clique para enviar uma imagem</span>
-                  </>
-                )}
-              </label>
-            </div>
-
-            <button type="submit" disabled={loading || uploadandoImagem} className="btn w-100 fw-bold py-3 text-white"
-              style={{ backgroundColor: '#23a889', borderRadius: '10px', opacity: loading || uploadandoImagem ? 0.65 : 1 }}>
-              {loading ? 'Salvando no catálogo...' : 'Cadastrar Produto'}
+          <div className="d-flex justify-content-end pt-3 border-top">
+            <button type="submit" disabled={loading || uploadandoImagem} className="btn text-white fw-bold px-5 py-2 rounded-3 shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }}>
+              {loading ? 'Salvando...' : 'Cadastrar Produto'}
             </button>
-          </form>
-        </div>
-      </main>
-    </div>
+          </div>
+        </form>
+      </div>
+    </>
   );
 }

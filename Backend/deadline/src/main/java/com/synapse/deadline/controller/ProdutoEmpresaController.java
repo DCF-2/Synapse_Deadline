@@ -5,6 +5,7 @@ import com.synapse.deadline.dto.ProdutoEmpresaFiltroDTO;
 import com.synapse.deadline.dto.ProdutoEmpresaResumoDTO;
 import com.synapse.deadline.dto.ProdutoRequestDTO;
 import com.synapse.deadline.entity.CategoriaProduto;
+import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.service.ProdutoEmpresaService;
 import jakarta.validation.Valid;
 
@@ -15,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -51,6 +53,7 @@ public class ProdutoEmpresaController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProdutoEmpresaDetalhesDTO> visualizarProduto(@PathVariable Long id) {
+        // Agora o controller passa apenas o ID, o Service se vira com o SecurityContext
         return ResponseEntity.ok(service.visualizarProdutoDaEmpresa(id));
     }
 

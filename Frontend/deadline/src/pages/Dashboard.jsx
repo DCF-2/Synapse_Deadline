@@ -1,168 +1,192 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
-export default function DashboardPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-  const metricas = [
-    { id: 1, titulo: "Itens Vendidos", valor: 8, icone: "📦", bgIcone: "#e8f5e9" },
-    { id: 2, titulo: "Ofertas Ativas", valor: 8, icone: "📣", bgIcone: "#e8f5e9" },
-    { id: 3, titulo: "Urgentes (< 7 dias)", valor: 1, icone: "⚠️", bgIcone: "#ffebee" },
-  ];
+export default function Dashboard() {
+  const navigate = useNavigate();
+  const [dados, setDados] = useState(null);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(null);
 
-  const [produtosRecentes, setProdutosRecentes] = useState([
-    { id: 1, nome: "Esponja de banho", categoria: "Outros", desconto: "-5%", status: "Ativo" },
-    { id: 2, nome: "Lenço umidecido", categoria: "Higiene", desconto: "-10%", status: "Ativo" },
-    { id: 3, nome: "Protetor solar", categoria: "Cosméticos", desconto: "-35%", status: "Ativo" },
-    { id: 4, nome: "Creatina", categoria: "Suplementos", desconto: "-25%", status: "Ativo" },
-    { id: 5, nome: "Dorflex", categoria: "Medicamentos", desconto: "-50%", status: "Ativo" },
-    { id: 6, nome: "Fralda calça", categoria: "Higiene", desconto: "-15%", status: "Ativo" },
-  ]);
+  useEffect(() => {
+    const buscarDashboard = async () => {
+      try {
+        const token = localStorage.getItem('deadline_token');
+        if (!token) {
+          navigate('/');
+          return;
+        }
 
-  const handleLogout = () => {
-    localStorage.removeItem('deadline_token');
-    window.location.href = '/';
+        const res = await fetch(`${API_URL}/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.removeItem('deadline_token');
+          navigate('/');
+          return;
+        }
+
+        if (!res.ok) throw new Error('Não foi possível carregar as estatísticas.');
+
+        const data = await res.json();
+        setDados(data);
+      } catch (err) {
+        setErro(err.message);
+      } finally {
+        setCarregando(false);
+      }
+    };
+
+    buscarDashboard();
+  }, [navigate]);
+
+  const formatarMoeda = (valor) => {
+    if (valor == null) return '—';
+    return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   };
 
-  return (
-    <div className="container-fluid p-0" style={{ height: '100vh', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+  const formatarData = (dataString) => {
+    if (!dataString) return '—';
+    return new Date(`${dataString}T00:00:00`).toLocaleDateString('pt-BR');
+  };
 
-      {/* BARRA SUPERIOR MOBILE */}
-      <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#23a889' }}>
-        <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
-        <button className="navbar-toggler border-0" type="button" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          <span className="navbar-toggler-icon"></span>
-        </button>
-      </header>
-
-      <div className="row g-0 flex-grow-1" style={{ overflow: 'hidden' }}>
-
-        {/* MENU LATERAL FIXO (Ocupa 100vh no desktop e não rola) */}
-        <nav className={`col-md-3 col-lg-2 p-3 d-md-flex flex-column justify-content-between ${isMenuOpen ? 'd-flex' : 'd-none d-md-flex'}`}
-          style={{
-            backgroundColor: '#23a889',
-            height: '100vh',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1030
-          }}>
-
-          <div>
-            {/* Logo */}
-            <div className="d-none d-md-block text-white my-3 ps-2">
-              <h4 className="fw-bold d-flex align-items-center gap-2">
-                <span>⏱️</span> Deadline
-              </h4>
-            </div>
-
-            {/* Itens do Menu */}
-            <ul className="nav nav-pills flex-column mb-auto mt-4 gap-1">
-              <li className="nav-item">
-                <Link to="/dashboard" className="nav-link active text-white fw-medium d-flex align-items-center gap-2" style={{ backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: '10px' }}>
-                  <span>📊</span> Dashboard
-                </Link>
-              </li>
-              <li className="nav-item">
-                {/* O 'to="/produtos"' aponta para a rota no App.jsx */}
-                <Link to="/produtos" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
-                  <span>📦</span> Meus Produtos
-                </Link>
-              </li>
-              <li className="nav-item">
-                  <Link to="/ofertas" className="nav-link text-white opacity-75 fw-medium d-flex align-items-center gap-2">
-                  <span>📢</span> Minhas Ofertas
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Rodapé do Menu com o Card de Dica e Botão Sair */}
-          <div className="mt-4">
-            <div className="p-3 mb-3 text-white rounded-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.15)', fontSize: '13px' }}>
-              <p className="fw-bold mb-1">Sabia que...</p>
-              <p className="m-0 opacity-90" style={{ lineHeight: '1.4' }}>
-                Vender com 50% de desconto ainda é melhor do que descartar e ter prejuízo total?
-              </p>
-            </div>
-
-            <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}>
-              <span>🚪</span> Sair
-            </button>
-          </div>
-        </nav>
-
-        {/* CONTEÚDO PRINCIPAL COM ROLAGEM INDEPENDENTE */}
-        <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 p-4"
-          style={{
-            height: '100vh',
-            overflowY: 'auto',
-            backgroundColor: '#f8f9fa'
-          }}>
-
-          {/* Título do Topo */}
-          <div className="pt-3 pb-2 mb-4">
-            <h2 className="fw-bold text-dark m-0">Dashboard</h2>
-            <p className="text-muted small m-0 mt-1">Visão geral dos seus produtos e ofertas</p>
-          </div>
-
-          {/* GRID DOS 4 CARDS DE MÉTRICAS */}
-          <div className="row g-3 mb-5">
-            {metricas.map((card) => (
-              <div className="col-12 col-sm-6 col-lg-4" key={card.id}>
-                <div className="card border-0 shadow-sm rounded-4 p-2">
-                  <div className="card-body d-flex justify-content-between align-items-start">
-                    <div>
-                      <span className="text-muted small fw-medium d-block mb-2">{card.titulo}</span>
-                      <h2 className="fw-bold text-dark m-0" style={{ fontSize: '2rem' }}>{card.valor}</h2>
-                    </div>
-                    <div className="rounded-3 d-flex align-items-center justify-content-center shadow-sm"
-                      style={{ width: '40px', height: '40px', backgroundColor: card.bgIcone, fontSize: '1.2rem' }}>
-                      {card.icone}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* SEÇÃO OFERTAS RECENTES */}
-          <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="fw-bold text-dark m-0">Ofertas Recentes</h5>
-            <span className="text-success small fw-medium" style={{ cursor: 'pointer' }}>Ver todos</span>
-          </div>
-
-          <div className="row g-3">
-            {produtosRecentes.map((produto) => (
-              <div className="col-12 col-sm-6 col-md-4 col-lg-2" key={produto.id}>
-                <div className="card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden" style={{ minHeight: '260px' }}>
-
-                  <span className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold small"
-                    style={{ backgroundColor: '#ff7a00', fontSize: '12px', zIndex: 2 }}>
-                    {produto.desconto}
-                  </span>
-
-                  <span className="position-absolute top-0 end-0 m-3 px-2 py-1 rounded-5 text-success fw-bold"
-                    style={{ backgroundColor: '#e8f5e9', fontSize: '11px', zIndex: 2 }}>
-                    {produto.status}
-                  </span>
-
-                  <div className="card-body d-flex flex-column justify-content-between p-3 pt-5">
-                    <div className="d-flex justify-content-center align-items-center flex-grow-1 my-4">
-                      <span style={{ fontSize: '4rem', opacity: 0.15 }}>📦</span>
-                    </div>
-
-                    <div className="mt-2">
-                      <span className="text-muted small d-block">{produto.categoria}</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            ))}
-          </div>
-
-        </main>
-      </div>
+  if (carregando) return (
+    <div className="d-flex justify-content-center align-items-center h-100">
+      <div className="spinner-border text-success" role="status"></div>
+      <span className="ms-3 text-muted fw-bold">A preparar o seu resumo...</span>
     </div>
+  );
+
+  if (erro) return (
+    <div className="alert alert-danger m-4 shadow-sm rounded-4">⚠️ {erro}</div>
+  );
+
+  return (
+    <>
+      <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
+        <div>
+          <h2 className="fw-bold text-dark m-0">Bem-vindo ao Deadline! 👋</h2>
+          <p className="text-muted small m-0 mt-1">Acompanhe o desempenho das suas ofertas em tempo real.</p>
+        </div>
+        <Link to="/nova-oferta" className="btn text-white fw-bold px-4 py-2 shadow-sm rounded-3" style={{ backgroundColor: 'var(--dl-primary)' }}>
+          ➕ Criar Oferta
+        </Link>
+      </div>
+
+      {/* CARDS DE ESTATÍSTICAS */}
+      <div className="row g-4 mb-4">
+        <div className="col-12 col-sm-6 col-xl-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3" style={{ borderLeft: '5px solid var(--dl-primary) !important' }}>
+            <div className="d-flex align-items-center">
+              <div className="flex-shrink-0 bg-light p-3 rounded-circle text-center" style={{ width: '60px', height: '60px' }}>
+                <span style={{ fontSize: '1.5rem' }}>📢</span>
+              </div>
+              <div className="flex-grow-1 ms-3">
+                <h6 className="text-muted mb-1 fw-bold">Ofertas Ativas</h6>
+                <h2 className="mb-0 fw-bold text-dark">{dados?.totalOfertasAtivas || 0}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-sm-6 col-xl-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3" style={{ borderLeft: '5px solid #eeab45 !important' }}>
+            <div className="d-flex align-items-center">
+              <div className="flex-shrink-0 bg-light p-3 rounded-circle text-center" style={{ width: '60px', height: '60px' }}>
+                <span style={{ fontSize: '1.5rem' }}>⏳</span>
+              </div>
+              <div className="flex-grow-1 ms-3">
+                <h6 className="text-muted mb-1 fw-bold">Vencem nos próximos 7 dias</h6>
+                <h2 className="mb-0 fw-bold text-warning">{dados?.ofertasExpirandoBrevemente || 0}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-12 col-sm-12 col-xl-4">
+          <div className="card border-0 shadow-sm rounded-4 h-100 p-3" style={{ borderLeft: '5px solid #1E3A5F !important' }}>
+            <div className="d-flex align-items-center">
+              <div className="flex-shrink-0 bg-light p-3 rounded-circle text-center" style={{ width: '60px', height: '60px' }}>
+                <span style={{ fontSize: '1.5rem' }}>📦</span>
+              </div>
+              <div className="flex-grow-1 ms-3">
+                <h6 className="text-muted mb-1 fw-bold">Produtos no Catálogo</h6>
+                <h2 className="mb-0 fw-bold text-dark">{dados?.totalProdutosAtivos || 0}</h2>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ÁREA DE ÚLTIMAS OFERTAS E DICAS */}
+      <div className="row g-4">
+        {/* TABELA DE ÚLTIMAS OFERTAS */}
+        <div className="col-12 col-lg-8">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <h5 className="fw-bold m-0 text-dark">Ofertas Adicionadas Recentemente</h5>
+              <Link to="/ofertas" className="btn btn-sm btn-outline-secondary rounded-3 fw-bold">Ver Todas</Link>
+            </div>
+            
+            {dados?.ofertasRecentes?.length === 0 ? (
+              <div className="text-center text-muted my-4">
+                <span style={{fontSize: '2rem'}}>📋</span>
+                <p className="mt-2">Ainda não criou nenhuma oferta.</p>
+              </div>
+            ) : (
+              <div className="table-responsive">
+                <table className="table table-hover align-middle mb-0">
+                  <thead className="table-light">
+                    <tr>
+                      <th className="text-muted small">Produto</th>
+                      <th className="text-muted small text-center">Desconto</th>
+                      <th className="text-muted small">Preço Final</th>
+                      <th className="text-muted small">Encerra em</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dados?.ofertasRecentes?.map((oferta) => (
+                      <tr key={oferta.id}>
+                        <td className="fw-medium text-dark">{oferta.tituloProduto}</td>
+                        <td className="text-center">
+                          <span className="badge bg-danger rounded-pill px-2 py-1">-{oferta.percentualDesconto?.toFixed(0)}%</span>
+                        </td>
+                        <td className="fw-bold text-success">{formatarMoeda(oferta.precoPromocional)}</td>
+                        <td>{formatarData(oferta.dataFimOferta)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ATALHOS RÁPIDOS */}
+        <div className="col-12 col-lg-4">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100" style={{ backgroundColor: 'var(--dl-secondary)', color: 'white' }}>
+            <h5 className="fw-bold mb-4">Ações Rápidas</h5>
+            
+            <Link to="/cadastro-produto" className="btn btn-light w-100 text-start d-flex align-items-center gap-3 mb-3 p-3 rounded-4 shadow-sm" style={{ color: 'var(--dl-secondary)' }}>
+              <span style={{fontSize: '1.5rem'}}>📦</span>
+              <span className="fw-bold">Adicionar Novo Produto</span>
+            </Link>
+            
+            <Link to="/ofertas" className="btn btn-light w-100 text-start d-flex align-items-center gap-3 mb-3 p-3 rounded-4 shadow-sm" style={{ color: 'var(--dl-secondary)' }}>
+              <span style={{fontSize: '1.5rem'}}>🔍</span>
+              <span className="fw-bold">Gerir Ofertas Ativas</span>
+            </Link>
+
+            <div className="mt-auto pt-4 border-top" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>
+              <small className="opacity-75 d-block text-center">
+                Mantenha o seu catálogo sempre atualizado para obter os melhores resultados!
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   );
 }

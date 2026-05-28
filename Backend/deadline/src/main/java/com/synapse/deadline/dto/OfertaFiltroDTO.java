@@ -1,0 +1,14 @@
+package com.synapse.deadline.dto;
+
+public class OfertaFiltroDTO {
+    private String nome;
+    private Long categoriaId;
+    private Boolean ativo;
+
+    public String getNome() { return nome; }
+    public void setNome(String nome) { this.nome = nome; }
+    public Long getCategoriaId() { return categoriaId; }
+    public void setCategoriaId(Long categoriaId) { this.categoriaId = categoriaId; }
+    public Boolean getAtivo() { return ativo; }
+    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+}
