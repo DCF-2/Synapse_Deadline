@@ -8,11 +8,11 @@
 		<version>3.4.5</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.synapse.</groupId>
+	<groupId>com.synapse</groupId>
 	<artifactId>deadline</artifactId>
-	<version>1.0.0</version> <name>Deadline Application</name>
+	<version>1.0.0</version> 
+    <name>Deadline Application</name>
     <description>Backend API for Synapse Deadline</description>
-	<description/>
 	<url/>
 	<licenses>
 		<license/>
