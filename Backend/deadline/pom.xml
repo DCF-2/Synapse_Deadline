@@ -10,8 +10,8 @@
 	</parent>
 	<groupId>com.synapse.</groupId>
 	<artifactId>deadline</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<name/>
+	<version>1.0.0</version> <name>Deadline Application</name>
+    <description>Backend API for Synapse Deadline</description>
 	<description/>
 	<url/>
 	<licenses>

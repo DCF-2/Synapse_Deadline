@@ -89,7 +89,7 @@ desktop.ini
 # Arquivos indesejados específicos do projeto
 # ==========================================
 .xml
-node_modules
+.tool-versions
 
 # ==========================================
 # Node.js
