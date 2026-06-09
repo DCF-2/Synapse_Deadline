@@ -10,12 +10,13 @@ export default function ClienteHome() {
   const [carregando, setCarregando] = useState(true);
   
   // Estados para Filtros
-  const [termoBusca, setTermoBusca] = useState(''); // O que o utilizador digita
-  const [nomeProduto, setNomeProduto] = useState(''); // O que vai para a API
+  const [termoBusca, setTermoBusca] = useState(''); 
+  const [nomeProduto, setNomeProduto] = useState(''); 
   const [categoriaId, setCategoriaId] = useState('');
   const [precoMin, setPrecoMin] = useState('');
   const [precoMax, setPrecoMax] = useState('');
   const [diasMaxValidade, setDiasMaxValidade] = useState('');
+  const [lojasEncontradas, setLojasEncontradas] = useState([]);
 
   // Estado de Ordenação
   const [ordenacao, setOrdenacao] = useState('validadeProduto,asc');
@@ -84,7 +85,6 @@ export default function ClienteHome() {
     try {
       const url = new URL(`${API_URL}/oferta/publico`);
       
-      // Aplicando filtros dinâmicos na URL
       if (nomeProduto) url.searchParams.append('nomeProduto', nomeProduto);
       if (categoriaId) url.searchParams.append('categoriaId', categoriaId);
       if (precoMin) url.searchParams.append('precoMin', precoMin);
@@ -92,13 +92,22 @@ export default function ClienteHome() {
       if (diasMaxValidade) url.searchParams.append('diasMaxValidade', diasMaxValidade);
       
       url.searchParams.append('sort', ordenacao);
-      url.searchParams.append('size', '50'); // Paginação
+      url.searchParams.append('size', '50'); 
 
       const res = await fetch(url.toString());
       if (res.ok) {
         const data = await res.json();
         setOfertas(data.content || []);
       }
+
+      // Busca Lojas pelo Nome (Se tiver 3+ caracteres)
+      if (nomeProduto && nomeProduto.length >= 3) {
+        const resLojas = await fetch(`${API_URL}/empresa/publico/buscar?nome=${nomeProduto}`);
+        if (resLojas.ok) setLojasEncontradas(await resLojas.json());
+      } else {
+        setLojasEncontradas([]);
+      }
+
     } catch (error) {
       console.error("Erro ao carregar vitrine:", error);
     } finally {
@@ -212,6 +221,40 @@ export default function ClienteHome() {
 
           {/* ÁREA DE PRODUTOS */}
           <div className="col-lg-9">
+
+            {/* CARDS DE LOJAS ENCONTRADAS (Estilo Mercado Livre) */}
+            {lojasEncontradas.length > 0 && (
+              <div className="mb-4">
+                {lojasEncontradas.map(loja => (
+                  <div key={loja.id} className="bg-white rounded-4 shadow-sm p-4 mb-3 border border-light d-flex flex-column flex-md-row align-items-center justify-content-between gap-3" style={{ borderLeft: '4px solid #0d6efd !important' }}>
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '70px', height: '70px' }}>
+                        {loja.logotipo ? (
+                          <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                        ) : ( <span className="fw-bold text-success fs-3">🏢</span> )}
+                      </div>
+                      <div>
+                        <span className="text-muted fw-medium d-block mb-1" style={{fontSize: '0.9rem'}}>Você quer ir para a loja da {loja.nomeFantasia}?</span>
+                        <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-1">
+                          {loja.nomeFantasia} 
+                          <span className="text-primary d-flex align-items-center justify-content-center" style={{fontSize: '0.8rem', width: '16px', height: '16px', backgroundColor: '#e7f1ff', borderRadius: '50%'}}>✓</span>
+                        </h5>
+                      </div>
+                    </div>
+                    
+                    <div className="d-flex align-items-center gap-3 w-100 w-md-auto mt-3 mt-md-0">
+                       <div className="d-none d-md-block text-end me-3 border-end pe-4">
+                          <small className="text-muted d-block fw-bold">Loja Oficial Parceira</small>
+                          <span className="fw-bold text-success small">Ofertas Ativas na Plataforma</span>
+                       </div>
+                       <Link to={`/loja/${loja.id}`} className="btn text-white fw-bold px-4 py-2 rounded-3 w-100 w-md-auto shadow-sm" style={{ backgroundColor: '#0d6efd' }}>
+                         Ir para a loja
+                       </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
             
             {/* BARRA DE ORDENAÇÃO */}
             <div className="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 bg-white p-3 rounded-4 shadow-sm">

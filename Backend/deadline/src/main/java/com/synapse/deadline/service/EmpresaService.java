@@ -260,4 +260,18 @@ public class EmpresaService {
         
         return dto;
     }
+
+    @Transactional(readOnly = true)
+    public List<com.synapse.deadline.dto.EmpresaResumoDTO> buscarLojasPorNome(String nome) {
+        if (nome == null || nome.trim().length() < 3) return java.util.List.of();
+        
+        return repository.findTop3ByNomeFantasiaContainingIgnoreCase(nome)
+                .stream().map(emp -> {
+                    com.synapse.deadline.dto.EmpresaResumoDTO dto = new com.synapse.deadline.dto.EmpresaResumoDTO();
+                    dto.setId(emp.getId());
+                    dto.setNomeFantasia(emp.getNomeFantasia());
+                    dto.setLogotipo(emp.getLogotipo());
+                    return dto;
+                }).toList();
+    }
 }

@@ -52,8 +52,15 @@ public class EmpresaController {
         return ResponseEntity.ok(service.listarRamosPublicos());
     }
 
+    /* Obter perfil de empresa público */
     @GetMapping("/publico/{id}")
     public ResponseEntity<com.synapse.deadline.dto.EmpresaPerfilDTO> obterPerfilPublico(@PathVariable Long id) {
         return ResponseEntity.ok(service.obterPerfilPublico(id)); 
+    }
+
+    /* Buscar lojas por nome */
+    @GetMapping("/publico/buscar")
+    public ResponseEntity<List<com.synapse.deadline.dto.EmpresaResumoDTO>> buscarLojas(@RequestParam String nome) {
+        return ResponseEntity.ok(service.buscarLojasPorNome(nome));
     }
 }
