@@ -38,11 +38,22 @@ public class DashboardService {
         // 1. Contagens
         dashboard.setTotalProdutosAtivos(produtoRepository.countByEmpresaIdAndAtivoTrue(idEmpresa));
         dashboard.setTotalOfertasAtivas(ofertaRepository.countByProdutoEmpresaIdAndAtivoTrue(idEmpresa));
+        dashboard.setEngajamentosTotais(ofertaRepository.sumCliquesContatoByEmpresaId(idEmpresa));
         
         // Ofertas que acabam nos próximos 7 dias
         dashboard.setOfertasExpirandoBrevemente(
                 ofertaRepository.countByProdutoEmpresaIdAndAtivoTrueAndDataFimOfertaBetween(idEmpresa, hoje, hoje.plusDays(7))
         );
+
+        // Gráfico de Barras: Top 5 Ofertas com mais cliques no WhatsApp/Email
+        List<OfertaResponseDTO> topEngajadas = ofertaRepository.findTop5ByProdutoEmpresaIdOrderByCliquesContatoDesc(idEmpresa)
+                .stream().map(oferta -> {
+                    OfertaResponseDTO dto = new OfertaResponseDTO();
+                    dto.setTituloProduto(oferta.getProduto().getTituloProduto());
+                    dto.setCliquesContato(oferta.getCliquesContato() != null ? oferta.getCliquesContato() : 0);
+                    return dto;
+                }).toList();
+        dashboard.setTopOfertasEngajamento(topEngajadas);
 
         // 2. Últimas 5 ofertas criadas
         List<OfertaResponseDTO> recentes = ofertaRepository.findByProdutoEmpresaId(

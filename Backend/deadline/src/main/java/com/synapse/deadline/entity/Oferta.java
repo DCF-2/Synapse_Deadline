@@ -55,6 +55,12 @@ public class Oferta {
     @Column(nullable = false)
     private Boolean ativo = true;
 
+    /**
+     * Número de cliques registrados no botão de contato da oferta.
+     */
+    @Column(name = "cliques_contato", nullable = false, columnDefinition = "integer default 0")
+    private Integer cliquesContato = 0;
+
     // --- CONSTRUTORES ---
     public Oferta() {
     }
@@ -80,4 +86,7 @@ public class Oferta {
 
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+
+    public Integer getCliquesContato() { return cliquesContato; }
+    public void setCliquesContato(Integer cliquesContato) { this.cliquesContato = cliquesContato; }
 }

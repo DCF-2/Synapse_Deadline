@@ -50,5 +50,10 @@ public class EmpresaController {
    @GetMapping("/ramo/publico")
     public ResponseEntity<List<RamoEmpresa>> listarRamosPublicos() {
         return ResponseEntity.ok(service.listarRamosPublicos());
-}
+    }
+
+    @GetMapping("/publico/{id}")
+    public ResponseEntity<com.synapse.deadline.dto.EmpresaPerfilDTO> obterPerfilPublico(@PathVariable Long id) {
+        return ResponseEntity.ok(service.obterPerfilPublico(id)); 
+    }
 }

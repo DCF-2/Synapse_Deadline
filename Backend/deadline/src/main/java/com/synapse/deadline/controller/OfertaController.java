@@ -12,7 +12,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/oferta")
@@ -68,5 +67,11 @@ public class OfertaController {
     @GetMapping("/publico/{id}")
     public ResponseEntity<com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO> detalhesPublicos(@PathVariable Long id) {
         return ResponseEntity.ok(ofertaService.buscarDetalhesPublicos(id));
+    }
+
+    @PostMapping("/publico/{id}/engajamento")
+    public ResponseEntity<Void> registrarEngajamento(@PathVariable Long id) {
+        ofertaService.registrarCliqueContato(id);
+        return ResponseEntity.noContent().build();
     }
 }

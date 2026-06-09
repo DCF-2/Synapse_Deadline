@@ -15,6 +15,9 @@ public class OfertaConsumidorDetalhesDTO {
     private LocalDate dataFimOferta;
     
     // Dados da Empresa para o Cliente saber onde buscar
+    private Long empresaId;
+    private String contatoWhatsapp;
+    private String emailContato;
     private String nomeFantasiaEmpresa;
     private String logotipoEmpresa;
     private String instrucoesRetirada;
@@ -50,4 +53,10 @@ public class OfertaConsumidorDetalhesDTO {
     public void setEnderecoEmpresa(EnderecoDTO enderecoEmpresa) { this.enderecoEmpresa = enderecoEmpresa; }
     public String getHorarioFuncionamento() { return horarioFuncionamento; }
     public void setHorarioFuncionamento(String horarioFuncionamento) { this.horarioFuncionamento = horarioFuncionamento; }
+    public Long getEmpresaId() {return empresaId;}
+    public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
+    public String getContatoWhatsapp() {return contatoWhatsapp;}
+    public void setContatoWhatsapp(String contatoWhatsapp) {this.contatoWhatsapp = contatoWhatsapp;}
+    public String getEmailContato() {return emailContato;}
+    public void setEmailContato(String emailContato) {this.emailContato = emailContato;}
 }

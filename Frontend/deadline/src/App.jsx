@@ -11,6 +11,7 @@ import ProdutoDetalhes from './pages/ProdutoDetalhes';
 import EditarOferta from './pages/EditarOferta'; 
 import Layout from './components/Layout';
 import ConfiguracoesPage from "./pages/Configuracoes";
+import LojaPerfil from './pages/LojaPerfil';
 
 export default function App() {
   return (
@@ -20,6 +21,9 @@ export default function App() {
       <Route path="/auth" element={<AuthPage />} />
       <Route path="/login" element={<Navigate to="/auth" replace />} />
       <Route path="/cadastro" element={<Navigate to="/auth" replace />} />
+
+      {/* Rota de perfil da loja (pública) */}
+      <Route path="/loja/:id" element={<LojaPerfil />} />
 
       {/* ROTAS ADMINISTRATIVAS  */}
       <Route element={<Layout />}>

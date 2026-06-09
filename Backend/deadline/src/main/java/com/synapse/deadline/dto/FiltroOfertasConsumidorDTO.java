@@ -3,6 +3,7 @@ package com.synapse.deadline.dto;
 import java.math.BigDecimal;
 
 public class FiltroOfertasConsumidorDTO {
+    private Long empresaId;
     private String nomeProduto;
     private Long categoriaId;
     private BigDecimal precoMin;
@@ -20,4 +21,6 @@ public class FiltroOfertasConsumidorDTO {
     public void setPrecoMax(BigDecimal precoMax) { this.precoMax = precoMax; }
     public Integer getDiasMaxValidade() { return diasMaxValidade; }
     public void setDiasMaxValidade(Integer diasMaxValidade) { this.diasMaxValidade = diasMaxValidade; }
+    public Long getEmpresaId() {return empresaId;}
+    public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
 }
