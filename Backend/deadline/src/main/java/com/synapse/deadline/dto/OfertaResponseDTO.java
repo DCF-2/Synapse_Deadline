@@ -16,6 +16,8 @@ public class OfertaResponseDTO {
     private LocalDate validadeProduto;
     private LocalDate dataFimOferta;
     private Boolean ativo;
+    private Integer cliquesContato;
+ 
 
     public Long getId() {
         return id;
@@ -104,4 +106,8 @@ public class OfertaResponseDTO {
     public void setAtivo(Boolean ativo) {
         this.ativo = ativo;
     }
+
+    public Integer getCliquesContato() { return cliquesContato; }
+    public void setCliquesContato(Integer cliquesContato) { this.cliquesContato = cliquesContato; }
+
 }

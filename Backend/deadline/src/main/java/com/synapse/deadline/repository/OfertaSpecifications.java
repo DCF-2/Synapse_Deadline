@@ -30,28 +30,35 @@ public class OfertaSpecifications {
                 if (filtro.getAtivo() != null) {
                     predicates.add(cb.equal(root.get("ativo"), filtro.getAtivo()));
                 }
+                // Filtro por nome da empresa (caso queira filtrar por ofertas de uma empresa específica, além da empresa logada)
+                if (filtro.getEmpresaId() != null) {
+                    predicates.add(cb.equal(root.get("produto").get("empresa").get("id"), filtro.getEmpresaId()));
+                }
             }
             
             return cb.and(predicates.toArray(new Predicate[0]));
         };
     }
 
-    public static Specification<Oferta> filtroVitrinePublica(com.synapse.deadline.dto.FiltroOfertasConsumidorDTO filtro) {
+   public static Specification<Oferta> filtroVitrinePublica(com.synapse.deadline.dto.FiltroOfertasConsumidorDTO filtro) {
         return (root, query, cb) -> {
             List<Predicate> predicates = new java.util.ArrayList<>();
+            
+            // Usando JOIN por segurança para evitar erros 500 no Hibernate
+            jakarta.persistence.criteria.Join<Object, Object> produtoJoin = root.join("produto");
 
-            // 1. REGRAS DE SEGURANÇA E VALIDADE (Obrigatórias para o consumidor)
-            predicates.add(cb.isTrue(root.get("ativo"))); // Oferta ativa
-            predicates.add(cb.isTrue(root.get("produto").get("ativo"))); // Produto ativo
-            predicates.add(cb.greaterThanOrEqualTo(root.get("dataFimOferta"), java.time.LocalDate.now())); // Não expirada
+            // 1. REGRAS OBRIGATÓRIAS
+            predicates.add(cb.isTrue(root.get("ativo")));
+            predicates.add(cb.isTrue(produtoJoin.get("ativo"))); 
+            predicates.add(cb.greaterThanOrEqualTo(root.get("dataFimOferta"), java.time.LocalDate.now()));
 
-            // 2. Filtros dinâmicos do consumidor
+            // 2. FILTROS DINÂMICOS
             if (filtro != null) {
                 if (filtro.getNomeProduto() != null && !filtro.getNomeProduto().isBlank()) {
-                    predicates.add(cb.like(cb.lower(root.get("produto").get("tituloProduto")), "%" + filtro.getNomeProduto().toLowerCase() + "%"));
+                    predicates.add(cb.like(cb.lower(produtoJoin.get("tituloProduto")), "%" + filtro.getNomeProduto().toLowerCase() + "%"));
                 }
                 if (filtro.getCategoriaId() != null) {
-                    predicates.add(cb.equal(root.get("produto").get("categoria").get("id"), filtro.getCategoriaId()));
+                    predicates.add(cb.equal(produtoJoin.get("categoria").get("id"), filtro.getCategoriaId()));
                 }
                 if (filtro.getPrecoMin() != null) {
                     predicates.add(cb.greaterThanOrEqualTo(root.get("precoPromocional"), filtro.getPrecoMin()));
@@ -62,6 +69,9 @@ public class OfertaSpecifications {
                 if (filtro.getDiasMaxValidade() != null) {
                     java.time.LocalDate dataMax = java.time.LocalDate.now().plusDays(filtro.getDiasMaxValidade());
                     predicates.add(cb.lessThanOrEqualTo(root.get("validadeProduto"), dataMax));
+                }
+                if (filtro.getEmpresaId() != null) {
+                    predicates.add(cb.equal(produtoJoin.get("empresa").get("id"), filtro.getEmpresaId()));
                 }
             }
             return cb.and(predicates.toArray(new Predicate[0]));

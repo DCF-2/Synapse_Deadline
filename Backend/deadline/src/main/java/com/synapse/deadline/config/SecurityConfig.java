@@ -49,7 +49,9 @@ public class SecurityConfig {
                 // --- ENDPOINTS PÚBLICOS DO CONSUMIDOR ---
                 // O asterisco duplo (/**) garante que /oferta/publico/1 (detalhes) também fica aberto
                 .requestMatchers(HttpMethod.GET, "/oferta/publico/**").permitAll() 
+                .requestMatchers(HttpMethod.POST, "/oferta/publico/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/empresa/ramo/publico").permitAll()
+                .requestMatchers(HttpMethod.GET, "/empresa/publico/**").permitAll()
                 
                 // Permite que o frontend busque a lista de categorias sem token!
                 .requestMatchers(HttpMethod.GET, "/categoria").permitAll() 

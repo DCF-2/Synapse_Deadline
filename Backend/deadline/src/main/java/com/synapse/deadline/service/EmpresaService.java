@@ -12,14 +12,8 @@ import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.RamoEmpresaRepository;
-
-import java.util.List;
-import java.util.UUID;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import com.synapse.deadline.repository.RamoEmpresaRepository;
+import java.util.List;
 
 
 @Service
@@ -222,5 +216,62 @@ public class EmpresaService {
     /* Listar ramos de empresa públicos */
     public List<RamoEmpresa> listarRamosPublicos() {
         return ramoRepository.findByAtivoTrue();
+    }
+
+    @Transactional(readOnly = true)
+    public com.synapse.deadline.dto.EmpresaPerfilDTO obterPerfilPublico(Long idEmpresa) {
+        
+        Empresa empresa = repository.findById(idEmpresa)
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Loja não encontrada."));
+
+        com.synapse.deadline.dto.EmpresaPerfilDTO dto = new com.synapse.deadline.dto.EmpresaPerfilDTO();
+        
+        // 1. Dados Públicos (Visíveis para o Consumidor)
+        dto.setNomeFantasia(empresa.getNomeFantasia());
+        dto.setLogotipo(empresa.getLogotipo());
+        dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
+        dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
+        dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
+        
+        // 2. Omitir DADOS SENSÍVEIS (Segurança / Anti-vazamento)
+        dto.setRazaoSocial(null);
+        dto.setCnpj(null);
+        dto.setEmailLogin(null);
+        dto.setIdRamo(null); // O consumidor não precisa de saber o ID interno do ramo
+        
+        // Contatos extra públicos
+        dto.setContato1(empresa.getContato1());
+        dto.setContato2(empresa.getContato2());
+        dto.setEmailContato(empresa.getEmailContato());
+
+        // 3. Endereço Público
+        com.synapse.deadline.dto.EnderecoDTO endDto = new com.synapse.deadline.dto.EnderecoDTO();
+        if (empresa.getEndereco() != null) {
+            endDto.setLogradouro(empresa.getEndereco().getLogradouro());
+            endDto.setNumero(empresa.getEndereco().getNumero());
+            endDto.setComplemento(empresa.getEndereco().getComplemento());
+            endDto.setBairro(empresa.getEndereco().getBairro());
+            endDto.setCidade(empresa.getEndereco().getCidade());
+            endDto.setUf(empresa.getEndereco().getUf());
+            // Cep opcional omitir se não for necessário para segurança, mas geralmente é público.
+            endDto.setCep(empresa.getEndereco().getCep()); 
+        }
+        dto.setEndereco(endDto);
+        
+        return dto;
+    }
+
+    @Transactional(readOnly = true)
+    public List<com.synapse.deadline.dto.EmpresaResumoDTO> buscarLojasPorNome(String nome) {
+        if (nome == null || nome.trim().length() < 3) return java.util.List.of();
+        
+        return repository.findTop3ByNomeFantasiaContainingIgnoreCase(nome)
+                .stream().map(emp -> {
+                    com.synapse.deadline.dto.EmpresaResumoDTO dto = new com.synapse.deadline.dto.EmpresaResumoDTO();
+                    dto.setId(emp.getId());
+                    dto.setNomeFantasia(emp.getNomeFantasia());
+                    dto.setLogotipo(emp.getLogotipo());
+                    return dto;
+                }).toList();
     }
 }

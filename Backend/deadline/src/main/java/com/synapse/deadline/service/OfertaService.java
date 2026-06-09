@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+
 
 @Service
 public class OfertaService {
@@ -58,7 +58,14 @@ public class OfertaService {
         dto.setId(oferta.getId());
         dto.setProdutoId(oferta.getProduto().getId());
         dto.setTituloProduto(oferta.getProduto().getTituloProduto());
-        dto.setNomeCategoria(oferta.getProduto().getCategoria().getNome());
+        
+        // PROTEÇÃO CONTRA ERRO 500 (NullPointerException)
+        if (oferta.getProduto().getCategoria() != null) {
+            dto.setNomeCategoria(oferta.getProduto().getCategoria().getNome());
+        } else {
+            dto.setNomeCategoria("Sem Categoria");
+        }
+        
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setFoto(oferta.getProduto().getFoto());
         dto.setPrecoPromocional(oferta.getPrecoPromocional());
@@ -167,6 +174,13 @@ public class OfertaService {
                 .map(this::converterParaResponseDTO);
     }
 
+    @Transactional
+    public void registrarCliqueContato(Long idOferta) {
+        Oferta oferta = ofertaRepository.findById(idOferta).orElseThrow();
+        oferta.setCliquesContato(oferta.getCliquesContato() + 1);
+        ofertaRepository.save(oferta);
+    }
+
     @Transactional(readOnly = true)
     public com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO buscarDetalhesPublicos(Long id) {
         // [RF04] Detalhes ricos da oferta
@@ -194,6 +208,9 @@ public class OfertaService {
         dto.setLogotipoEmpresa(empresa.getLogotipo());
         dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
         dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
+        dto.setEmpresaId(empresa.getId());
+        dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
+        dto.setEmailContato(empresa.getEmailContato());
 
         if (empresa.getEndereco() != null) {
             com.synapse.deadline.dto.EnderecoDTO endDto = new com.synapse.deadline.dto.EnderecoDTO();

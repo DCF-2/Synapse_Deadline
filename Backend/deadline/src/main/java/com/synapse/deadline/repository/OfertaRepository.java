@@ -30,4 +30,11 @@ public interface OfertaRepository extends JpaRepository<Oferta, Long>, JpaSpecif
     long countByProdutoEmpresaIdAndAtivoTrue(Long empresaId);
 
     long countByProdutoEmpresaIdAndAtivoTrueAndDataFimOfertaBetween(Long empresaId, java.time.LocalDate inicio, java.time.LocalDate fim);
+
+    // método para o Dashboard somar os cliques:
+    @Query("SELECT COALESCE(SUM(o.cliquesContato), 0) FROM Oferta o WHERE o.produto.empresa.id = :empresaId")
+    Long sumCliquesContatoByEmpresaId(Long empresaId);
+
+    // Método para o Dashboard listar as 5 ofertas mais clicadas:
+    List<Oferta> findTop5ByProdutoEmpresaIdOrderByCliquesContatoDesc(Long empresaId);
 }
