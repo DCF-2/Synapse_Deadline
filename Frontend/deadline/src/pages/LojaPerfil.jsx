@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../styles/theme.css';
+import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -9,10 +10,17 @@ export default function LojaPerfil() {
   const [loja, setLoja] = useState(null);
   const [ofertas, setOfertas] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [localizacao, setLocalizacao] = useState(null);
 
   // Estados do Modal de Detalhes
   const [detalhesOferta, setDetalhesOferta] = useState(null);
   const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
+
+  useEffect(() => {
+    obterLocalizacaoConsumidor()
+      .then(setLocalizacao)
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const carregarLoja = async () => {
@@ -20,7 +28,16 @@ export default function LojaPerfil() {
         const resLoja = await fetch(`${API_URL}/empresa/publico/${id}`);
         if (resLoja.ok) setLoja(await resLoja.json());
 
-        const resOfertas = await fetch(`${API_URL}/oferta/publico?empresaId=${id}&size=50&sort=id,desc`);
+        const url = new URL(`${API_URL}/oferta/publico`);
+        url.searchParams.append('empresaId', id);
+        url.searchParams.append('size', '50');
+        url.searchParams.append('sort', 'id,desc');
+        if (localizacao) {
+          url.searchParams.append('latitude', localizacao.latitude);
+          url.searchParams.append('longitude', localizacao.longitude);
+        }
+
+        const resOfertas = await fetch(url.toString());
         if (resOfertas.ok) {
            const data = await resOfertas.json();
            setOfertas(data.content || []);
@@ -32,7 +49,7 @@ export default function LojaPerfil() {
       }
     };
     carregarLoja();
-  }, [id]);
+  }, [id, localizacao]);
 
   const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
@@ -40,7 +57,12 @@ export default function LojaPerfil() {
   const abrirDetalhes = async (ofertaId) => {
     setCarregandoDetalhes(true);
     try {
-      const res = await fetch(`${API_URL}/oferta/publico/${ofertaId}`);
+      const url = new URL(`${API_URL}/oferta/publico/${ofertaId}`);
+      if (localizacao) {
+        url.searchParams.append('latitude', localizacao.latitude);
+        url.searchParams.append('longitude', localizacao.longitude);
+      }
+      const res = await fetch(url.toString());
       if (res.ok) setDetalhesOferta(await res.json());
     } catch (error) {
       console.error(error);
@@ -130,6 +152,9 @@ export default function LojaPerfil() {
                  <h1 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h1>
                  <div className="d-flex flex-wrap gap-4 mt-2 text-muted small">
                     <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    {ofertas[0]?.distanciaKm != null && (
+                      <span className="fw-bold text-primary">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
+                    )}
                     <span>🕒 {loja.horarioFuncionamento}</span>
                  </div>
                </div>
@@ -177,7 +202,14 @@ export default function LojaPerfil() {
                       ) : ( <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span> )}
                     </div>
                     <div className="card-body d-flex flex-column p-4 bg-white">
-                      <span className="text-success small fw-bold mb-1 text-uppercase">{oferta.nomeCategoria}</span>
+                      <div className="d-flex justify-content-between align-items-start mb-1">
+                        <span className="text-success small fw-bold text-uppercase">{oferta.nomeCategoria}</span>
+                        {oferta.distanciaKm != null && (
+                          <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill" style={{ fontSize: '0.7rem' }}>
+                            📍 {formatarDistancia(oferta.distanciaKm)}
+                          </span>
+                        )}
+                      </div>
                       <h6 className="fw-bold text-dark mb-3 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
                       <div className="mb-3">
                         <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
@@ -289,6 +321,11 @@ export default function LojaPerfil() {
                     </div>
                     <div className="mt-auto border-top pt-4">
                       <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2">📍</span> Informações de Retirada</h6>
+                      {detalhesOferta.distanciaKm != null && (
+                        <p className="small fw-bold text-primary mb-2">
+                          Distância de você: {formatarDistancia(detalhesOferta.distanciaKm)}
+                        </p>
+                      )}
                       <p className="small text-muted mb-2"><strong>Horário: </strong> {detalhesOferta.horarioFuncionamento}</p>
                       <div className="alert alert-warning small py-2 mb-0 d-flex align-items-start gap-2 border">
                         <span className="mt-1">📋</span>
