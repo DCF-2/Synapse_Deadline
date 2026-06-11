@@ -5,6 +5,7 @@ public class OfertaFiltroDTO {
     private String nome;
     private Long categoriaId;
     private Boolean ativo;
+    private String codBarrasEan;
 
     public String getNome() { return nome; }
     public void setNome(String nome) { this.nome = nome; }
@@ -14,4 +15,6 @@ public class OfertaFiltroDTO {
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
         public Long getEmpresaId() {return empresaId;}
     public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
+    public String getCodBarrasEan() {return codBarrasEan;}
+    public void setCodBarrasEan(String codBarrasEan) {this.codBarrasEan = codBarrasEan;}
 }

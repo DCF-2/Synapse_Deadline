@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 public class FiltroOfertasConsumidorDTO {
     private Long empresaId;
     private String nomeProduto;
+    private String codBarrasEan;
     private Long categoriaId;
     private BigDecimal precoMin;
     private BigDecimal precoMax;
@@ -23,4 +24,6 @@ public class FiltroOfertasConsumidorDTO {
     public void setDiasMaxValidade(Integer diasMaxValidade) { this.diasMaxValidade = diasMaxValidade; }
     public Long getEmpresaId() {return empresaId;}
     public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
+    public String getCodBarrasEan() {return codBarrasEan;}
+    public void setCodBarrasEan(String codBarrasEan) {this.codBarrasEan = codBarrasEan;}
 }
