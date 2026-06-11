@@ -15,14 +15,15 @@ export default function OfertasPage() {
   const [buscaInput, setBuscaInput] = useState('');
   const [buscaAtiva, setBuscaAtiva] = useState('');
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
-  const [statusSelecionado, setStatusSelecionado] = useState(''); // Novo filtro!
+  const [statusSelecionado, setStatusSelecionado] = useState(''); 
   const [ordenacao, setOrdenacao] = useState('id,desc'); 
 
   // Estados para os Modals
-  const [ofertaSelecionada, setOfertaSelecionada] = useState(null); // Para o modal de Visualização
-  const [showConfirm, setShowConfirm] = useState(null); // Modal de confirmação ({ id, tipoAcao, ativoAtual })
+  const [ofertaSelecionada, setOfertaSelecionada] = useState(null); 
+  const [showConfirm, setShowConfirm] = useState(null); 
   const [processandoAcao, setProcessandoAcao] = useState(false);
 
+  // Ref para controlar o debounce (igual ao ProdutosPage)
   const debounceTimer = useRef(null);
 
   // Carregar as categorias reais
@@ -41,38 +42,49 @@ export default function OfertasPage() {
     fetchCategorias();
   }, []);
 
-  // Lógica de Busca Assíncrona
-  // Lógica de Busca Assíncrona (Debounce com regra de 3 caracteres)
+  // ==========================================
+  // LÓGICA 1: BUSCA ASSÍNCRONA (A PARTIR DE 3 CARACTERES - Igual ao ProdutosPage)
+  // ==========================================
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
     
     debounceTimer.current = setTimeout(() => {
-      const termo = buscaInput.trim();
-      // Dispara a busca apenas se tiver 3+ caracteres ou se estiver vazio (para limpar)
-      if (termo.length >= 3 || termo.length === 0) {
-        setBuscaAtiva(termo);
+      const inputLimpo = buscaInput.trim();
+      if (inputLimpo.length >= 3 || inputLimpo === '') {
+        setBuscaAtiva(inputLimpo);
       }
-    }, 600); // Aguarda 600ms após o último toque na tecla
+    }, 600); 
     
     return () => clearTimeout(debounceTimer.current);
   }, [buscaInput]);
   
-  // Função central de carregamento de ofertas
-  const carregarOfertas = async () => {
+  // ==========================================
+  // FUNÇÃO CENTRAL COM PARÂMETROS EXPLÍCITOS (Igual ao ProdutosPage)
+  // ==========================================
+  const carregarOfertas = async (nomeBusca, categoria, status, ord) => {
     try {
       setCarregando(true);
       setErro(null);
       const token = localStorage.getItem('deadline_token');
-      if (!token) { handleLogout(); return; }
+      if (!token) { handleLogout(); return; } // Certifique-se de que a função handleLogout existe ou ajuste conforme seu app
 
       const url = new URL(`${API_URL}/oferta/empresa`);
       
-      if (buscaAtiva) url.searchParams.append('nome', buscaAtiva);
-      if (categoriaSelecionada) url.searchParams.append('categoriaId', categoriaSelecionada);
-      if (statusSelecionado !== '') url.searchParams.append('ativo', statusSelecionado);
-      if (ordenacao) url.searchParams.append('sort', ordenacao);
+      // Lógica invisível que detecta se é código de barras ou nome
+      if (nomeBusca) {
+        const isCodigoBarras = /^\d+$/.test(nomeBusca);
+        if (isCodigoBarras) {
+          url.searchParams.append('codBarrasEan', nomeBusca);
+        } else {
+          url.searchParams.append('nome', nomeBusca);
+        }
+      }
+
+      if (categoria) url.searchParams.append('categoriaId', categoria);
+      if (status !== undefined && status !== null && status !== '') url.searchParams.append('ativo', status);
+      if (ord) url.searchParams.append('sort', ord);
       
-      url.searchParams.append('size', '50'); // Exemplo com 50 itens na página
+      url.searchParams.append('size', '50');
 
       const res = await fetch(url.toString(), {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -90,18 +102,29 @@ export default function OfertasPage() {
     }
   };
 
+  // Dispara a busca sempre que os filtros reais mudarem
   useEffect(() => {
-    carregarOfertas();
+    carregarOfertas(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
   }, [buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao]);
 
+  // ==========================================
+  // LÓGICA 2: BUSCA MANUAL PELO BOTÃO (Igual ao ProdutosPage)
+  // ==========================================
   const handleBuscar = (e) => {
     e.preventDefault();
-    setBuscaAtiva(buscaInput.trim());
+    const inputLimpo = buscaInput.trim();
+    if (inputLimpo.length > 0 && inputLimpo.length < 3) {
+       setErro('Digite pelo menos 3 caracteres para buscar.');
+       return;
+    }
+    setErro(null);
+    setBuscaAtiva(inputLimpo);
   };
 
   const limparBusca = () => {
     setBuscaInput('');
     setBuscaAtiva('');
+    setErro(null);
   };
 
   // ---- AÇÕES DO MODAL (INATIVAR / REMOVER) ----
@@ -130,10 +153,10 @@ export default function OfertasPage() {
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
       if (!res.ok) throw new Error('Erro ao processar a requisição.');
 
-      // Atualiza os dados no ecrã
       setShowConfirm(null);
       setOfertaSelecionada(null);
-      carregarOfertas();
+      // Recarrega usando os estados atuais para não perder o filtro ativo
+      carregarOfertas(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
 
     } catch (error) {
       alert("Erro: " + error.message);
@@ -170,7 +193,7 @@ export default function OfertasPage() {
           <form onSubmit={handleBuscar} className="d-flex gap-2 align-items-center">
             <input 
               type="text" className="form-control form-control-sm bg-light border-0" 
-              placeholder="Buscar pelo nome..." 
+              placeholder="Buscar pelo nome ou EAN..." 
               value={buscaInput} onChange={(e) => setBuscaInput(e.target.value)}
             />
             <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#23a889' }}>🔍</button>
@@ -363,4 +386,5 @@ export default function OfertasPage() {
         </div>
       )}
     </>
-  )};
+  );
+}

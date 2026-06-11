@@ -1,11 +1,14 @@
 package com.synapse.deadline.repository;
 
-import com.synapse.deadline.dto.OfertaFiltroDTO;
-import com.synapse.deadline.entity.Oferta;
-import org.springframework.data.jpa.domain.Specification;
-import jakarta.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.springframework.data.jpa.domain.Specification;
+
+import com.synapse.deadline.dto.OfertaFiltroDTO;
+import com.synapse.deadline.entity.Oferta;
+
+import jakarta.persistence.criteria.Predicate;
 
 public class OfertaSpecifications {
 
@@ -22,6 +25,12 @@ public class OfertaSpecifications {
                     predicates.add(cb.like(cb.lower(root.get("produto").get("tituloProduto")), 
                             "%" + filtro.getNome().toLowerCase() + "%"));
                 }
+                
+                // Filtro por código de barras (EAN)
+                if (filtro.getCodBarrasEan() != null && !filtro.getCodBarrasEan().trim().isEmpty()) {
+                    predicates.add(cb.equal(root.get("produto").get("codBarrasEan"), filtro.getCodBarrasEan().trim()));
+                }
+
                 // Filtro por categoria
                 if (filtro.getCategoriaId() != null) {
                     predicates.add(cb.equal(root.get("produto").get("categoria").get("id"), filtro.getCategoriaId()));
@@ -57,6 +66,11 @@ public class OfertaSpecifications {
                 if (filtro.getNomeProduto() != null && !filtro.getNomeProduto().isBlank()) {
                     predicates.add(cb.like(cb.lower(produtoJoin.get("tituloProduto")), "%" + filtro.getNomeProduto().toLowerCase() + "%"));
                 }
+
+                if (filtro.getCodBarrasEan() != null && !filtro.getCodBarrasEan().isBlank()) {
+                    predicates.add(cb.equal(produtoJoin.get("codBarrasEan"), filtro.getCodBarrasEan().trim()));
+                }
+
                 if (filtro.getCategoriaId() != null) {
                     predicates.add(cb.equal(produtoJoin.get("categoria").get("id"), filtro.getCategoriaId()));
                 }
