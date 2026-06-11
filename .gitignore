@@ -99,3 +99,4 @@ npm-debug.log
 yarn-error.log
 dist/
 .next
+.nvmrc
