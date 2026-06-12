@@ -10,6 +10,9 @@ public class FiltroOfertasConsumidorDTO {
     private BigDecimal precoMin;
     private BigDecimal precoMax;
     private Integer diasMaxValidade; // Para filtrar "Vence em até X dias"
+    private Double latitude;
+    private Double longitude;
+    private Double distanciaMaxKm;
 
     // Getters e Setters
     public String getNomeProduto() { return nomeProduto; }
@@ -26,4 +29,10 @@ public class FiltroOfertasConsumidorDTO {
     public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
     public String getCodBarrasEan() {return codBarrasEan;}
     public void setCodBarrasEan(String codBarrasEan) {this.codBarrasEan = codBarrasEan;}
+    public Double getLatitude() { return latitude; }
+    public void setLatitude(Double latitude) { this.latitude = latitude; }
+    public Double getLongitude() { return longitude; }
+    public void setLongitude(Double longitude) { this.longitude = longitude; }
+    public Double getDistanciaMaxKm() { return distanciaMaxKm; }
+    public void setDistanciaMaxKm(Double distanciaMaxKm) { this.distanciaMaxKm = distanciaMaxKm; }
 }

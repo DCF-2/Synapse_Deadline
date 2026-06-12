@@ -9,12 +9,19 @@ import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.OfertaSpecifications;
 import com.synapse.deadline.repository.ProdutoRepository;
+import com.synapse.deadline.util.GeoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
 
 
 
@@ -54,18 +61,24 @@ public class OfertaService {
     }
 
     private OfertaResponseDTO converterParaResponseDTO(Oferta oferta) {
+        return converterParaResponseDTO(oferta, null, null);
+    }
+
+    private OfertaResponseDTO converterParaResponseDTO(Oferta oferta, Double latConsumidor, Double lngConsumidor) {
         OfertaResponseDTO dto = new OfertaResponseDTO();
         dto.setId(oferta.getId());
         dto.setProdutoId(oferta.getProduto().getId());
         dto.setTituloProduto(oferta.getProduto().getTituloProduto());
-        
-        // PROTEÇÃO CONTRA ERRO 500 (NullPointerException)
+
         if (oferta.getProduto().getCategoria() != null) {
             dto.setNomeCategoria(oferta.getProduto().getCategoria().getNome());
         } else {
             dto.setNomeCategoria("Sem Categoria");
         }
-        
+
+        Empresa empresa = oferta.getProduto().getEmpresa();
+        dto.setNomeFantasiaEmpresa(empresa.getNomeFantasia());
+
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setFoto(oferta.getProduto().getFoto());
         dto.setPrecoPromocional(oferta.getPrecoPromocional());
@@ -73,6 +86,14 @@ public class OfertaService {
         dto.setValidadeProduto(oferta.getValidadeProduto());
         dto.setDataFimOferta(oferta.getDataFimOferta());
         dto.setAtivo(oferta.getAtivo());
+
+        if (latConsumidor != null && lngConsumidor != null
+                && empresa.getLatitude() != null && empresa.getLongitude() != null) {
+            double distancia = GeoUtil.calcularDistanciaKm(
+                    latConsumidor, lngConsumidor, empresa.getLatitude(), empresa.getLongitude());
+            dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
+        }
+
         return dto;
     }
 
@@ -84,61 +105,51 @@ public class OfertaService {
 
     @Transactional
     public OfertaResponseDTO atualizarOferta(Long idOferta, OfertaRequestDTO dto) {
-        // 1. Pega a empresa logada
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. Busca a oferta existente
         Oferta oferta = ofertaRepository.findById(idOferta)
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
 
-        // 3. Validação de Segurança: A oferta pertence a um produto desta empresa?
         if (!oferta.getProduto().getEmpresa().getId().equals(empresaLogada.getId())) {
             throw new SecurityException("Acesso negado: Você não tem permissão para alterar esta oferta.");
         }
 
-        // 4. Atualiza os dados
         oferta.setValidadeProduto(dto.getValidadeProduto());
         oferta.setDataFimOferta(dto.getDataFimOferta());
         oferta.setPrecoPromocional(dto.getPrecoPromocional());
         oferta.setPercentualDesconto(dto.getPercentualDesconto());
-        
+
         if (dto.getAtivo() != null) {
             oferta.setAtivo(dto.getAtivo());
         }
 
-        // 5. Salva e converte para DTO
         Oferta salvo = ofertaRepository.save(oferta);
         return converterParaResponseDTO(salvo);
     }
 
     @Transactional
     public void removerOferta(Long idOferta) {
-        // 1. Pega a empresa logada
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
-        // 2. Busca a oferta
         Oferta oferta = ofertaRepository.findById(idOferta)
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
 
-        // 3. Valida se a oferta pertence à empresa logada
         if (!oferta.getProduto().getEmpresa().getId().equals(empresaLogada.getId())) {
             throw new SecurityException("Acesso negado: Você não pode remover esta oferta.");
         }
 
-        // 4. Deleta a oferta do banco (ou faça um "Soft Delete" setando ativo = false, se preferir)
         ofertaRepository.delete(oferta);
     }
 
     @Transactional(readOnly = true)
     public Page<OfertaResponseDTO> listarOfertasDaEmpresa(OfertaFiltroDTO filtro, Pageable pageable) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
-        // Aplica a especificação de segurança e filtros dinâmicos
+
         return ofertaRepository.findAll(OfertaSpecifications.comFiltros(filtro, empresaLogada.getId()), pageable)
                 .map(this::converterParaResponseDTO);
     }
 
-    
+
     @Transactional
     public void alternarStatus(Long idOferta, Boolean novoStatus) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -155,11 +166,10 @@ public class OfertaService {
     @Transactional(readOnly = true)
     public OfertaResponseDTO buscarPorId(Long idOferta) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        
+
         Oferta oferta = ofertaRepository.findById(idOferta)
                 .orElseThrow(() -> new IllegalArgumentException("Oferta não encontrada."));
 
-        // Validação de segurança: a empresa só pode ver a própria oferta
         if (!oferta.getProduto().getEmpresa().getId().equals(empresaLogada.getId())) {
             throw new SecurityException("Acesso negado: Você não tem permissão para visualizar esta oferta.");
         }
@@ -169,9 +179,65 @@ public class OfertaService {
 
     @Transactional(readOnly = true)
     public Page<OfertaResponseDTO> listarOfertasPublicas(com.synapse.deadline.dto.FiltroOfertasConsumidorDTO filtro, Pageable pageable) {
-        // [RF01, RF02, RF03] Lista filtrada e ordenada (Spring Data Pageable já resolve o ORDER BY do RF02)
-        return ofertaRepository.findAll(com.synapse.deadline.repository.OfertaSpecifications.filtroVitrinePublica(filtro), pageable)
-                .map(this::converterParaResponseDTO);
+        Double lat = filtro != null ? filtro.getLatitude() : null;
+        Double lng = filtro != null ? filtro.getLongitude() : null;
+        boolean geoAtivo = lat != null && lng != null;
+        boolean filtrarDistancia = geoAtivo && filtro.getDistanciaMaxKm() != null;
+        boolean ordenarPorDistancia = geoAtivo && pageable.getSort().stream()
+                .anyMatch(o -> "distanciaKm".equals(o.getProperty()));
+
+        if (geoAtivo && (filtrarDistancia || ordenarPorDistancia)) {
+            List<OfertaResponseDTO> dtos = ofertaRepository
+                    .findAll(OfertaSpecifications.filtroVitrinePublica(filtro))
+                    .stream()
+                    .map(o -> converterParaResponseDTO(o, lat, lng))
+                    .filter(d -> !filtrarDistancia || (d.getDistanciaKm() != null && d.getDistanciaKm() <= filtro.getDistanciaMaxKm()))
+                    .sorted(criarComparator(pageable.getSort()))
+                    .collect(Collectors.toList());
+
+            return paginarLista(dtos, pageable);
+        }
+
+        Page<OfertaResponseDTO> pagina = ofertaRepository
+                .findAll(OfertaSpecifications.filtroVitrinePublica(filtro), pageable)
+                .map(o -> converterParaResponseDTO(o, lat, lng));
+
+        return pagina;
+    }
+
+    private Comparator<OfertaResponseDTO> criarComparator(Sort sort) {
+        Comparator<OfertaResponseDTO> comparator = null;
+
+        for (Sort.Order order : sort) {
+            Comparator<OfertaResponseDTO> atual = switch (order.getProperty()) {
+                case "distanciaKm" -> Comparator.comparing(
+                        OfertaResponseDTO::getDistanciaKm,
+                        Comparator.nullsLast(Double::compareTo));
+                case "precoPromocional" -> Comparator.comparing(OfertaResponseDTO::getPrecoPromocional);
+                case "percentualDesconto" -> Comparator.comparing(OfertaResponseDTO::getPercentualDesconto);
+                case "validadeProduto" -> Comparator.comparing(OfertaResponseDTO::getValidadeProduto);
+                default -> Comparator.comparing(OfertaResponseDTO::getId);
+            };
+
+            if (order.isDescending()) {
+                atual = atual.reversed();
+            }
+
+            comparator = comparator == null ? atual : comparator.thenComparing(atual);
+        }
+
+        return comparator != null ? comparator : Comparator.comparing(OfertaResponseDTO::getId);
+    }
+
+    private Page<OfertaResponseDTO> paginarLista(List<OfertaResponseDTO> lista, Pageable pageable) {
+        int inicio = (int) pageable.getOffset();
+        int fim = Math.min(inicio + pageable.getPageSize(), lista.size());
+
+        if (inicio > lista.size()) {
+            return new PageImpl<>(List.of(), pageable, lista.size());
+        }
+
+        return new PageImpl<>(lista.subList(inicio, fim), pageable, lista.size());
     }
 
     @Transactional
@@ -183,11 +249,14 @@ public class OfertaService {
 
     @Transactional(readOnly = true)
     public com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO buscarDetalhesPublicos(Long id) {
-        // [RF04] Detalhes ricos da oferta
+        return buscarDetalhesPublicos(id, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO buscarDetalhesPublicos(Long id, Double latitude, Double longitude) {
         Oferta oferta = ofertaRepository.findById(id)
                 .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Oferta não encontrada."));
 
-        // Validação de segurança: Oferta tem de estar ativa e não expirada
         if (!oferta.getAtivo() || !oferta.getProduto().getAtivo() || oferta.getDataFimOferta().isBefore(java.time.LocalDate.now())) {
             throw new IllegalArgumentException("Esta oferta já não está disponível.");
         }
@@ -211,6 +280,13 @@ public class OfertaService {
         dto.setEmpresaId(empresa.getId());
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setEmailContato(empresa.getEmailContato());
+
+        if (latitude != null && longitude != null
+                && empresa.getLatitude() != null && empresa.getLongitude() != null) {
+            double distancia = GeoUtil.calcularDistanciaKm(
+                    latitude, longitude, empresa.getLatitude(), empresa.getLongitude());
+            dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
+        }
 
         if (empresa.getEndereco() != null) {
             com.synapse.deadline.dto.EnderecoDTO endDto = new com.synapse.deadline.dto.EnderecoDTO();
