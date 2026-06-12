@@ -2,6 +2,8 @@ package com.synapse.deadline.service;
 
 import java.util.Optional;
 
+import com.synapse.deadline.entity.Endereco;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +15,7 @@ import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -44,6 +47,9 @@ class EmpresaServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private GoogleMapsGeocodingService googleMapsGeocodingService;
 
     private EmpresaCadastroDTO cadastroDTO;
     private EmpresaPerfilDTO edicaoDTO;
@@ -82,6 +88,8 @@ class EmpresaServiceTest {
         empresaSalva.setCnpj("11.111.111/0001-11");
         empresaSalva.setEmailLogin("contato@mercado.com");
         empresaSalva.setSenhaHash("hash_da_senha");
+
+        lenient().when(googleMapsGeocodingService.geocodificar(any(Endereco.class))).thenReturn(Optional.empty());
     }
 
     @Test

@@ -23,6 +23,7 @@ public class OfertaConsumidorDetalhesDTO {
     private String instrucoesRetirada;
     private EnderecoDTO enderecoEmpresa;
     private String horarioFuncionamento;
+    private Double distanciaKm;
 
     // Gere os Getters e Setters para todos os campos acima...
     public Long getId() { return id; }
@@ -59,4 +60,6 @@ public class OfertaConsumidorDetalhesDTO {
     public void setContatoWhatsapp(String contatoWhatsapp) {this.contatoWhatsapp = contatoWhatsapp;}
     public String getEmailContato() {return emailContato;}
     public void setEmailContato(String emailContato) {this.emailContato = emailContato;}
+    public Double getDistanciaKm() { return distanciaKm; }
+    public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
 }

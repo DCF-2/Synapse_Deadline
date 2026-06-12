@@ -55,6 +55,7 @@ public class OfertaSpecifications {
             
             // Usando JOIN por segurança para evitar erros 500 no Hibernate
             jakarta.persistence.criteria.Join<Object, Object> produtoJoin = root.join("produto");
+            jakarta.persistence.criteria.Join<Object, Object> empresaJoin = produtoJoin.join("empresa");
 
             // 1. REGRAS OBRIGATÓRIAS
             predicates.add(cb.isTrue(root.get("ativo")));
@@ -85,7 +86,13 @@ public class OfertaSpecifications {
                     predicates.add(cb.lessThanOrEqualTo(root.get("validadeProduto"), dataMax));
                 }
                 if (filtro.getEmpresaId() != null) {
-                    predicates.add(cb.equal(produtoJoin.get("empresa").get("id"), filtro.getEmpresaId()));
+                    predicates.add(cb.equal(empresaJoin.get("id"), filtro.getEmpresaId()));
+                }
+
+                boolean geoAtivo = filtro.getLatitude() != null && filtro.getLongitude() != null;
+                if (geoAtivo) {
+                    predicates.add(cb.isNotNull(empresaJoin.get("latitude")));
+                    predicates.add(cb.isNotNull(empresaJoin.get("longitude")));
                 }
             }
             return cb.and(predicates.toArray(new Predicate[0]));

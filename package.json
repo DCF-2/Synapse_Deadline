@@ -1,0 +1,10 @@
+{
+  "name": "synapse-deadline",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix Frontend/deadline",
+    "build": "npm run build --prefix Frontend/deadline",
+    "lint": "npm run lint --prefix Frontend/deadline",
+    "install:frontend": "npm install --prefix Frontend/deadline"
+  }
+}
