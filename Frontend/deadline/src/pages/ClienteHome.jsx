@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/theme.css'; 
+import '../styles/theme.css';
+import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -16,7 +17,12 @@ export default function ClienteHome() {
   const [precoMin, setPrecoMin] = useState('');
   const [precoMax, setPrecoMax] = useState('');
   const [diasMaxValidade, setDiasMaxValidade] = useState('');
+  const [distanciaMaxKm, setDistanciaMaxKm] = useState('');
   const [lojasEncontradas, setLojasEncontradas] = useState([]);
+
+  // Geolocalização do consumidor
+  const [localizacao, setLocalizacao] = useState(null);
+  const [statusLocalizacao, setStatusLocalizacao] = useState('pendente'); // pendente | ok | negado | indisponivel
 
   // Estado de Ordenação
   const [ordenacao, setOrdenacao] = useState('validadeProduto,asc');
@@ -64,6 +70,22 @@ export default function ClienteHome() {
       .catch(console.error);
   }, []);
 
+  // Solicita geolocalização do consumidor ao abrir a vitrine
+  useEffect(() => {
+    obterLocalizacaoConsumidor()
+      .then((coords) => {
+        setLocalizacao(coords);
+        setStatusLocalizacao('ok');
+      })
+      .catch((err) => {
+        if (err.code === 1) {
+          setStatusLocalizacao('negado');
+        } else {
+          setStatusLocalizacao('indisponivel');
+        }
+      });
+  }, []);
+
   // Lógica de Busca Assíncrona (Debounce com regra de 3 caracteres)
   useEffect(() => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current);
@@ -90,7 +112,12 @@ export default function ClienteHome() {
       if (precoMin) url.searchParams.append('precoMin', precoMin);
       if (precoMax) url.searchParams.append('precoMax', precoMax);
       if (diasMaxValidade) url.searchParams.append('diasMaxValidade', diasMaxValidade);
-      
+      if (distanciaMaxKm && localizacao) url.searchParams.append('distanciaMaxKm', distanciaMaxKm);
+      if (localizacao) {
+        url.searchParams.append('latitude', localizacao.latitude);
+        url.searchParams.append('longitude', localizacao.longitude);
+      }
+
       url.searchParams.append('sort', ordenacao);
       url.searchParams.append('size', '50'); 
 
@@ -118,7 +145,7 @@ export default function ClienteHome() {
   // Recarrega sempre que os filtros principais, a busca ativa ou a ordenação mudarem
   useEffect(() => {
     carregarVitrine();
-  }, [nomeProduto, categoriaId, diasMaxValidade, ordenacao]);
+  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao]);
 
   // Previne que a página recarregue caso o utilizador pressione "Enter" no form
   const aplicarFiltrosTexto = (e) => {
@@ -130,7 +157,12 @@ export default function ClienteHome() {
   const abrirDetalhes = async (id) => {
     setCarregandoDetalhes(true);
     try {
-      const res = await fetch(`${API_URL}/oferta/publico/${id}`);
+      const url = new URL(`${API_URL}/oferta/publico/${id}`);
+      if (localizacao) {
+        url.searchParams.append('latitude', localizacao.latitude);
+        url.searchParams.append('longitude', localizacao.longitude);
+      }
+      const res = await fetch(url.toString());
       if (res.ok) {
         const data = await res.json();
         setDetalhesOferta(data);
@@ -169,6 +201,19 @@ export default function ClienteHome() {
       </div>
 
       <div className="container py-5">
+        {statusLocalizacao === 'negado' && (
+          <div className="alert alert-warning rounded-4 mb-4 d-flex align-items-center gap-2">
+            <span>📍</span>
+            <span>Ative a localização do navegador para ver distâncias e filtrar ofertas por proximidade.</span>
+          </div>
+        )}
+        {statusLocalizacao === 'indisponivel' && (
+          <div className="alert alert-secondary rounded-4 mb-4 d-flex align-items-center gap-2">
+            <span>📍</span>
+            <span>Não foi possível obter sua localização. As distâncias não serão exibidas.</span>
+          </div>
+        )}
+
         <div className="row g-4">
           
           {/* SIDEBAR DE FILTROS */}
@@ -199,6 +244,25 @@ export default function ClienteHome() {
                     <option value="15">Próximos 15 dias</option>
                     <option value="30">Próximos 30 dias</option>
                   </select>
+                </div>
+
+                <div className="mb-4">
+                  <label className="form-label text-muted small fw-bold">Distância máxima</label>
+                  <select
+                    className="form-select bg-light border-0"
+                    value={distanciaMaxKm}
+                    onChange={(e) => setDistanciaMaxKm(e.target.value)}
+                    disabled={!localizacao}
+                  >
+                    <option value="">Qualquer distância</option>
+                    <option value="5">Até 5 km</option>
+                    <option value="10">Até 10 km</option>
+                    <option value="25">Até 25 km</option>
+                    <option value="50">Até 50 km</option>
+                  </select>
+                  {!localizacao && (
+                    <small className="text-muted d-block mt-1">Aguardando localização...</small>
+                  )}
                 </div>
 
                 <div className="mb-4">
@@ -261,12 +325,13 @@ export default function ClienteHome() {
               <span className="text-muted fw-bold mb-2 mb-md-0">{ofertas.length} ofertas encontradas</span>
               <div className="d-flex align-items-center gap-2">
                 <span className="text-muted small text-nowrap">Ordenar por:</span>
-                <select className="form-select form-select-sm bg-light border-0 fw-bold" style={{ width: '200px' }}
+                <select className="form-select form-select-sm bg-light border-0 fw-bold" style={{ width: '220px' }}
                         value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
                   <option value="validadeProduto,asc">Vence Mais Cedo</option>
                   <option value="precoPromocional,asc">Menor Preço</option>
                   <option value="percentualDesconto,desc">Maior Desconto (%)</option>
                   <option value="id,desc">Mais Recentes</option>
+                  {localizacao && <option value="distanciaKm,asc">Mais Próximo</option>}
                 </select>
               </div>
             </div>
@@ -300,8 +365,18 @@ export default function ClienteHome() {
                       </div>
                       
                       <div className="card-body d-flex flex-column p-4">
-                        <span className="text-success small fw-bold mb-1 text-uppercase">{oferta.nomeCategoria}</span>
-                        <h6 className="fw-bold text-dark mb-3 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
+                        <div className="d-flex justify-content-between align-items-start mb-1">
+                          <span className="text-success small fw-bold text-uppercase">{oferta.nomeCategoria}</span>
+                          {oferta.distanciaKm != null && (
+                            <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill" style={{ fontSize: '0.7rem' }}>
+                              📍 {formatarDistancia(oferta.distanciaKm)}
+                            </span>
+                          )}
+                        </div>
+                        <h6 className="fw-bold text-dark mb-1 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
+                        {oferta.nomeFantasiaEmpresa && (
+                          <small className="text-muted mb-2 d-block">{oferta.nomeFantasiaEmpresa}</small>
+                        )}
                         
                         <div className="mb-3">
                           <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
@@ -390,6 +465,11 @@ export default function ClienteHome() {
 
                     <div className="mt-auto border-top pt-4">
                       <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2">📍</span> Informações de Retirada</h6>
+                      {detalhesOferta.distanciaKm != null && (
+                        <p className="small fw-bold text-primary mb-2">
+                          Distância de você: {formatarDistancia(detalhesOferta.distanciaKm)}
+                        </p>
+                      )}
                       <p className="small text-muted mb-2">
                         <strong>Endereço: </strong> 
                         {detalhesOferta.enderecoEmpresa?.logradouro}, {detalhesOferta.enderecoEmpresa?.numero} - {detalhesOferta.enderecoEmpresa?.bairro}, {detalhesOferta.enderecoEmpresa?.cidade}/{detalhesOferta.enderecoEmpresa?.uf}

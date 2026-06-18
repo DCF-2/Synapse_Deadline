@@ -65,8 +65,11 @@ public class OfertaController {
     }
 
     @GetMapping("/publico/{id}")
-    public ResponseEntity<com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO> detalhesPublicos(@PathVariable Long id) {
-        return ResponseEntity.ok(ofertaService.buscarDetalhesPublicos(id));
+    public ResponseEntity<com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO> detalhesPublicos(
+            @PathVariable Long id,
+            @RequestParam(required = false) Double latitude,
+            @RequestParam(required = false) Double longitude) {
+        return ResponseEntity.ok(ofertaService.buscarDetalhesPublicos(id, latitude, longitude));
     }
 
     @PostMapping("/publico/{id}/engajamento")

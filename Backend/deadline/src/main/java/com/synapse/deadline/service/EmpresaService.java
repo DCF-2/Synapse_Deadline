@@ -28,6 +28,9 @@ public class EmpresaService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private GoogleMapsGeocodingService googleMapsGeocodingService;
+
     /**
      * Cadastra uma nova empresa.
      * @param dto Os dados do cadastro da empresa.
@@ -72,7 +75,9 @@ public class EmpresaService {
         e.setContato2(dto.getContato2());
         e.setEmailContato(dto.getEmailContato());
         e.setInstrucoesRetirada(dto.getInstrucoesRetirada());
-        e.setHorarioFuncionamento(dto.getHorarioFuncionamento()); 
+        e.setHorarioFuncionamento(dto.getHorarioFuncionamento());
+
+        geocodificarEndereco(e);
 
         Empresa salva = repository.save(e);
 
@@ -167,6 +172,7 @@ public class EmpresaService {
             empresa.getEndereco().setCep(dto.getEndereco().getCep());
             empresa.getEndereco().setCidade(dto.getEndereco().getCidade());
             empresa.getEndereco().setUf(dto.getEndereco().getUf());
+            geocodificarEndereco(empresa);
         }
 
         Empresa atualizada = repository.save(empresa);
@@ -174,6 +180,14 @@ public class EmpresaService {
     }
 
     // -- MÉTODOS AUXILIARES ---
+
+    private void geocodificarEndereco(Empresa empresa) {
+        if (empresa.getEndereco() == null) return;
+        googleMapsGeocodingService.geocodificar(empresa.getEndereco()).ifPresent(coords -> {
+            empresa.setLatitude(coords.latitude());
+            empresa.setLongitude(coords.longitude());
+        });
+    }
 
     /**
      * Converte um objeto Empresa para um DTO de perfil.

@@ -17,6 +17,8 @@ public class OfertaResponseDTO {
     private LocalDate dataFimOferta;
     private Boolean ativo;
     private Integer cliquesContato;
+    private String nomeFantasiaEmpresa;
+    private Double distanciaKm;
  
 
     public Long getId() {
@@ -109,5 +111,9 @@ public class OfertaResponseDTO {
 
     public Integer getCliquesContato() { return cliquesContato; }
     public void setCliquesContato(Integer cliquesContato) { this.cliquesContato = cliquesContato; }
+    public String getNomeFantasiaEmpresa() { return nomeFantasiaEmpresa; }
+    public void setNomeFantasiaEmpresa(String nomeFantasiaEmpresa) { this.nomeFantasiaEmpresa = nomeFantasiaEmpresa; }
+    public Double getDistanciaKm() { return distanciaKm; }
+    public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
 
 }

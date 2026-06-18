@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
-// Captura as variáveis de ambiente para o Cloudinary (com fallbacks)
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
@@ -92,6 +91,54 @@ export default function ConfiguracoesPage() {
     carregarDadosIniciais();
   }, []);
 
+  // 1. Função que apenas atualiza e formata o input do CEP enquanto se digita
+  const handleCepChange = (e) => {
+    let rawValue = e.target.value.replace(/\D/g, ''); // Mantém apenas números
+    let formatado = rawValue;
+    if (rawValue.length > 5) {
+      formatado = rawValue.replace(/^(\d{5})(\d)/, '$1-$2'); // Coloca o traço
+    }
+    setCep(formatado);
+
+    // Se chegar a 8, busca logo automaticamente
+    if (rawValue.length === 8) {
+      buscarCepNosCorreios(rawValue);
+    }
+  };
+
+  // 2. Função robusta para ir buscar o CEP aos Correios
+  const buscarCepNosCorreios = async (cepBuscado) => {
+    const apenasNumeros = (typeof cepBuscado === 'string' ? cepBuscado : cep).replace(/\D/g, '');
+    
+    if (apenasNumeros.length !== 8) {
+      setErro('Digite os 8 números do CEP para buscar.');
+      setTimeout(() => setErro(null), 3000);
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${apenasNumeros}/json/`);
+      const data = await response.json();
+
+      if (!data.erro) {
+        setLogradouro(data.logradouro || '');
+        setBairro(data.bairro || '');
+        setCidade(data.localidade || ''); // O ViaCEP devolve 'localidade' em vez de 'cidade'
+        setUf(data.uf || '');
+        setErro(null);
+        
+        // Manda o rato diretamente para o campo "Número"
+        document.getElementById('inputNumero')?.focus();
+      } else {
+        setErro('CEP não encontrado. Por favor, preencha manualmente.');
+        setTimeout(() => setErro(null), 4000);
+      }
+    } catch (error) {
+      setErro('Falha ao comunicar com os Correios.');
+      setTimeout(() => setErro(null), 4000);
+    }
+  };
+
   const handleUploadLogo = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -101,11 +148,9 @@ export default function ConfiguracoesPage() {
 
     const formData = new FormData();
     formData.append('file', file);
-    // Usa a variável de ambiente para o Preset
     formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET); 
 
     try {
-      // Usa a variável de ambiente para montar a URL do Cloudinary dinamicamente
       const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
         method: 'POST',
         body: formData
@@ -141,7 +186,6 @@ export default function ConfiguracoesPage() {
         razaoSocial,
         cnpj,
         logotipo,
-        // Correção de segurança: converte para Integer/Number do JS de forma segura
         idRamo: idRamo ? parseInt(idRamo, 10) : null,
         emailLogin,
         contatoWhatsapp,
@@ -151,7 +195,7 @@ export default function ConfiguracoesPage() {
         horarioFuncionamento,
         instrucoesRetirada,
         endereco: {
-          logradouro, numero, complemento, bairro, cep, cidade, uf // Ajustado 'city' para 'cidade'
+          logradouro, numero, complemento, bairro, cep, cidade, uf 
         }
       };
 
@@ -165,7 +209,7 @@ export default function ConfiguracoesPage() {
       });
 
       if (!res.ok) {
-        throw new Error('Erro 500: Verifique se todos os campos obrigatórios estão preenchidos corretamente.');
+        throw new Error('Erro ao salvar. Verifique se os campos estão corretos.');
       }
 
       setSucesso(true);
@@ -285,17 +329,31 @@ export default function ConfiguracoesPage() {
 
           {activeTab === 'endereco' && (
             <div className="row g-3">
-              <div className="col-md-3">
-                <label className="form-label text-muted small fw-bold">CEP</label>
-                <input type="text" className="form-control bg-light border-0" required value={cep} onChange={(e) => setCep(e.target.value)} />
+              <div className="col-md-4">
+                <label className="form-label text-muted small fw-bold text-primary">CEP</label>
+                <div className="input-group shadow-sm">
+                  <input 
+                     type="text" 
+                     maxLength="9"
+                     placeholder="Ex: 50010-000"
+                     className="form-control bg-light border-primary border-opacity-25" 
+                     required 
+                     value={cep} 
+                     onChange={handleCepChange}
+                     onBlur={buscarCepNosCorreios} 
+                  />
+                  <button className="btn btn-primary px-3" type="button" onClick={buscarCepNosCorreios} title="Buscar Endereço">
+                    🔍
+                  </button>
+                </div>
               </div>
-              <div className="col-md-7">
+              <div className="col-md-6">
                 <label className="form-label text-muted small fw-bold">Logradouro</label>
                 <input type="text" className="form-control bg-light border-0" required value={logradouro} onChange={(e) => setLogradouro(e.target.value)} />
               </div>
               <div className="col-md-2">
                 <label className="form-label text-muted small fw-bold">Número</label>
-                <input type="text" className="form-control bg-light border-0" required value={numero} onChange={(e) => setNumero(e.target.value)} />
+                <input id="inputNumero" type="text" className="form-control bg-light border-0" required value={numero} onChange={(e) => setNumero(e.target.value)} />
               </div>
               <div className="col-md-5">
                 <label className="form-label text-muted small fw-bold">Complemento</label>
