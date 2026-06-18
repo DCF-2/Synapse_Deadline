@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { IonPage, IonContent } from '@ionic/react'; // <-- IMPORTAÇÃO DO IONIC
+import { IonPage, IonContent } from '@ionic/react';
 import '../styles/theme.css';
 
 const API_URL = import.meta.env.VITE_API_URL;
@@ -63,30 +63,6 @@ export default function LojaPerfil() {
     window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
   };
 
-  const enviarEmailLoja = () => {
-    if (!loja?.emailContato) {
-      alert("Esta loja não disponibilizou um e-mail de contacto.");
-      return;
-    }
-    if (ofertas.length > 0) {
-      fetch(`${API_URL}/oferta/publico/${ofertas[0].id}/engajamento`, { method: 'POST' }).catch(console.error);
-    }
-    const assunto = encodeURIComponent(`Contacto via Plataforma Deadline`);
-    const corpo = encodeURIComponent(`Olá, vi o vosso catálogo de produtos com desconto no aplicativo Deadline e gostaria de tirar uma dúvida.`);
-    window.open(`mailto:${loja.emailContato}?subject=${assunto}&body=${corpo}`, '_blank');
-  };
-
-  const abrirMapaExt = (endereco) => {
-    if (!endereco) return;
-    const query = encodeURIComponent(`${endereco.logradouro}, ${endereco.numero} - ${endereco.bairro}, ${endereco.cidade} - ${endereco.uf}`);
-    window.open(`http://googleusercontent.com/maps.google.com/?q=${query}`, '_blank');
-  };
-
-  const getEnderecoString = () => {
-    if (!loja?.endereco) return '';
-    return encodeURIComponent(`${loja.endereco.logradouro}, ${loja.endereco.numero} - ${loja.endereco.bairro}, ${loja.endereco.cidade} - ${loja.endereco.uf}`);
-  };
-
   if (carregando) return (
     <IonPage><IonContent fullscreen><div className="text-center py-5 mt-5"><div className="spinner-border text-success"></div></div></IonContent></IonPage>
   );
@@ -94,205 +70,116 @@ export default function LojaPerfil() {
     <IonPage><IonContent fullscreen><div className="text-center py-5 mt-5 fw-bold text-muted">Loja não encontrada.</div></IonContent></IonPage>
   );
 
-  // --- ENVOLVENDO COM IONPAGE E IONCONTENT ---
   return (
     <IonPage>
       <IonContent fullscreen>
-        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '60px' }}>
+        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '40px' }}>
           
           <nav className="navbar navbar-light bg-white shadow-sm sticky-top">
-            <div className="container">
-              <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
-                <span className="text-success fs-4">←</span> Voltar para Vitrine
+            <div className="container px-3 d-flex justify-content-between align-items-center">
+              <Link className="navbar-brand d-flex align-items-center gap-1 fw-bold text-dark text-decoration-none" to="/" style={{ fontSize: '0.9rem' }}>
+                <span className="text-success fs-5">←</span> Vitrine
               </Link>
-              <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
+              <img src="/logo_deadline.png" alt="Deadline" style={{ height: '26px' }} />
             </div>
           </nav>
 
-          <div className="bg-white shadow-sm mb-4">
-            <div style={{ height: '180px', background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}></div>
-            
-            <div className="container position-relative pb-4">
-              <div className="bg-white rounded-circle shadow-lg d-flex align-items-center justify-content-center overflow-hidden border border-4 border-white position-absolute" 
-                   style={{ width: '140px', height: '140px', top: '-70px', left: '15px' }}>
+          {/* BANNER E PERFIL COMPACTADOS */}
+          <div className="bg-white shadow-sm mb-3">
+            <div style={{ height: '110px', background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}></div>
+            <div className="container position-relative pb-3 px-3">
+              <div className="bg-white rounded-circle shadow d-flex align-items-center justify-content-center overflow-hidden border border-3 border-white position-absolute" 
+                   style={{ width: '90px', height: '90px', top: '-45px', left: '15px' }}>
                  {loja.logotipo ? (
                    <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                 ) : ( <span style={{ fontSize: '3.5rem' }}>🏢</span> )}
+                 ) : ( <span style={{ fontSize: '2.5rem' }}>🏢</span> )}
               </div>
               
-              <div style={{ paddingTop: '80px', paddingLeft: '15px' }}>
-                 <div className="d-flex align-items-center gap-2 mb-1">
-                   <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 small rounded-pill">
-                     ✓ Loja Oficial Parceira
-                   </span>
+              <div style={{ paddingTop: '50px' }}>
+                 <h4 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h4>
+                 <div className="d-flex flex-wrap gap-2 mt-1 text-muted" style={{ fontSize: '0.75rem' }}>
+                    <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    <span>🕒 {loja.horarioFuncionamento}</span>
                  </div>
-                 
-                 <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
-                   <div>
-                     <h1 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h1>
-                     <div className="d-flex flex-wrap gap-4 mt-2 text-muted small">
-                        <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
-                        <span>🕒 {loja.horarioFuncionamento}</span>
-                     </div>
-                   </div>
-
-                   <div className="d-flex gap-2 w-100 w-md-auto mt-2">
-                     <button className="btn text-white fw-bold rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm" 
-                             style={{ backgroundColor: '#25D366', fontSize: '0.9rem' }} onClick={entrarEmContatoWhatsApp}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592"/></svg>
-                        WhatsApp da Loja
-                     </button>
-                     <button className="btn text-white fw-bold rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm" 
-                             style={{ backgroundColor: '#0d6efd', fontSize: '0.9rem' }} onClick={enviarEmailLoja}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/></svg>
-                        E-mail
-                     </button>
-                   </div>
-                 </div>
+                 <button className="btn btn-sm text-white fw-bold rounded-pill px-3 mt-2 d-flex align-items-center gap-1" 
+                         style={{ backgroundColor: '#25D366', fontSize: '0.75rem' }} onClick={entrarEmContatoWhatsApp}>
+                    Contatar WhatsApp
+                 </button>
               </div>
             </div>
           </div>
 
-          <div className="container py-4">
-             <h4 className="fw-bold mb-4 text-dark border-bottom pb-2">Produtos em Destaque</h4>
-             
-             {ofertas.length === 0 ? (
-                <div className="text-center py-5 bg-white rounded-4 shadow-sm">
-                   <span style={{fontSize: '3rem'}}>🏷️</span>
-                   <p className="text-muted mt-3 mb-0">Esta loja não tem ofertas ativas no momento.</p>
-                </div>
-             ) : (
-                <div className="row g-4">
-                  {ofertas.map((oferta) => (
-                    <div className="col-12 col-md-6 col-xl-3" key={oferta.id}>
-                      <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                        <div className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold shadow-sm" style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.85rem' }}>
-                          -{oferta.percentualDesconto?.toFixed(0)}%
+          <div className="container px-3">
+            <h6 className="fw-bold text-muted mb-2 small">Ofertas desta Farmácia ({ofertas.length})</h6>
+            
+            {ofertas.length === 0 ? (
+              <div className="text-center py-4 bg-white rounded-4 shadow-sm">
+                <p className="text-muted small mb-0">Nenhum produto em oferta no momento.</p>
+              </div>
+            ) : (
+              /* GRID DE MINIATURAS DA LOJA - OTIMIZADO PARA MOBILE */
+              <div className="row g-2">
+                {ofertas.map((oferta) => (
+                  <div className="col-6 col-md-4 col-xl-3" key={oferta.id}>
+                    <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative" style={{ minHeight: '260px' }}>
+                      <div className="position-absolute top-0 start-0 m-2 px-2 py-0.5 rounded-3 text-white fw-bold" 
+                           style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.7rem' }}>
+                        -{oferta.percentualDesconto?.toFixed(0)}%
+                      </div>
+                      <div className="bg-light text-center p-2 d-flex align-items-center justify-content-center" style={{ height: '110px' }}>
+                        {oferta.foto ? (
+                          <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                        ) : ( <span style={{ fontSize: '2.5rem', opacity: 0.15 }}>📦</span> )}
+                      </div>
+                      <div className="card-body d-flex flex-column p-2">
+                        <h6 className="fw-bold text-dark mb-1 text-truncate small" style={{ fontSize: '0.85rem' }}>{oferta.tituloProduto}</h6>
+                        <div className="my-1">
+                          <span className="text-muted text-decoration-line-through d-block" style={{ fontSize: '0.7rem' }}>De: {formatarMoeda(oferta.precoOriginal)}</span>
+                          <span className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>Por: {formatarMoeda(oferta.precoPromocional)}</span>
                         </div>
-                        <div className="bg-white text-center p-4 border-bottom" style={{ height: '200px' }}>
-                          {oferta.foto ? (
-                            <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                          ) : ( <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span> )}
-                        </div>
-                        <div className="card-body d-flex flex-column p-4 bg-white">
-                          <span className="text-success small fw-bold mb-1 text-uppercase">{oferta.nomeCategoria}</span>
-                          <h6 className="fw-bold text-dark mb-3 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
-                          <div className="mb-3">
-                            <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
-                            <span className="fw-bold text-dark fs-4">Por: {formatarMoeda(oferta.precoPromocional)}</span>
+                        <div className="mt-auto pt-2 border-top">
+                          <div className="d-flex justify-content-between align-items-center" style={{ fontSize: '0.65rem' }}>
+                            <span className="text-muted">Vence:</span>
+                            <span className="fw-bold text-danger">{formatarData(oferta.validadeProduto)}</span>
                           </div>
-                          <div className="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
-                            <div>
-                              <small className="text-muted d-block" style={{fontSize: '0.7rem'}}>Vence em:</small>
-                              <span className="fw-bold text-danger small">{formatarData(oferta.validadeProduto)}</span>
-                            </div>
-                            <button className="btn btn-sm text-white fw-bold px-3 rounded-pill" style={{backgroundColor: 'var(--dl-primary)'}} onClick={() => abrirDetalhes(oferta.id)}>
-                              Ver Detalhes
-                            </button>
-                          </div>
+                          <button className="btn btn-sm text-white fw-bold py-1 px-2 rounded-3 w-100 mt-1" 
+                                  style={{ backgroundColor: 'var(--dl-primary)', fontSize: '0.75rem' }} onClick={() => abrirDetalhes(oferta.id)}>
+                            Ver
+                          </button>
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
-             )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div id="mapa" className="container py-5 mt-4 border-top">
-             <div className="bg-white rounded-4 shadow-sm p-4">
-                <h5 className="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-                   📍 Como chegar à {loja.nomeFantasia}
-                </h5>
-                <div className="row g-4 align-items-center">
-                   <div className="col-lg-4">
-                      <div className="p-3 bg-light rounded-3 border">
-                         <p className="fw-bold mb-1">Endereço Completo:</p>
-                         <p className="text-muted small mb-3">
-                            {loja.endereco?.logradouro}, {loja.endereco?.numero}<br/>
-                            {loja.endereco?.bairro}<br/>
-                            {loja.endereco?.cidade} - {loja.endereco?.uf}<br/>
-                            CEP: {loja.endereco?.cep}
-                         </p>
-                         <p className="fw-bold mb-1">Retirada:</p>
-                         <p className="text-muted small m-0">{loja.instrucoesRetirada || "Apresente o código da oferta no balcão."}</p>
-                         <button className="btn btn-sm btn-outline-dark w-100 fw-bold rounded-pill mt-3" onClick={() => abrirMapaExt(loja.endereco)}>
-                           Abrir no Google Maps ↗
-                         </button>
-                      </div>
-                   </div>
-                   <div className="col-lg-8">
-                      <div className="rounded-3 overflow-hidden shadow-sm border" style={{ height: '300px', backgroundColor: '#e9ecef' }}>
-                         {loja.endereco ? (
-                           <iframe 
-                             width="100%" 
-                             height="100%" 
-                             style={{ border: 0 }} 
-                             loading="lazy" 
-                             allowFullScreen 
-                             src={`https://maps.google.com/maps?q=${getEnderecoString()}&t=&z=15&ie=UTF8&iwloc=&output=embed`}>
-                           </iframe>
-                         ) : (
-                           <div className="d-flex h-100 align-items-center justify-content-center text-muted">Endereço não disponível</div>
-                         )}
-                      </div>
-                   </div>
-                </div>
-             </div>
-          </div>
-
+          {/* DETALHES DA OFERTA (PERMANECE COM FORMATO MODAL DO ORIGINAL CASO SEJA ACIONADO) */}
           {detalhesOferta && (
             <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 1050 }}>
-              <div className="modal-dialog modal-dialog-centered modal-lg">
-                <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-                  <div className="modal-header border-0 bg-light p-4">
-                    <div className="d-flex align-items-center gap-3">
-                      <h5 className="fw-bold text-dark m-0">Detalhes da Oferta</h5>
-                    </div>
+              <div className="modal-dialog modal-dialog-centered">
+                <div className="modal-content border-0 rounded-4 shadow">
+                  <div className="modal-header p-3 border-0 bg-light">
+                    <h6 className="fw-bold m-0 text-dark">Detalhes da Oferta</h6>
                     <button type="button" className="btn-close" onClick={() => setDetalhesOferta(null)}></button>
                   </div>
-                  <div className="modal-body p-4">
-                    <div className="row g-4">
-                      <div className="col-md-5 text-center">
-                        <div className="bg-light rounded-4 p-3 mb-3 d-flex align-items-center justify-content-center border" style={{ height: '220px' }}>
-                          {detalhesOferta.foto ? (
-                            <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                          ) : ( <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span> )}
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded-4 border border-success border-opacity-25">
-                          <div className="text-start">
-                            <span className="text-muted text-decoration-line-through small d-block">{formatarMoeda(detalhesOferta.precoOriginal)}</span>
-                            <h3 className="fw-bold text-success m-0">{formatarMoeda(detalhesOferta.precoPromocional)}</h3>
-                          </div>
-                          <div className="badge bg-danger fs-6 rounded-3">-{detalhesOferta.percentualDesconto?.toFixed(0)}%</div>
-                        </div>
-                      </div>
-                      <div className="col-md-7 d-flex flex-column">
-                        <h4 className="fw-bold text-dark mb-2">{detalhesOferta.tituloProduto}</h4>
-                        <p className="text-muted small mb-4">{detalhesOferta.descricao || "Sem descrição disponível."}</p>
-                        <div className="row g-2 mb-4">
-                          <div className="col-6">
-                            <div className="p-2 border rounded-3 bg-light text-center h-100">
-                              <small className="text-muted fw-bold d-block" style={{fontSize: '0.7rem'}}>PRODUTO VENCE EM</small>
-                              <span className="fw-bold text-danger">{formatarData(detalhesOferta.validadeProduto)}</span>
-                            </div>
-                          </div>
-                          <div className="col-6">
-                            <div className="p-2 border rounded-3 bg-light text-center h-100">
-                              <small className="text-muted fw-bold d-block" style={{fontSize: '0.7rem'}}>OFERTA ENCERRA EM</small>
-                              <span className="fw-bold text-dark">{formatarData(detalhesOferta.dataFimOferta)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-auto border-top pt-4">
-                          <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2">📍</span> Informações de Retirada</h6>
-                          <p className="small text-muted mb-2"><strong>Horário: </strong> {detalhesOferta.horarioFuncionamento}</p>
-                          <div className="alert alert-warning small py-2 mb-0 d-flex align-items-start gap-2 border">
-                            <span className="mt-1">📋</span>
-                            <div><strong>Instruções do Lojista:</strong><br/>{detalhesOferta.instrucoesRetirada}</div>
-                          </div>
-                        </div>
-                      </div>
+                  <div className="modal-body p-3">
+                    <div className="text-center bg-light rounded-4 p-2 mb-2" style={{ height: '140px' }}>
+                      <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                     </div>
+                    <h6 className="fw-bold text-dark text-center mb-2">{detalhesOferta.tituloProduto}</h6>
+                    <div className="alert alert-danger py-1.5 text-center small fw-bold mb-2">
+                       Vence em: {formatarData(detalhesOferta.validadeProduto)}
+                    </div>
+                    <div className="text-center mb-3">
+                      <span className="text-muted text-decoration-line-through small me-2">De: {formatarMoeda(detalhesOferta.precoOriginal)}</span>
+                      <span className="fw-bold text-success fs-5">Por: {formatarMoeda(detalhesOferta.precoPromocional)}</span>
+                    </div>
+                    <button className="btn text-white w-100 fw-bold py-2 rounded-pill" style={{ backgroundColor: '#25D366' }}
+                            onClick={() => window.open(`https://wa.me/55${loja.contatoWhatsapp?.replace(/\D/g, '')}`, '_blank')}>
+                      Reservar via WhatsApp
+                    </button>
                   </div>
                 </div>
               </div>
