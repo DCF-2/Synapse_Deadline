@@ -15,4 +15,6 @@ public class OfertaFiltroDTO {
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
         public Long getEmpresaId() {return empresaId;}
     public void setEmpresaId(Long empresaId) {this.empresaId = empresaId;}
+    public String getCodBarrasEan() {return codBarrasEan;}
+    public void setCodBarrasEan(String codBarrasEan) {this.codBarrasEan = codBarrasEan;}
 }
