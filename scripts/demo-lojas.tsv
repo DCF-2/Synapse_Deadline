@@ -1,0 +1,16 @@
+# suffix | email | cnpj | nome | logradouro | numero | bairro | cep | cidade | uf | produto | preco_original | preco_promo
+001|farmacia-recife-dev@test.local|11.444.777/0001-61|Farmácia Boa Viagem Demo|Av. Boa Viagem|1000|Boa Viagem|51020-000|Recife|PE|Dipirona 500mg|24.90|12.90
+002|farmacia-sp-dev@test.local|04.252.011/0001-10|Farmácia Paulista Demo|Av. Paulista|1000|Bela Vista|01310-100|São Paulo|SP|Paracetamol 750mg|18.50|9.90
+003|farmacia-olinda-demo@test.local|97.530.841/0001-42|Farmácia Olinda Demo|Rua do Sol|200|Centro|53020-010|Olinda|PE|Ibuprofeno 400mg|22.00|11.00
+004|farmacia-caruaru-demo@test.local|17.895.646/0001-87|Farmácia Caruaru Demo|Av. Agamenon Magalhães|850|Centro|55016-000|Caruaru|PE|Vitamina C 1g|35.00|17.50
+005|farmacia-jp-demo@test.local|33.000.167/0001-01|Farmácia Tambaú Demo|Av. Cabo Branco|1500|Tambaú|58039-000|João Pessoa|PB|Loratadina 10mg|28.00|14.00
+006|farmacia-natal-demo@test.local|04.884.082/0001-35|Farmácia Ponta Negra Demo|Av. Eng. Roberto Freire|3000|Ponta Negra|59090-000|Natal|RN|Omeprazol 20mg|32.00|16.00
+007|farmacia-fortaleza-demo@test.local|07.526.557/0001-00|Farmácia Beira Mar Demo|Av. Beira Mar|2500|Meireles|60165-121|Fortaleza|CE|Shampoo Anticaspa|45.00|22.50
+008|farmacia-salvador-demo@test.local|86.419.732/0001-36|Farmácia Pelourinho Demo|Rua das Laranjeiras|45|Centro|40020-000|Salvador|BA|Engov After|19.90|9.90
+009|farmacia-rj-demo@test.local|10.864.297/0001-97|Farmácia Copacabana Demo|Av. Nossa Senhora de Copacabana|500|Copacabana|22020-001|Rio de Janeiro|RJ|Protetor Solar FPS50|89.90|44.90
+010|farmacia-bh-demo@test.local|21.975.308/0001-22|Farmácia Savassi Demo|Rua da Bahia|1200|Savassi|30160-011|Belo Horizonte|MG|Hidratante Corporal|55.00|27.50
+011|farmacia-bsb-demo@test.local|32.086.419/0001-02|Farmácia Asa Sul Demo|SCS Quadra 2|100|Asa Sul|70302-000|Brasília|DF|Álcool Gel 500ml|15.00|7.50
+012|farmacia-curitiba-demo@test.local|43.197.520/0001-49|Farmácia Batel Demo|Rua Comendador Araújo|500|Batel|80420-000|Curitiba|PR|Neosoro Spray|21.00|10.50
+013|farmacia-poa-demo@test.local|54.208.631/0001-20|Farmácia Moinhos Demo|Rua Padre Chagas|800|Moinhos de Vento|90570-080|Porto Alegre|RS|Dorflex 36 comp|26.00|13.00
+014|farmacia-manaus-demo@test.local|65.319.742/0001-20|Farmácia Manaus Centro Demo|Av. Eduardo Ribeiro|300|Centro|69010-001|Manaus|AM|Rinosoro Infantil|16.00|8.00
+015|farmacia-goiania-demo@test.local|76.420.853/0001-44|Farmácia Goiânia Demo|Av. T-10|200|Setor Bueno|74210-010|Goiânia|GO|Antigripal Resfriado|23.00|11.50
