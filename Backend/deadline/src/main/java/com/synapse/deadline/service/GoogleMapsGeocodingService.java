@@ -26,7 +26,7 @@ public class GoogleMapsGeocodingService {
     public GoogleMapsGeocodingService(
             RestTemplate restTemplate,
             ObjectMapper objectMapper,
-            @Value("${google.maps.api.key:}") String apiKey) {
+            @Value("${google.maps.geocoding.api.key:}") String apiKey) {
         this.restTemplate = restTemplate;
         this.objectMapper = objectMapper;
         this.apiKey = apiKey;
@@ -36,7 +36,7 @@ public class GoogleMapsGeocodingService {
 
     public Optional<Coordenadas> geocodificar(Endereco endereco) {
         if (apiKey == null || apiKey.isBlank()) {
-            log.warn("GOOGLE_MAPS_API_KEY não configurada — geocodificação ignorada.");
+            log.warn("GOOGLE_MAPS_GEOCODING_API_KEY não configurada — geocodificação ignorada.");
             return Optional.empty();
         }
 

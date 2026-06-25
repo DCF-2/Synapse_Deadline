@@ -9,7 +9,6 @@ import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.OfertaSpecifications;
 import com.synapse.deadline.repository.ProdutoRepository;
-import com.synapse.deadline.util.GeoUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -19,8 +18,10 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
@@ -33,6 +34,9 @@ public class OfertaService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private GoogleMapsDistanceService googleMapsDistanceService;
 
     @Transactional
     public OfertaResponseDTO criarOferta(OfertaRequestDTO dto) {
@@ -61,10 +65,6 @@ public class OfertaService {
     }
 
     private OfertaResponseDTO converterParaResponseDTO(Oferta oferta) {
-        return converterParaResponseDTO(oferta, null, null);
-    }
-
-    private OfertaResponseDTO converterParaResponseDTO(Oferta oferta, Double latConsumidor, Double lngConsumidor) {
         OfertaResponseDTO dto = new OfertaResponseDTO();
         dto.setId(oferta.getId());
         dto.setProdutoId(oferta.getProduto().getId());
@@ -87,14 +87,36 @@ public class OfertaService {
         dto.setDataFimOferta(oferta.getDataFimOferta());
         dto.setAtivo(oferta.getAtivo());
 
-        if (latConsumidor != null && lngConsumidor != null
-                && empresa.getLatitude() != null && empresa.getLongitude() != null) {
-            double distancia = GeoUtil.calcularDistanciaKm(
-                    latConsumidor, lngConsumidor, empresa.getLatitude(), empresa.getLongitude());
-            dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
+        return dto;
+    }
+
+    private void enrichirComDistanciasRodoviarias(
+            List<Oferta> ofertas, List<OfertaResponseDTO> dtos, double latConsumidor, double lngConsumidor) {
+        if (ofertas.isEmpty()) {
+            return;
         }
 
-        return dto;
+        List<GoogleMapsDistanceService.Ponto> destinos = ofertas.stream()
+                .map(o -> o.getProduto().getEmpresa())
+                .filter(e -> e.getLatitude() != null && e.getLongitude() != null)
+                .map(e -> new GoogleMapsDistanceService.Ponto(e.getLatitude(), e.getLongitude()))
+                .distinct()
+                .toList();
+
+        Map<String, Double> distancias = googleMapsDistanceService.calcularDistanciasRodoviariasKm(
+                latConsumidor, lngConsumidor, destinos);
+
+        for (int i = 0; i < ofertas.size(); i++) {
+            Empresa empresa = ofertas.get(i).getProduto().getEmpresa();
+            if (empresa.getLatitude() != null && empresa.getLongitude() != null) {
+                String chave = GoogleMapsDistanceService.chaveCoordenada(
+                        empresa.getLatitude(), empresa.getLongitude());
+                Double distancia = distancias.get(chave);
+                if (distancia != null) {
+                    dtos.get(i).setDistanciaKm(distancia);
+                }
+            }
+        }
     }
 
     @Transactional(readOnly = true)
@@ -187,22 +209,33 @@ public class OfertaService {
                 .anyMatch(o -> "distanciaKm".equals(o.getProperty()));
 
         if (geoAtivo && (filtrarDistancia || ordenarPorDistancia)) {
-            List<OfertaResponseDTO> dtos = ofertaRepository
-                    .findAll(OfertaSpecifications.filtroVitrinePublica(filtro))
-                    .stream()
-                    .map(o -> converterParaResponseDTO(o, lat, lng))
+            List<Oferta> ofertas = ofertaRepository
+                    .findAll(OfertaSpecifications.filtroVitrinePublica(filtro));
+            List<OfertaResponseDTO> dtos = ofertas.stream()
+                    .map(this::converterParaResponseDTO)
+                    .collect(Collectors.toCollection(ArrayList::new));
+            enrichirComDistanciasRodoviarias(ofertas, dtos, lat, lng);
+
+            List<OfertaResponseDTO> filtrados = dtos.stream()
                     .filter(d -> !filtrarDistancia || (d.getDistanciaKm() != null && d.getDistanciaKm() <= filtro.getDistanciaMaxKm()))
                     .sorted(criarComparator(pageable.getSort()))
                     .collect(Collectors.toList());
 
-            return paginarLista(dtos, pageable);
+            return paginarLista(filtrados, pageable);
         }
 
-        Page<OfertaResponseDTO> pagina = ofertaRepository
-                .findAll(OfertaSpecifications.filtroVitrinePublica(filtro), pageable)
-                .map(o -> converterParaResponseDTO(o, lat, lng));
+        Page<Oferta> paginaOfertas = ofertaRepository
+                .findAll(OfertaSpecifications.filtroVitrinePublica(filtro), pageable);
+        List<Oferta> ofertas = paginaOfertas.getContent();
+        List<OfertaResponseDTO> dtos = ofertas.stream()
+                .map(this::converterParaResponseDTO)
+                .collect(Collectors.toCollection(ArrayList::new));
 
-        return pagina;
+        if (geoAtivo) {
+            enrichirComDistanciasRodoviarias(ofertas, dtos, lat, lng);
+        }
+
+        return new PageImpl<>(dtos, pageable, paginaOfertas.getTotalElements());
     }
 
     private Comparator<OfertaResponseDTO> criarComparator(Sort sort) {
@@ -283,9 +316,10 @@ public class OfertaService {
 
         if (latitude != null && longitude != null
                 && empresa.getLatitude() != null && empresa.getLongitude() != null) {
-            double distancia = GeoUtil.calcularDistanciaKm(
-                    latitude, longitude, empresa.getLatitude(), empresa.getLongitude());
-            dto.setDistanciaKm(Math.round(distancia * 10.0) / 10.0);
+            googleMapsDistanceService
+                    .calcularDistanciaRodoviariaKm(
+                            latitude, longitude, empresa.getLatitude(), empresa.getLongitude())
+                    .ifPresent(dto::setDistanciaKm);
         }
 
         if (empresa.getEndereco() != null) {

@@ -78,7 +78,7 @@ export default function ClienteHome() {
   const [precoMin, setPrecoMin] = useState('');
   const [precoMax, setPrecoMax] = useState('');
   const [diasMaxValidade, setDiasMaxValidade] = useState('');
-  const [distanciaMaxKm, setDistanciaMaxKm] = useState('');
+  const [distanciaMaxKm, setDistanciaMaxKm] = useState('100');
   const [lojasEncontradas, setLojasEncontradas] = useState([]);
 
   const [localizacao, setLocalizacao] = useState(null);
@@ -185,7 +185,7 @@ export default function ClienteHome() {
   const limparFiltros = () => {
     setCategoriaId('');
     setDiasMaxValidade('');
-    setDistanciaMaxKm('');
+    setDistanciaMaxKm('100');
     setPrecoMin('');
     setPrecoMax('');
   };
@@ -458,6 +458,7 @@ export default function ClienteHome() {
                     <option value="10">Até 10 km</option>
                     <option value="25">Até 25 km</option>
                     <option value="50">Até 50 km</option>
+                    <option value="100">Até 100 km</option>
                   </select>
                   {!localizacao && (
                     <small className="text-muted d-block mt-1">Habilite a localização do aparelho para usar este filtro.</small>

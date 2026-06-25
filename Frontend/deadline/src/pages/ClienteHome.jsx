@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/theme.css';
-import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
+import { obterLocalizacaoConsumidor, formatarDistancia, mensagemErroGeolocalizacao, statusDeErroGeolocalizacao } from '../utils/geolocalizacao';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -17,12 +17,14 @@ export default function ClienteHome() {
   const [precoMin, setPrecoMin] = useState('');
   const [precoMax, setPrecoMax] = useState('');
   const [diasMaxValidade, setDiasMaxValidade] = useState('');
-  const [distanciaMaxKm, setDistanciaMaxKm] = useState('');
+  const [distanciaMaxKm, setDistanciaMaxKm] = useState('100');
   const [lojasEncontradas, setLojasEncontradas] = useState([]);
 
   // Geolocalização do consumidor
   const [localizacao, setLocalizacao] = useState(null);
-  const [statusLocalizacao, setStatusLocalizacao] = useState('pendente'); // pendente | ok | negado | indisponivel
+  const [statusLocalizacao, setStatusLocalizacao] = useState('pendente'); // pendente | ok | negado | indisponivel | timeout | inseguro
+  const [mensagemLocalizacao, setMensagemLocalizacao] = useState('');
+  const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
 
   // Estado de Ordenação
   const [ordenacao, setOrdenacao] = useState('validadeProduto,asc');
@@ -70,21 +72,28 @@ export default function ClienteHome() {
       .catch(console.error);
   }, []);
 
+  const solicitarLocalizacao = useCallback(async () => {
+    setBuscandoLocalizacao(true);
+    setStatusLocalizacao('pendente');
+    setMensagemLocalizacao('');
+    try {
+      const coords = await obterLocalizacaoConsumidor();
+      setLocalizacao(coords);
+      setStatusLocalizacao('ok');
+    } catch (err) {
+      console.warn('Geolocalização:', err);
+      setLocalizacao(null);
+      setStatusLocalizacao(statusDeErroGeolocalizacao(err));
+      setMensagemLocalizacao(mensagemErroGeolocalizacao(err));
+    } finally {
+      setBuscandoLocalizacao(false);
+    }
+  }, []);
+
   // Solicita geolocalização do consumidor ao abrir a vitrine
   useEffect(() => {
-    obterLocalizacaoConsumidor()
-      .then((coords) => {
-        setLocalizacao(coords);
-        setStatusLocalizacao('ok');
-      })
-      .catch((err) => {
-        if (err.code === 1) {
-          setStatusLocalizacao('negado');
-        } else {
-          setStatusLocalizacao('indisponivel');
-        }
-      });
-  }, []);
+    solicitarLocalizacao();
+  }, [solicitarLocalizacao]);
 
   // Lógica de Busca Assíncrona (Debounce com regra de 3 caracteres)
   useEffect(() => {
@@ -202,15 +211,25 @@ export default function ClienteHome() {
 
       <div className="container py-5">
         {statusLocalizacao === 'negado' && (
-          <div className="alert alert-warning rounded-4 mb-4 d-flex align-items-center gap-2">
-            <span>📍</span>
-            <span>Ative a localização do navegador para ver distâncias e filtrar ofertas por proximidade.</span>
+          <div className="alert alert-warning rounded-4 mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <span>📍 {mensagemLocalizacao || 'Ative a localização do navegador para ver distâncias e filtrar ofertas por proximidade.'}</span>
+            <button type="button" className="btn btn-sm btn-outline-dark rounded-pill" onClick={solicitarLocalizacao} disabled={buscandoLocalizacao}>
+              {buscandoLocalizacao ? 'Aguardando...' : 'Tentar novamente'}
+            </button>
           </div>
         )}
-        {statusLocalizacao === 'indisponivel' && (
-          <div className="alert alert-secondary rounded-4 mb-4 d-flex align-items-center gap-2">
+        {(statusLocalizacao === 'indisponivel' || statusLocalizacao === 'timeout' || statusLocalizacao === 'inseguro') && (
+          <div className="alert alert-secondary rounded-4 mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap">
+            <span>📍 {mensagemLocalizacao || 'Não foi possível obter sua localização. As distâncias não serão exibidas.'}</span>
+            <button type="button" className="btn btn-sm btn-success rounded-pill" onClick={solicitarLocalizacao} disabled={buscandoLocalizacao}>
+              {buscandoLocalizacao ? 'Buscando...' : 'Tentar novamente'}
+            </button>
+          </div>
+        )}
+        {statusLocalizacao === 'pendente' && buscandoLocalizacao && (
+          <div className="alert alert-light border rounded-4 mb-4 d-flex align-items-center gap-2">
             <span>📍</span>
-            <span>Não foi possível obter sua localização. As distâncias não serão exibidas.</span>
+            <span>Obtendo sua localização...</span>
           </div>
         )}
 
@@ -252,16 +271,19 @@ export default function ClienteHome() {
                     className="form-select bg-light border-0"
                     value={distanciaMaxKm}
                     onChange={(e) => setDistanciaMaxKm(e.target.value)}
-                    disabled={!localizacao}
+                    disabled={!localizacao || buscandoLocalizacao}
                   >
                     <option value="">Qualquer distância</option>
                     <option value="5">Até 5 km</option>
                     <option value="10">Até 10 km</option>
                     <option value="25">Até 25 km</option>
                     <option value="50">Até 50 km</option>
+                    <option value="100">Até 100 km</option>
                   </select>
                   {!localizacao && (
-                    <small className="text-muted d-block mt-1">Aguardando localização...</small>
+                    <small className="text-muted d-block mt-1">
+                      {buscandoLocalizacao ? 'Obtendo localização...' : 'Aguardando localização...'}
+                    </small>
                   )}
                 </div>
 
