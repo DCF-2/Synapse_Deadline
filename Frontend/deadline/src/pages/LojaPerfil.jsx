@@ -146,22 +146,41 @@ export default function LojaPerfil() {
                  ✓ Loja Oficial Parceira
                </span>
              </div>
-             
              <div className="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3">
                <div>
                  <h1 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h1>
+                 
                  <div className="d-flex flex-wrap gap-4 mt-2 text-muted small">
-                    <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    {/* Cidade e UF */}
+                    <span className="d-flex align-items-center gap-1">📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    
+                    {/* Distância */}
                     {ofertas[0]?.distanciaKm != null && (
-                      <span className="fw-bold text-primary">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
+                      <span className="fw-bold text-primary d-flex align-items-center gap-1">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
                     )}
-                    <span>🕒 {loja.horarioFuncionamento}</span>
+                    
+                    {/* Horário de Funcionamento */}
+                    <span className="d-flex align-items-center gap-1">🕒 {loja.horarioFuncionamento}</span>
+                    
+                    {/* CNPJ ADICIONADO */}
+                    {loja.cnpj && (
+                      <span className="d-flex align-items-center gap-1" title="CNPJ da Empresa">📄 CNPJ: {loja.cnpj}</span>
+                    )}
+
+                    {/* MÚLTIPLOS TELEFONES ADICIONADOS */}
+                    {(loja.contato1 || loja.contato2) && (
+                      <span className="d-flex align-items-center gap-2">
+                        📞 
+                        {loja.contato1 && <span>{loja.contato1}</span>}
+                        {loja.contato1 && loja.contato2 && <span> | </span>}
+                        {loja.contato2 && <span>{loja.contato2}</span>}
+                      </span>
+                    )}
                  </div>
+
                </div>
 
-               {/* ========================================================================= */}
-               {/* ADIÇÃO: BOTÕES MODERNOS DE CONTACTO DIRETO NO PERFIL DA LOJA              */}
-               {/* ========================================================================= */}
+               {/* BOTÕES MODERNOS DE CONTACTO DIRETO NO PERFIL DA LOJA */}
                <div className="d-flex gap-2 w-100 w-md-auto mt-2">
                  <button className="btn text-white fw-bold rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm" 
                          style={{ backgroundColor: '#25D366', fontSize: '0.9rem' }} onClick={entrarEmContatoWhatsApp}>
@@ -210,7 +229,18 @@ export default function LojaPerfil() {
                           </span>
                         )}
                       </div>
-                      <h6 className="fw-bold text-dark mb-3 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
+                      <h6 className="fw-bold text-dark mb-1 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
+                      
+                      {/* CNPJ ADICIONADO NO CARD DA OFERTA */}
+                      <div className="mb-3">
+                        <small className="text-muted d-block fw-bold">{oferta.nomeFantasiaEmpresa}</small>
+                        {oferta.cnpjEmpresa && (
+                          <small className="text-muted d-block" style={{ fontSize: '0.65rem' }}>
+                            CNPJ: {oferta.cnpjEmpresa}
+                          </small>
+                        )}
+                      </div>
+
                       <div className="mb-3">
                         <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
                         <span className="fw-bold text-dark fs-4">Por: {formatarMoeda(oferta.precoPromocional)}</span>
@@ -331,6 +361,38 @@ export default function LojaPerfil() {
                         <span className="mt-1">📋</span>
                         <div><strong>Instruções do Lojista:</strong><br/>{detalhesOferta.instrucoesRetirada}</div>
                       </div>
+
+                       {/* BOTÕES DE AÇÃO NO FUNDO DO MODAL */}
+                  <div className="modal-footer border-top bg-light p-3 d-flex flex-wrap gap-2">
+                 
+                 {/* BOTÃO COMO CHEGAR */}
+                 <button className="btn btn-outline-dark fw-bold rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center gap-2" onClick={() => abrirMapa(detalhesOferta)}>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                      <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
+                    </svg>
+                    Como Chegar
+                 </button>
+                 
+                 <div className="d-flex gap-2 flex-grow-1">
+                   {/* BOTÃO WHATSAPP */}
+                   <button className="btn text-white fw-bold rounded-pill px-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2 shadow-sm" 
+                           style={{backgroundColor: '#25D366'}} onClick={() => abrirWhatsApp(detalhesOferta)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592m3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.73.73 0 0 0-.529.247c-.182.198-.691.677-.691 1.654s.71 1.916.81 2.049c.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232"/>
+                      </svg>
+                      WhatsApp
+                   </button>
+                   
+                   {/* BOTÃO E-MAIL */}
+                   <button className="btn text-white fw-bold rounded-pill px-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2 shadow-sm" 
+                           style={{backgroundColor: '#0d6efd'}} onClick={() => abrirEmail(detalhesOferta)}>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/>
+                      </svg>
+                      E-mail
+                   </button>
+                 </div>
+              </div>
                     </div>
                   </div>
                 </div>
