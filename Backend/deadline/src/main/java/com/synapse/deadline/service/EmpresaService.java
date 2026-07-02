@@ -249,7 +249,7 @@ public class EmpresaService {
         
         // 2. Omitir DADOS SENSÍVEIS (Segurança / Anti-vazamento)
         dto.setRazaoSocial(null);
-        dto.setCnpj(empresa.getCnpj());
+        dto.setCnpj(null);
         dto.setEmailLogin(null);
         dto.setIdRamo(null); // O consumidor não precisa de saber o ID interno do ramo
         
