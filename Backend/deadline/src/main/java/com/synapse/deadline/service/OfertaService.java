@@ -78,7 +78,6 @@ public class OfertaService {
 
         Empresa empresa = oferta.getProduto().getEmpresa();
         dto.setNomeFantasiaEmpresa(empresa.getNomeFantasia());
-        dto.setCnpjEmpresa(empresa.getCnpj());
 
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setFoto(oferta.getProduto().getFoto());

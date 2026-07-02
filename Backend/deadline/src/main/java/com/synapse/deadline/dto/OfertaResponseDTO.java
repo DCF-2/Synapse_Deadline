@@ -19,16 +19,7 @@ public class OfertaResponseDTO {
     private Integer cliquesContato;
     private String nomeFantasiaEmpresa;
     private Double distanciaKm;
-    private String cnpjEmpresa;
  
-
-    public String getCnpjEmpresa() {
-        return cnpjEmpresa;
-    }
-
-    public void setCnpjEmpresa(String cnpjEmpresa) {
-        this.cnpjEmpresa = cnpjEmpresa;
-    }
 
     public Long getId() {
         return id;
