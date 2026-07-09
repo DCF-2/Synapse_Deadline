@@ -12,6 +12,7 @@ import EditarOferta from './pages/EditarOferta';
 import Layout from './components/Layout';
 import ConfiguracoesPage from "./pages/Configuracoes";
 import LojaPerfil from './pages/LojaPerfil';
+import Ajuda from './pages/Ajuda';
 
 export default function App() {
   return (
@@ -42,6 +43,9 @@ export default function App() {
 
         {/* Configurações */}
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+        
+        {/* Ajuda */}
+        <Route path="/ajuda" element={<Ajuda />} />
       </Route>
       
     </Routes>
