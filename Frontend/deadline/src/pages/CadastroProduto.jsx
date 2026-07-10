@@ -5,79 +5,6 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
-// Componente reutilizável: ícone de ajuda com tooltip
-function IconeAjuda({ texto }) {
-  const [visivel, setVisivel] = useState(false);
-
-  return (
-    <span
-      className="position-relative d-inline-flex align-items-center ms-1"
-      onMouseEnter={() => setVisivel(true)}
-      onMouseLeave={() => setVisivel(false)}
-      onFocus={() => setVisivel(true)}
-      onBlur={() => setVisivel(false)}
-      tabIndex={0}
-      role="button"
-      aria-label="Ajuda"
-      style={{ cursor: 'help' }}
-    >
-      <span
-        className="d-flex align-items-center justify-content-center rounded-circle fw-bold"
-        style={{
-          width: '16px',
-          height: '16px',
-          fontSize: '11px',
-          backgroundColor: '#d1d5db',
-          color: '#4b5563',
-          lineHeight: 1,
-        }}
-      >
-        ?
-      </span>
-
-      {visivel && (
-        <span
-          className="position-absolute bg-dark text-white rounded-3 shadow-sm p-2"
-          style={{
-            bottom: '135%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            width: '220px',
-            fontSize: '12px',
-            fontWeight: 400,
-            zIndex: 20,
-            whiteSpace: 'normal',
-            lineHeight: 1.4,
-          }}
-        >
-          {texto}
-          <span
-            className="position-absolute"
-            style={{
-              top: '100%',
-              left: '50%',
-              transform: 'translateX(-50%)',
-              borderWidth: '5px',
-              borderStyle: 'solid',
-              borderColor: '#212529 transparent transparent transparent',
-            }}
-          />
-        </span>
-      )}
-    </span>
-  );
-}
-
-// Label + ícone de ajuda juntos
-function LabelComAjuda({ texto, ajuda }) {
-  return (
-    <label className="form-label fw-bold text-muted small d-flex align-items-center">
-      {texto}
-      <IconeAjuda texto={ajuda} />
-    </label>
-  );
-}
-
 export default function CadastroProduto() {
   const [nome, setNome] = useState('');
   const [codigoBarrasEan, setCodigoBarrasEan] = useState('');
@@ -211,50 +138,35 @@ export default function CadastroProduto() {
         <form onSubmit={handleCadastrar}>
           <div className="row g-3 mb-4">
             <div className="col-md-6">
-              <LabelComAjuda
-                texto="Nome do Produto"
-                ajuda="Use o nome exatamente como aparece na embalagem, incluindo marca e variação (ex: sabor, tamanho)."
-              />
+              <label className="form-label fw-bold text-muted small">Nome do Produto</label>
               <input type="text" className="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="Ex: Leite Integral" value={nome} onChange={e => setNome(e.target.value)} required />
             </div>
             <div className="col-md-6">
-              <LabelComAjuda
-                texto="Código de barras (EAN)"
-                ajuda="Código numérico de até 13 dígitos que fica sob o código de barras da embalagem. Campo opcional, mas ajuda a evitar produtos duplicados no catálogo."
-              />
+              <label className="form-label fw-bold text-muted small">Código de barras (EAN)</label>
               <input type="text" className="form-control form-control-lg bg-light border-0 shadow-sm" placeholder="Opcional" value={codigoBarrasEan} onChange={e => setCodigoBarrasEan(e.target.value)} maxLength={13} />
             </div>
           </div>
 
           <div className="row g-3 mb-4">
             <div className="col-md-6">
-              <LabelComAjuda
-                texto="Categoria"
-                ajuda="Escolha o grupo que melhor representa o produto. Isso define onde ele aparece nos filtros de busca dos clientes."
-              />
+              <label className="form-label fw-bold text-muted small">Categoria</label>
               <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
                 <option value="">Selecione...</option>
                 {categorias.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
               </select>
             </div>
             <div className="col-md-6">
-              <LabelComAjuda
-                texto="Preço Base (R$)"
-                ajuda="Preço ORIGINAL do produto, sem desconto. É a partir dele que o percentual de desconto da oferta será calculado depois, na tela de ofertas."
-              />
+              <label className="form-label fw-bold text-muted small">Preço Base (R$)</label>
               <input type="number" className="form-control form-control-lg bg-light border-0 shadow-sm fw-bold text-success" placeholder="0.00" value={precoOriginal} onChange={e => setPrecoOriginal(e.target.value)} required min="0.01" step="0.01" />
             </div>
           </div>
 
           <div className="mb-4">
-            <LabelComAjuda
-              texto="Descrição Detalhada"
-              ajuda="Informações complementares que ajudam o cliente a decidir a compra: composição, peso, validade média ou modo de conservação."
-            />
+            <label className="form-label fw-bold text-muted small">Descrição Detalhada</label>
             <textarea className="form-control bg-light border-0 shadow-sm" placeholder="Detalhes do produto..." value={descricao} onChange={e => setDescricao(e.target.value)} rows={3} />
           </div>
 
-                    <div className="mb-4">
+          <div className="mb-4">
             <label className="form-label fw-bold text-muted small">Imagem do Produto</label>
             <label className="d-flex flex-column align-items-center justify-content-center rounded-4 p-4 shadow-sm bg-light" style={{ border: '2px dashed #d1d5db', cursor: 'pointer', transition: 'all 0.3s' }}>
               <input type="file" accept="image/*" onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
