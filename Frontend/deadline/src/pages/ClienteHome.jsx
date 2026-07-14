@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterLocalizacaoConsumidor, formatarDistancia, mensagemErroGeolocalizacao, statusDeErroGeolocalizacao } from '../utils/geolocalizacao';
+import { contarFavoritos } from '../utils/favoritos';
+import BotaoFavorito from '../components/BotaoFavorito';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -34,6 +36,13 @@ export default function ClienteHome() {
   const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
 
   const debounceTimer = useRef(null);
+  const [totalFavoritos, setTotalFavoritos] = useState(() => contarFavoritos());
+
+  useEffect(() => {
+    const atualizar = () => setTotalFavoritos(contarFavoritos());
+    window.addEventListener('favoritos-atualizados', atualizar);
+    return () => window.removeEventListener('favoritos-atualizados', atualizar);
+  }, []);
 
   const abrirMapa = (oferta) => {
     const end = oferta.enderecoEmpresa;
@@ -195,8 +204,15 @@ export default function ClienteHome() {
           <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
             <img src="/logo_deadline.png" alt="Deadline" style={{ height: '35px' }} />
           </Link>
-          <div className="d-flex gap-2">
-             <Link to="/auth" className="btn btn-outline-success fw-bold rounded-pill px-4">Entrar / Sou Empresa</Link>
+          <div className="d-flex gap-2 align-items-center">
+            <Link to="/favoritos" className="btn btn-warning fw-bold rounded-pill px-3 d-flex align-items-center gap-2" title="Ver favoritos">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.05-.372.602-.372.652 0l1.847 3.65 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+              </svg>
+              Favoritos
+              {totalFavoritos > 0 && <span className="badge bg-dark rounded-pill">{totalFavoritos}</span>}
+            </Link>
+            <Link to="/auth" className="btn btn-outline-success fw-bold rounded-pill px-4">Entrar / Sou Empresa</Link>
           </div>
         </div>
       </nav>
@@ -373,6 +389,10 @@ export default function ClienteHome() {
                   <div className="col-12 col-md-6 col-xl-4" key={oferta.id}>
                     <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
                       
+                      <div className="position-absolute top-0 end-0 m-3">
+                        <BotaoFavorito oferta={oferta} />
+                      </div>
+
                       <div className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold shadow-sm" 
                            style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.85rem' }}>
                         -{oferta.percentualDesconto?.toFixed(0)}%
