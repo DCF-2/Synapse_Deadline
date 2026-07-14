@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterFavoritos, contarFavoritos } from '../utils/favoritos';
 import BotaoFavorito from '../components/BotaoFavorito';
+import OfertaCard from '../components/OfertaCard';
 
 export default function Favoritos() {
   const [favoritos, setFavoritos] = useState([]);
@@ -15,8 +16,6 @@ export default function Favoritos() {
     return () => window.removeEventListener('favoritos-atualizados', recarregar);
   }, []);
 
-  const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
-  const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
   const total = contarFavoritos();
 
   return (
@@ -61,48 +60,17 @@ export default function Favoritos() {
           <div className="row g-4">
             {favoritos.map((oferta) => (
               <div className="col-12 col-md-6 col-xl-4" key={oferta.id}>
-                <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                  <div className="position-absolute top-0 end-0 m-3">
-                    <BotaoFavorito oferta={oferta} />
-                  </div>
-
-                  <div className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold shadow-sm"
-                       style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.85rem' }}>
-                    -{oferta.percentualDesconto?.toFixed(0)}%
-                  </div>
-
-                  <div className="bg-light text-center p-4" style={{ height: '200px' }}>
-                    {oferta.foto ? (
-                      <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    ) : (
-                      <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span>
-                    )}
-                  </div>
-
-                  <div className="card-body d-flex flex-column p-4">
-                    <span className="text-success small fw-bold text-uppercase mb-1">{oferta.nomeCategoria}</span>
-                    <h6 className="fw-bold text-dark mb-1 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
-                    {oferta.nomeFantasiaEmpresa && (
-                      <small className="text-muted mb-2 d-block">{oferta.nomeFantasiaEmpresa}</small>
-                    )}
-
-                    <div className="mb-3">
-                      <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
-                      <span className="fw-bold text-dark fs-4">Por: {formatarMoeda(oferta.precoPromocional)}</span>
-                    </div>
-
-                    <div className="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
-                      <div>
-                        <small className="text-muted d-block" style={{ fontSize: '0.7rem' }}>Vence em:</small>
-                        <span className="fw-bold text-danger small">{formatarData(oferta.validadeProduto)}</span>
-                      </div>
-                      {oferta.empresaId && (
-                        <Link to={`/loja/${oferta.empresaId}`} className="btn btn-sm btn-outline-success fw-bold px-3 rounded-pill">
-                          Ver loja
-                        </Link>
-                      )}
-                    </div>
-                  </div>
+                <OfertaCard 
+                  oferta={oferta} 
+                  onClickCard={() => {}} 
+                  esconderLoja={false} 
+                />
+                <div className="mt-2 text-end">
+                  {oferta.empresaId && (
+                    <Link to={`/loja/${oferta.empresaId}`} className="btn btn-sm btn-outline-success fw-bold px-3 rounded-pill w-100">
+                      Ir para a loja
+                    </Link>
+                  )}
                 </div>
               </div>
             ))}

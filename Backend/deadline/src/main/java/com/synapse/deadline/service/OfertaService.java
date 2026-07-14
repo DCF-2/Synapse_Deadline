@@ -78,6 +78,8 @@ public class OfertaService {
 
         Empresa empresa = oferta.getProduto().getEmpresa();
         dto.setNomeFantasiaEmpresa(empresa.getNomeFantasia());
+        dto.setLogotipoEmpresa(empresa.getLogotipo());
+        dto.setEmpresaId(empresa.getId());
 
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setFoto(oferta.getProduto().getFoto());

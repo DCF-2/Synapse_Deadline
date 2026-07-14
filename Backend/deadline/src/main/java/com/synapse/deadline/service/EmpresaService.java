@@ -246,10 +246,12 @@ public class EmpresaService {
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
         dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
+        dto.setCnpj(empresa.getCnpj());
+        dto.setRazaoSocial(empresa.getRazaoSocial());
+        dto.setContato1(empresa.getContato1());
+        dto.setContato2(empresa.getContato2());
         
         // 2. Omitir DADOS SENSÍVEIS (Segurança / Anti-vazamento)
-        dto.setRazaoSocial(null);
-        dto.setCnpj(null);
         dto.setEmailLogin(null);
         dto.setIdRamo(null); // O consumidor não precisa de saber o ID interno do ramo
         

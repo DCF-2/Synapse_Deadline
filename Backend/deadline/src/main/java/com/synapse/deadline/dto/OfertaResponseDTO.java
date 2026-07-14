@@ -18,6 +18,8 @@ public class OfertaResponseDTO {
     private Boolean ativo;
     private Integer cliquesContato;
     private String nomeFantasiaEmpresa;
+    private String logotipoEmpresa;
+    private Long empresaId;
     private Double distanciaKm;
  
 
@@ -113,6 +115,10 @@ public class OfertaResponseDTO {
     public void setCliquesContato(Integer cliquesContato) { this.cliquesContato = cliquesContato; }
     public String getNomeFantasiaEmpresa() { return nomeFantasiaEmpresa; }
     public void setNomeFantasiaEmpresa(String nomeFantasiaEmpresa) { this.nomeFantasiaEmpresa = nomeFantasiaEmpresa; }
+    public String getLogotipoEmpresa() { return logotipoEmpresa; }
+    public void setLogotipoEmpresa(String logotipoEmpresa) { this.logotipoEmpresa = logotipoEmpresa; }
+    public Long getEmpresaId() { return empresaId; }
+    public void setEmpresaId(Long empresaId) { this.empresaId = empresaId; }
     public Double getDistanciaKm() { return distanciaKm; }
     public void setDistanciaKm(Double distanciaKm) { this.distanciaKm = distanciaKm; }
 
