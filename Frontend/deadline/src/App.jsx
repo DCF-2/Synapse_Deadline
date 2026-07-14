@@ -12,6 +12,8 @@ import EditarOferta from './pages/EditarOferta';
 import Layout from './components/Layout';
 import ConfiguracoesPage from "./pages/Configuracoes";
 import LojaPerfil from './pages/LojaPerfil';
+import Favoritos from './pages/Favoritos';
+import Ajuda from './pages/Ajuda';
 
 export default function App() {
   return (
@@ -24,6 +26,7 @@ export default function App() {
 
       {/* Rota de perfil da loja (pública) */}
       <Route path="/loja/:id" element={<LojaPerfil />} />
+      <Route path="/favoritos" element={<Favoritos />} />
 
       {/* ROTAS ADMINISTRATIVAS  */}
       <Route element={<Layout />}>
@@ -42,6 +45,9 @@ export default function App() {
 
         {/* Configurações */}
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+        
+        {/* Ajuda */}
+        <Route path="/ajuda" element={<Ajuda />} />
       </Route>
       
     </Routes>

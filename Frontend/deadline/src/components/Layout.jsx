@@ -154,6 +154,12 @@ export default function Layout() {
                   <span style={{ fontSize: '1.1rem' }}>⚙️</span> Configurações
                 </Link>
               </li>
+              <li className="nav-item">
+                <Link to="/ajuda" className={`nav-link text-white fw-medium d-flex align-items-center gap-3 ${isActive('/ajuda') ? 'active' : 'opacity-75'}`}
+                      style={isActive('/ajuda') ? { backgroundColor: 'rgba(255, 255, 255, 0.2)', borderRadius: 'var(--dl-radius-md)' } : {}}>
+                  <span style={{ fontSize: '1.1rem' }}>❓</span> Ajuda
+                </Link>
+              </li>
             </ul>
           </div>
 
