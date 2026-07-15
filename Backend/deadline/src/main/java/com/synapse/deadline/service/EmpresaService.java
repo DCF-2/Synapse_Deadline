@@ -7,11 +7,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
+import com.synapse.deadline.dto.ExcluirContaDTO;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
 import com.synapse.deadline.repository.RamoEmpresaRepository;
+import com.synapse.deadline.repository.MetricasOfertasRepository;
+import com.synapse.deadline.repository.MetricasEmpresasRepository;
+import com.synapse.deadline.repository.OfertaRepository;
+import com.synapse.deadline.repository.ProdutoRepository;
 import org.springframework.security.core.context.SecurityContextHolder;
 import java.util.List;
 
@@ -24,6 +29,18 @@ public class EmpresaService {
     
     @Autowired
     private RamoEmpresaRepository ramoRepository;
+
+    @Autowired
+    private MetricasOfertasRepository metricasOfertasRepository;
+
+    @Autowired
+    private MetricasEmpresasRepository metricasEmpresasRepository;
+
+    @Autowired
+    private OfertaRepository ofertaRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -289,5 +306,32 @@ public class EmpresaService {
                     dto.setLogotipo(emp.getLogotipo());
                     return dto;
                 }).toList();
+    }
+
+    @Transactional
+    public void excluirConta(ExcluirContaDTO dto) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Empresa empresa = repository.findById(empresaLogada.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Empresa não encontrada"));
+        
+        if (!empresa.getEmailLogin().equalsIgnoreCase(dto.getEmail())) {
+            throw new IllegalArgumentException("O e-mail informado não corresponde à conta logada.");
+        }
+
+        if (!passwordEncoder.matches(dto.getSenha(), empresa.getSenhaHash())) {
+            throw new IllegalArgumentException("Senha incorreta. A exclusão não foi autorizada.");
+        }
+
+        // Força parse do IDE
+        // Excluir métricas primeiro (foreign keys apontam para oferta/empresa)
+        metricasOfertasRepository.apagarPorEmpresaId(empresa.getId());
+        metricasEmpresasRepository.deleteByEmpresaId(empresa.getId());
+
+        // Excluir ofertas e produtos
+        ofertaRepository.deleteByEmpresaId(empresa.getId());
+        produtoRepository.deleteByEmpresaId(empresa.getId());
+
+        // Por fim, excluir a própria empresa
+        repository.delete(empresa);
     }
 }

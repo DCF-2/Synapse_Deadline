@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -19,6 +20,8 @@ const formatarData = (dataStr) => {
 };
 
 const abrirMapa = (oferta) => {
+  fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/como_chegar`, { method: 'POST' }).catch(console.error);
+  
   const end = oferta.enderecoEmpresa;
   if (!end || !end.logradouro) {
     alert("Esta oferta não possui informações detalhadas de endereço.");
@@ -30,7 +33,7 @@ const abrirMapa = (oferta) => {
 
 const abrirWhatsApp = (oferta) => {
   // 1. Registra o engajamento silenciosamente no backend
-  fetch(`${API_URL}/oferta/publico/${oferta.id}/engajamento`, { method: 'POST' }).catch(console.error);
+  fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/whatsapp`, { method: 'POST' }).catch(console.error);
   
   // 2. Abre o WhatsApp com texto pronto
   const fone = oferta.contatoWhatsapp?.replace(/\D/g, ''); // Limpa formatação
@@ -40,7 +43,7 @@ const abrirWhatsApp = (oferta) => {
 
 const abrirEmail = (oferta) => {
   // Regista o clique também para o lojista saber que houve interesse!
-  fetch(`${API_URL}/oferta/publico/${oferta.id}/engajamento`, { method: 'POST' }).catch(console.error);
+  fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/email`, { method: 'POST' }).catch(console.error);
   
   if (!oferta.emailContato) {
     alert("Este lojista não disponibilizou um e-mail de contacto.");
@@ -61,19 +64,23 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
         <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
           
           <div className="modal-header border-0 bg-light p-4">
-            <div className="d-flex align-items-center gap-3">
-              <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden" style={{width: '50px', height: '50px'}}>
+            <Link to={`/loja/${detalhesOferta.empresaId}`} className="d-flex align-items-center gap-3 text-decoration-none" title="Visitar perfil da loja" onClick={(e) => {
+              const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+              fetch(`${apiUrl}/api/publico/metricas/empresas/${detalhesOferta.empresaId}/engajamento/perfil`, { method: 'POST' }).catch(() => {});
+              onClose();
+            }}>
+              <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{width: '50px', height: '50px'}}>
                  {detalhesOferta.logotipoEmpresa ? (
                    <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
                  ) : ( <span className="fw-bold text-success">🏢</span> )}
               </div>
               <div>
                 <small className="text-muted d-block fw-bold" style={{fontSize: '0.75rem'}}>Vendido e entregue por:</small>
-                <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-2">
+                <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-2 hover-primary" style={{ transition: 'color 0.2s' }}>
                    {detalhesOferta.nomeFantasiaEmpresa}
                 </h5>
               </div>
-            </div>
+            </Link>
             <button type="button" className="btn-close" onClick={onClose}></button>
           </div>
 

@@ -21,7 +21,11 @@ const formatarData = (dataStr) => {
 const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
   return (
     <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift" 
-         onClick={() => onClickCard(oferta.id)} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
+         onClick={() => {
+           onClickCard(oferta.id);
+           const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+           fetch(`${apiUrl}/api/publico/metricas/ofertas/${oferta.id}/engajamento/detalhe`, { method: 'POST' }).catch(() => {});
+         }} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
       
       <div className="position-absolute top-0 end-0 m-3" onClick={(e) => e.stopPropagation()}>
         <BotaoFavorito oferta={oferta} />
@@ -54,7 +58,11 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
         {!esconderLoja && oferta.nomeFantasiaEmpresa && (
           <Link to={`/loja/${oferta.empresaId}`} 
                 className="d-flex align-items-center gap-2 mb-3 text-decoration-none" 
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+                  fetch(`${apiUrl}/api/publico/metricas/empresas/${oferta.empresaId}/engajamento/perfil`, { method: 'POST' }).catch(() => {});
+                }}
                 title="Visitar perfil da loja">
             <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{width: '36px', height: '36px', flexShrink: 0}}>
                {oferta.logotipoEmpresa ? (
@@ -64,7 +72,7 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
             <div className="overflow-hidden">
               <small className="text-muted d-block fw-bold lh-1 mb-1" style={{fontSize: '0.65rem'}}>Vendido por:</small>
               <span className="fw-bold text-dark lh-1 d-flex align-items-center gap-1 text-truncate" style={{fontSize: '0.85rem'}}>
-                 {oferta.nomeFantasiaEmpresa} <span style={{fontSize: '0.8rem'}}>↗️</span>
+                 {oferta.nomeFantasiaEmpresa} <span style={{fontSize: '0.8rem'}}></span>
               </span>
             </div>
           </Link>
