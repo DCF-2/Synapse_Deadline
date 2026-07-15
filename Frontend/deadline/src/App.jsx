@@ -15,6 +15,7 @@ import ConfiguracoesPage from "./pages/Configuracoes";
 import LojaPerfil from './pages/LojaPerfil';
 import Favoritos from './pages/Favoritos';
 import Ajuda from './pages/Ajuda';
+import CookieBanner from './components/CookieBanner';
 
 export default function App() {
   // Inicializar o tema do app
@@ -28,6 +29,7 @@ export default function App() {
   }, []);
 
   return (
+    <>
     <Routes>
       {/* Rotas Públicas (Sem o menu lateral) */}
       <Route path="/" element={<ClienteHome />} />
@@ -62,5 +64,7 @@ export default function App() {
       </Route>
       
     </Routes>
+    <CookieBanner />
+    </>
   );
 }

@@ -4,9 +4,11 @@ import '../styles/theme.css';
 import { obterFavoritos, contarFavoritos } from '../utils/favoritos';
 import BotaoFavorito from '../components/BotaoFavorito';
 import OfertaCard from '../components/OfertaCard';
+import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 
 export default function Favoritos() {
   const [favoritos, setFavoritos] = useState([]);
+  const [detalhesOferta, setDetalhesOferta] = useState(null);
 
   const recarregar = () => setFavoritos(obterFavoritos());
 
@@ -17,6 +19,23 @@ export default function Favoritos() {
   }, []);
 
   const total = contarFavoritos();
+
+  const abrirDetalhes = async (id) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+      const res = await fetch(`${API_URL}/api/publico/ofertas/${id}`); // Tenta rota pública
+      
+      // Ajuste caso a rota seja diferente
+      const response = res.ok ? res : await fetch(`${API_URL}/oferta/publico/${id}`);
+      
+      if (response.ok) {
+        const data = await response.json();
+        setDetalhesOferta(data);
+      }
+    } catch (error) {
+      console.error("Erro ao carregar detalhes:", error);
+    }
+  };
 
   return (
     <div style={{ backgroundColor: 'var(--dl-background)', minHeight: '100vh' }}>
@@ -62,7 +81,7 @@ export default function Favoritos() {
               <div className="col-12 col-md-6 col-xl-4" key={oferta.id}>
                 <OfertaCard 
                   oferta={oferta} 
-                  onClickCard={() => {}} 
+                  onClickCard={abrirDetalhes} 
                   esconderLoja={false} 
                 />
                 <div className="mt-2 text-end">
@@ -77,6 +96,11 @@ export default function Favoritos() {
           </div>
         )}
       </div>
+
+      <OfertaDetalhesModal
+        detalhesOferta={detalhesOferta}
+        onClose={() => setDetalhesOferta(null)}
+      />
     </div>
   );
 }

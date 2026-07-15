@@ -50,6 +50,7 @@ export function alternarFavorito(oferta) {
     percentualDesconto: oferta.percentualDesconto,
     validadeProduto: oferta.validadeProduto,
     nomeFantasiaEmpresa: oferta.nomeFantasiaEmpresa,
+    logotipoEmpresa: oferta.logotipoEmpresa,
     empresaId: oferta.empresaId,
     distanciaKm: oferta.distanciaKm,
     favoritadoEm: new Date().toISOString(),
