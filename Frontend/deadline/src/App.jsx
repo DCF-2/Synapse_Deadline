@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ClienteHome from './pages/ClienteHome';
 import AuthPage from './pages/AuthPage';
@@ -16,6 +17,16 @@ import Favoritos from './pages/Favoritos';
 import Ajuda from './pages/Ajuda';
 
 export default function App() {
+  // Inicializar o tema do app
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('deadline_theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+  }, []);
+
   return (
     <Routes>
       {/* Rotas Públicas (Sem o menu lateral) */}

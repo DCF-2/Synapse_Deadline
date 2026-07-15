@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import AcoesRapidasTop from './AcoesRapidasTop';
 import '../styles/theme.css'; 
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -7,7 +8,8 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [dicaAtual, setDicaAtual] = useState('');
-  const [empresaInfo, setEmpresaInfo] = useState(null); // Estado para guardar os dados reais do perfil
+  const [empresaInfo, setEmpresaInfo] = useState(null);
+  const [dashboardStats, setDashboardStats] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -38,13 +40,21 @@ export default function Layout() {
           const data = await res.json();
           setEmpresaInfo(data);
         }
+
+        const resDash = await fetch(`${API_URL}/dashboard`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (resDash.ok) {
+          const dashData = await resDash.json();
+          setDashboardStats(dashData);
+        }
       } catch (err) {
-        console.error("Erro ao buscar dados do perfil para o layout:", err);
+        console.error("Erro ao buscar dados para o layout:", err);
       }
     };
 
     buscarDadosPerfil();
-  }, []);
+  }, [location.pathname]);
 
   // 2. Muda a dica aleatória de forma dinâmica
   useEffect(() => {
@@ -186,6 +196,35 @@ export default function Layout() {
 
         {/* CONTEÚDO PRINCIPAL */}
         <main className="col-md-9 ms-sm-auto col-lg-10 px-md-4 p-4" style={{ height: '100vh', overflowY: 'auto', backgroundColor: 'var(--dl-background)' }}>
+            
+            {/* ALERTA GLOBAL DE ONBOARDING */}
+            {dashboardStats && (dashboardStats.totalProdutosAtivos === 0 || (dashboardStats.totalProdutosAtivos > 0 && dashboardStats.totalOfertasAtivas === 0)) && (
+              <div className="alert shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between p-4" style={{ backgroundColor: '#fff3cd', border: '1px solid #ffe69c' }}>
+                <div>
+                  <h5 className="fw-bold mb-2 text-dark">
+                    {dashboardStats.totalProdutosAtivos === 0 ? 'Bem-vindo ao Deadline! 🎉' : 'Ótimo começo! ✅'}
+                  </h5>
+                  <p className="mb-0 fs-6 text-dark opacity-75">
+                    {dashboardStats.totalProdutosAtivos === 0 
+                      ? 'O primeiro passo para o sistema funcionar é você cadastrar o seu primeiro Produto.'
+                      : 'Produto cadastrado com sucesso! Agora, crie sua primeira Oferta para que os clientes o encontrem e seu Dashboard seja ativado.'}
+                  </p>
+                </div>
+                <div className="d-flex flex-column gap-2 flex-shrink-0 ms-4">
+                  {dashboardStats.totalProdutosAtivos === 0 ? (
+                    <Link to="/cadastro-produto" className="btn btn-warning fw-bold rounded-pill px-4 shadow-sm text-dark">
+                      ➕ Cadastrar Produto
+                    </Link>
+                  ) : (
+                    <Link to="/nova-oferta" className="btn btn-warning fw-bold rounded-pill px-4 shadow-sm text-dark">
+                      📢 Criar Oferta
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
+
+            <AcoesRapidasTop />
             <Outlet /> 
         </main>
 

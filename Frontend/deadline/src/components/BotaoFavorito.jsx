@@ -17,6 +17,11 @@ export default function BotaoFavorito({ oferta, className = '', style = {}, onCh
     const agoraFavorito = alternarFavorito(oferta);
     setFavorito(agoraFavorito);
     onChange?.(agoraFavorito);
+
+    if (agoraFavorito) {
+        const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+        fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/favoritar`, { method: 'POST' }).catch(() => {});
+    }
   };
 
   return (
