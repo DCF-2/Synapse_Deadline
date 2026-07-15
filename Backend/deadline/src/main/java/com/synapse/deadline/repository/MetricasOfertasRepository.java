@@ -5,9 +5,11 @@ import com.synapse.deadline.entity.Oferta;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -45,4 +47,8 @@ public interface MetricasOfertasRepository extends JpaRepository<MetricasOfertas
            "FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia >= :dataInicio " +
            "GROUP BY m.dia ORDER BY m.dia ASC")
     java.util.List<Object[]> findEvolucaoDiariaByEmpresaId(@Param("empresaId") Long empresaId, @Param("dataInicio") LocalDate dataInicio);
+
+    @Modifying
+    @Query("DELETE FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
+    void apagarPorEmpresaId(@Param("empresaId") Long empresaId);
 }

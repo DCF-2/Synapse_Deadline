@@ -2,6 +2,7 @@ package com.synapse.deadline.controller;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
+import com.synapse.deadline.dto.ExcluirContaDTO;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.RamoEmpresaRepository;
 import com.synapse.deadline.service.EmpresaService;
@@ -62,5 +63,11 @@ public class EmpresaController {
     @GetMapping("/publico/buscar")
     public ResponseEntity<List<com.synapse.deadline.dto.EmpresaResumoDTO>> buscarLojas(@RequestParam String nome) {
         return ResponseEntity.ok(service.buscarLojasPorNome(nome));
+    }
+
+    @DeleteMapping("/perfil")
+    public ResponseEntity<Void> excluirConta(@Valid @RequestBody ExcluirContaDTO dto) {
+        service.excluirConta(dto);
+        return ResponseEntity.noContent().build();
     }
 }

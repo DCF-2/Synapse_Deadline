@@ -9,6 +9,7 @@ export default function ConfiguracoesPage() {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [enviandoLogo, setEnviandoLogo] = useState(false);
+  const [excluindoConta, setExcluindoConta] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
 
@@ -48,6 +49,7 @@ export default function ConfiguracoesPage() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleteEmail, setDeleteEmail] = useState('');
   const [deletePassword, setDeletePassword] = useState('');
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
 
   useEffect(() => {
     const carregarDadosIniciais = async () => {
@@ -207,10 +209,38 @@ export default function ConfiguracoesPage() {
     }
   };
 
-  const handleDeleteAccount = (e) => {
+  const handleDeleteAccount = async (e) => {
     e.preventDefault();
-    alert("Funcionalidade em desenvolvimento: A exclusão da conta será implementada em breve.");
-    setShowDeleteModal(false);
+    setExcluindoConta(true);
+    setErro(null);
+
+    try {
+      const token = localStorage.getItem('deadline_token');
+      const payload = { email: deleteEmail, senha: deletePassword };
+
+      const res = await fetch(`${API_URL}/empresa/perfil`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(payload)
+      });
+
+      if (!res.ok) {
+        let msg = "Erro ao excluir conta.";
+        try { const errData = await res.json(); msg = errData.message || msg; } catch(e) {}
+        throw new Error(msg);
+      }
+
+      alert("Conta e dados excluídos com sucesso. Você será desconectado.");
+      localStorage.removeItem('deadline_token');
+      localStorage.removeItem('deadline_empresa');
+      window.location.href = '/login'; // Força recarregamento limpo
+
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setExcluindoConta(false);
+      setShowDeleteModal(false);
+    }
   };
 
   if (carregando) return (
@@ -593,12 +623,30 @@ export default function ConfiguracoesPage() {
                   </div>
                   <div className="mb-4">
                     <label className="form-label fw-bold small text-muted">Senha Atual</label>
-                    <input type="password" className="form-control bg-light border-0 py-2" required value={deletePassword} onChange={(e) => setDeletePassword(e.target.value)} />
+                    <div className="input-group">
+                      <input 
+                        type={showDeletePassword ? "text" : "password"} 
+                        className="form-control bg-light border-0 py-2" 
+                        required 
+                        value={deletePassword} 
+                        onChange={(e) => setDeletePassword(e.target.value)} 
+                      />
+                      <button 
+                        type="button" 
+                        className="btn btn-light bg-light border-0" 
+                        onClick={() => setShowDeletePassword(!showDeletePassword)}
+                        style={{ padding: '0 15px' }}
+                      >
+                        {showDeletePassword ? "🙈" : "👁️"}
+                      </button>
+                    </div>
                   </div>
                 </div>
                 <div className="modal-footer border-top-0 pt-0 px-4 pb-4">
-                  <button type="button" className="btn btn-light fw-bold rounded-pill px-4" onClick={() => setShowDeleteModal(false)}>Cancelar</button>
-                  <button type="submit" className="btn btn-danger fw-bold rounded-pill px-4 shadow-sm">Confirmar Exclusão</button>
+                  <button type="button" className="btn btn-light fw-bold rounded-pill px-4" onClick={() => setShowDeleteModal(false)} disabled={excluindoConta}>Cancelar</button>
+                  <button type="submit" className="btn btn-danger fw-bold rounded-pill px-4 shadow-sm" disabled={excluindoConta}>
+                    {excluindoConta ? 'Excluindo...' : 'Confirmar Exclusão'}
+                  </button>
                 </div>
               </form>
             </div>

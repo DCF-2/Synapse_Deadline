@@ -5,6 +5,7 @@ import com.synapse.deadline.entity.MetricasEmpresas;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -39,4 +40,8 @@ public interface MetricasEmpresasRepository extends JpaRepository<MetricasEmpres
 
     @Query("SELECT COALESCE(SUM(m.cliquesComoChegarEmpresa), 0) FROM MetricasEmpresas m WHERE m.empresa.id = :empresaId")
     Long sumComoChegarByEmpresaId(@Param("empresaId") Long empresaId);
+
+    @Modifying
+    @Query("DELETE FROM MetricasEmpresas m WHERE m.empresa.id = :empresaId")
+    void deleteByEmpresaId(@Param("empresaId") Long empresaId);
 }
