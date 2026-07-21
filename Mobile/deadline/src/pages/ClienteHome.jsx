@@ -179,7 +179,7 @@ export default function ClienteHome() {
 
   useEffect(() => {
     carregarVitrine();
-  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao]);
+  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao, precoMin, precoMax]);
 
   // Função para Limpar todos os filtros do Modal
   const limparFiltros = () => {
