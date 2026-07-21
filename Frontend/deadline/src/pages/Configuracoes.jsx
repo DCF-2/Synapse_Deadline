@@ -9,6 +9,7 @@ export default function ConfiguracoesPage() {
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [enviandoLogo, setEnviandoLogo] = useState(false);
+  const [enviandoBanner, setEnviandoBanner] = useState(false);
   const [excluindoConta, setExcluindoConta] = useState(false);
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
@@ -25,6 +26,7 @@ export default function ConfiguracoesPage() {
   const [razaoSocial, setRazaoSocial] = useState('');
   const [cnpj, setCnpj] = useState('');
   const [logotipo, setLogotipo] = useState(''); 
+  const [bannerPerfil, setBannerPerfil] = useState(''); 
   const [idRamo, setIdRamo] = useState('');
   const [emailLogin, setEmailLogin] = useState('');
   
@@ -72,6 +74,7 @@ export default function ConfiguracoesPage() {
         setRazaoSocial(data.razaoSocial || '');
         setCnpj(data.cnpj || '');
         setLogotipo(data.logotipo || '');
+        setBannerPerfil(data.bannerPerfil || '');
         setIdRamo(data.idRamo || '');
         setEmailLogin(data.emailLogin || '');
         
@@ -177,6 +180,33 @@ export default function ConfiguracoesPage() {
     }
   };
 
+  const handleUploadBanner = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setEnviandoBanner(true);
+    setErro(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST',
+        body: formData
+      });
+      if (!res.ok) throw new Error('Falha no upload para o Cloudinary');
+      const data = await res.json();
+      setBannerPerfil(data.secure_url);
+      setSucesso(true);
+      setTimeout(() => setSucesso(false), 2000);
+    } catch (err) {
+      setErro("Erro no Upload do Banner: " + err.message);
+    } finally {
+      setEnviandoBanner(false);
+    }
+  };
+
   const handleSalvar = async (e) => {
     e.preventDefault();
     setSalvando(true);
@@ -186,7 +216,7 @@ export default function ConfiguracoesPage() {
     try {
       const token = localStorage.getItem('deadline_token');
       const payload = {
-        nomeFantasia, razaoSocial, cnpj, logotipo,
+        nomeFantasia, razaoSocial, cnpj, logotipo, bannerPerfil,
         idRamo: idRamo ? parseInt(idRamo, 10) : null,
         emailLogin, contatoWhatsapp, contato1, contato2,
         emailContato, horarioFuncionamento, instrucoesRetirada,
@@ -437,6 +467,29 @@ export default function ConfiguracoesPage() {
               <button type="submit" className="btn text-white fw-bold px-4 py-2 rounded-pill shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }} disabled={salvando}>
                 {salvando ? 'Salvando...' : 'Salvar Etapa'}
               </button>
+            </div>
+
+            <div className="rounded-4 border overflow-hidden bg-light shadow-sm mb-5">
+              <div className="position-relative" style={{ height: '180px' }}>
+                {bannerPerfil ? (
+                  <img src={bannerPerfil} alt="Banner da empresa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center" style={{ background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}>
+                    <span style={{ fontSize: '2.3rem' }}>🖼️</span>
+                    <p className="mb-0 mt-2 fw-bold text-white">Adicionar banner do perfil</p>
+                  </div>
+                )}
+                <div className="position-absolute bottom-0 start-0 end-0 p-3 bg-dark bg-opacity-25 d-flex justify-content-between align-items-center">
+                  <div className="text-white">
+                    <div className="fw-bold">Banner do Perfil</div>
+                    <small className="opacity-75">Recomendado: 1600x500px</small>
+                  </div>
+                  <label className="btn btn-light btn-sm fw-bold rounded-pill mb-0" style={{ cursor: 'pointer' }}>
+                    {enviandoBanner ? 'Enviando...' : 'Escolher imagem'}
+                    <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
+                  </label>
+                </div>
+              </div>
             </div>
 
             <div className="d-flex flex-column flex-sm-row align-items-center bg-light p-4 rounded-4 mb-5 border">

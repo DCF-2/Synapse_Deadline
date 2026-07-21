@@ -1,6 +1,9 @@
 package com.synapse.deadline.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -12,13 +15,11 @@ import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
-import com.synapse.deadline.repository.RamoEmpresaRepository;
-import com.synapse.deadline.repository.MetricasOfertasRepository;
 import com.synapse.deadline.repository.MetricasEmpresasRepository;
+import com.synapse.deadline.repository.MetricasOfertasRepository;
 import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.ProdutoRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
-import java.util.List;
+import com.synapse.deadline.repository.RamoEmpresaRepository;
 
 
 @Service
@@ -71,6 +72,7 @@ public class EmpresaService {
         e.setRazaoSocial(dto.getRazaoSocial());
         e.setCnpj(dto.getCnpj());
         e.setLogotipo(dto.getLogotipo());
+        e.setBannerPerfil(dto.getBannerPerfil());
         e.setRamo(ramo);
         
         // Mapeamento do objeto Endereco (Embeddable)
@@ -101,6 +103,8 @@ public class EmpresaService {
         EmpresaPerfilDTO retorno = new EmpresaPerfilDTO();
         retorno.setNomeFantasia(salva.getNomeFantasia());
         retorno.setCnpj(salva.getCnpj());
+        retorno.setLogotipo(salva.getLogotipo());
+        retorno.setBannerPerfil(salva.getBannerPerfil());
         retorno.setEmailLogin(salva.getEmailLogin());
         // (Setar os demais campos conforme necessidade do retorno)
         
@@ -128,6 +132,8 @@ public class EmpresaService {
         
         e.setNomeFantasia(dto.getNomeFantasia());
         e.setRazaoSocial(dto.getRazaoSocial());
+        e.setLogotipo(dto.getLogotipo());
+        e.setBannerPerfil(dto.getBannerPerfil());
         e.setContatoWhatsapp(dto.getContatoWhatsapp());
         e.setContato1(dto.getContato1());
         e.setContato2(dto.getContato2());
@@ -163,6 +169,7 @@ public class EmpresaService {
         empresa.setNomeFantasia(dto.getNomeFantasia());
         empresa.setRazaoSocial(dto.getRazaoSocial());
         empresa.setLogotipo(dto.getLogotipo()); // String recebida como URL do Cloudinary do front
+        empresa.setBannerPerfil(dto.getBannerPerfil());
         empresa.setContatoWhatsapp(dto.getContatoWhatsapp());
         empresa.setContato1(dto.getContato1());
         empresa.setContato2(dto.getContato2());
@@ -219,6 +226,7 @@ public class EmpresaService {
         dto.setRazaoSocial(empresa.getRazaoSocial());
         dto.setCnpj(empresa.getCnpj());
         dto.setLogotipo(empresa.getLogotipo());
+        dto.setBannerPerfil(empresa.getBannerPerfil());
         dto.setIdRamo(empresa.getRamo() != null ? empresa.getRamo().getId() : null);
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setContato1(empresa.getContato1());
@@ -260,6 +268,7 @@ public class EmpresaService {
         // 1. Dados Públicos (Visíveis para o Consumidor)
         dto.setNomeFantasia(empresa.getNomeFantasia());
         dto.setLogotipo(empresa.getLogotipo());
+        dto.setBannerPerfil(empresa.getBannerPerfil());
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
         dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());

@@ -132,7 +132,19 @@ export default function LojaPerfil() {
 
       {/* HEADER / CAPA DA LOJA (Estilo Mercado Livre / Premium) */}
       <div className="bg-white shadow-sm mb-4">
-        <div style={{ height: '180px', background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}></div>
+        <div
+          style={{
+            height: '180px',
+            backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
+            backgroundColor: loja.bannerPerfil ? '#f3f4f6' : 'var(--dl-primary)',
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            ...(loja.bannerPerfil ? {} : {
+              background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'
+            })
+          }}
+        ></div>
         
         <div className="container position-relative pb-4">
           <div className="bg-white rounded-circle shadow-lg d-flex align-items-center justify-content-center overflow-hidden border border-4 border-white position-absolute" 
