@@ -1,19 +1,25 @@
 package com.synapse.deadline.service;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.synapse.deadline.dto.EmpresaCadastroDTO;
 import com.synapse.deadline.dto.EmpresaPerfilDTO;
+import com.synapse.deadline.dto.ExcluirContaDTO;
 import com.synapse.deadline.entity.Empresa;
 import com.synapse.deadline.entity.Endereco;
 import com.synapse.deadline.entity.RamoEmpresa;
 import com.synapse.deadline.repository.EmpresaRepository;
+import com.synapse.deadline.repository.MetricasEmpresasRepository;
+import com.synapse.deadline.repository.MetricasOfertasRepository;
+import com.synapse.deadline.repository.OfertaRepository;
+import com.synapse.deadline.repository.ProdutoRepository;
 import com.synapse.deadline.repository.RamoEmpresaRepository;
-import org.springframework.security.core.context.SecurityContextHolder;
-import java.util.List;
 
 
 @Service
@@ -24,6 +30,18 @@ public class EmpresaService {
     
     @Autowired
     private RamoEmpresaRepository ramoRepository;
+
+    @Autowired
+    private MetricasOfertasRepository metricasOfertasRepository;
+
+    @Autowired
+    private MetricasEmpresasRepository metricasEmpresasRepository;
+
+    @Autowired
+    private OfertaRepository ofertaRepository;
+
+    @Autowired
+    private ProdutoRepository produtoRepository;
 
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -54,6 +72,7 @@ public class EmpresaService {
         e.setRazaoSocial(dto.getRazaoSocial());
         e.setCnpj(dto.getCnpj());
         e.setLogotipo(dto.getLogotipo());
+        e.setBannerPerfil(dto.getBannerPerfil());
         e.setRamo(ramo);
         
         // Mapeamento do objeto Endereco (Embeddable)
@@ -84,6 +103,8 @@ public class EmpresaService {
         EmpresaPerfilDTO retorno = new EmpresaPerfilDTO();
         retorno.setNomeFantasia(salva.getNomeFantasia());
         retorno.setCnpj(salva.getCnpj());
+        retorno.setLogotipo(salva.getLogotipo());
+        retorno.setBannerPerfil(salva.getBannerPerfil());
         retorno.setEmailLogin(salva.getEmailLogin());
         // (Setar os demais campos conforme necessidade do retorno)
         
@@ -111,6 +132,8 @@ public class EmpresaService {
         
         e.setNomeFantasia(dto.getNomeFantasia());
         e.setRazaoSocial(dto.getRazaoSocial());
+        e.setLogotipo(dto.getLogotipo());
+        e.setBannerPerfil(dto.getBannerPerfil());
         e.setContatoWhatsapp(dto.getContatoWhatsapp());
         e.setContato1(dto.getContato1());
         e.setContato2(dto.getContato2());
@@ -146,6 +169,7 @@ public class EmpresaService {
         empresa.setNomeFantasia(dto.getNomeFantasia());
         empresa.setRazaoSocial(dto.getRazaoSocial());
         empresa.setLogotipo(dto.getLogotipo()); // String recebida como URL do Cloudinary do front
+        empresa.setBannerPerfil(dto.getBannerPerfil());
         empresa.setContatoWhatsapp(dto.getContatoWhatsapp());
         empresa.setContato1(dto.getContato1());
         empresa.setContato2(dto.getContato2());
@@ -202,6 +226,7 @@ public class EmpresaService {
         dto.setRazaoSocial(empresa.getRazaoSocial());
         dto.setCnpj(empresa.getCnpj());
         dto.setLogotipo(empresa.getLogotipo());
+        dto.setBannerPerfil(empresa.getBannerPerfil());
         dto.setIdRamo(empresa.getRamo() != null ? empresa.getRamo().getId() : null);
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setContato1(empresa.getContato1());
@@ -243,13 +268,16 @@ public class EmpresaService {
         // 1. Dados Públicos (Visíveis para o Consumidor)
         dto.setNomeFantasia(empresa.getNomeFantasia());
         dto.setLogotipo(empresa.getLogotipo());
+        dto.setBannerPerfil(empresa.getBannerPerfil());
         dto.setContatoWhatsapp(empresa.getContatoWhatsapp());
         dto.setHorarioFuncionamento(empresa.getHorarioFuncionamento());
         dto.setInstrucoesRetirada(empresa.getInstrucoesRetirada());
+        dto.setCnpj(empresa.getCnpj());
+        dto.setRazaoSocial(empresa.getRazaoSocial());
+        dto.setContato1(empresa.getContato1());
+        dto.setContato2(empresa.getContato2());
         
         // 2. Omitir DADOS SENSÍVEIS (Segurança / Anti-vazamento)
-        dto.setRazaoSocial(null);
-        dto.setCnpj(null);
         dto.setEmailLogin(null);
         dto.setIdRamo(null); // O consumidor não precisa de saber o ID interno do ramo
         
@@ -287,5 +315,32 @@ public class EmpresaService {
                     dto.setLogotipo(emp.getLogotipo());
                     return dto;
                 }).toList();
+    }
+
+    @Transactional
+    public void excluirConta(ExcluirContaDTO dto) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Empresa empresa = repository.findById(empresaLogada.getId())
+                .orElseThrow(() -> new jakarta.persistence.EntityNotFoundException("Empresa não encontrada"));
+        
+        if (!empresa.getEmailLogin().equalsIgnoreCase(dto.getEmail())) {
+            throw new IllegalArgumentException("O e-mail informado não corresponde à conta logada.");
+        }
+
+        if (!passwordEncoder.matches(dto.getSenha(), empresa.getSenhaHash())) {
+            throw new IllegalArgumentException("Senha incorreta. A exclusão não foi autorizada.");
+        }
+
+        // Força parse do IDE
+        // Excluir métricas primeiro (foreign keys apontam para oferta/empresa)
+        metricasOfertasRepository.apagarPorEmpresaId(empresa.getId());
+        metricasEmpresasRepository.deleteByEmpresaId(empresa.getId());
+
+        // Excluir ofertas e produtos
+        ofertaRepository.deleteByEmpresaId(empresa.getId());
+        produtoRepository.deleteByEmpresaId(empresa.getId());
+
+        // Por fim, excluir a própria empresa
+        repository.delete(empresa);
     }
 }

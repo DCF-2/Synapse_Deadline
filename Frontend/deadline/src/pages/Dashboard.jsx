@@ -2,10 +2,73 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, 
-  PieChart, Pie, Cell, Legend 
+  PieChart, Pie, Cell, Legend, AreaChart, Area, FunnelChart, Funnel, LabelList
 } from 'recharts';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+
+// Componente reutilizável: ícone de ajuda com tooltip
+function IconeAjuda({ texto }) {
+  const [visivel, setVisivel] = useState(false);
+
+  return (
+    <span
+      className="position-relative d-inline-flex align-items-center ms-1"
+      onMouseEnter={() => setVisivel(true)}
+      onMouseLeave={() => setVisivel(false)}
+      onFocus={() => setVisivel(true)}
+      onBlur={() => setVisivel(false)}
+      tabIndex={0}
+      role="button"
+      aria-label="Ajuda"
+      style={{ cursor: 'help' }}
+    >
+      <span
+        className="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+        style={{
+          width: '16px',
+          height: '16px',
+          fontSize: '11px',
+          backgroundColor: '#d1d5db',
+          color: '#4b5563',
+          lineHeight: 1,
+        }}
+      >
+        ?
+      </span>
+
+      {visivel && (
+        <span
+          className="position-absolute bg-dark text-white rounded-3 shadow-sm p-2"
+          style={{
+            bottom: '135%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '220px',
+            fontSize: '12px',
+            fontWeight: 400,
+            zIndex: 1000,
+            lineHeight: 1.4,
+            textAlign: 'center'
+          }}
+        >
+          {texto}
+          <span
+            className="position-absolute"
+            style={{
+              bottom: '-4px',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              borderWidth: '5px',
+              borderStyle: 'solid',
+              borderColor: '#212529 transparent transparent transparent',
+            }}
+          />
+        </span>
+      )}
+    </span>
+  );
+}
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -45,41 +108,71 @@ export default function Dashboard() {
 
   const formatarMoeda = (valor) => valor == null ? '—' : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (dataString) => !dataString ? '—' : new Date(`${dataString}T00:00:00`).toLocaleDateString('pt-BR');
+  const formatarDataCurta = (dataString) => {
+    if (!dataString) return '';
+    const data = new Date(`${dataString}T00:00:00`);
+    return data.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  };
 
   if (carregando) return (
     <div className="d-flex justify-content-center align-items-center h-100">
       <div className="spinner-border text-success" role="status"></div>
-      <span className="ms-3 text-muted fw-bold">A processar gráficos e métricas...</span>
+      <span className="ms-3 text-muted fw-bold">A carregar painel analítico...</span>
     </div>
   );
 
   if (erro) return <div className="alert alert-danger m-4 shadow-sm rounded-4">⚠️ {erro}</div>;
 
   // --- DADOS PARA OS GRÁFICOS ---
-  // Gráfico 1 (Pie): Produtos com Oferta vs Sem Oferta
+  // Gráfico Pie: Aproveitamento
   const produtosSemOferta = Math.max(0, (dados?.totalProdutosAtivos || 0) - (dados?.totalOfertasAtivas || 0));
   const dadosPie = [
     { name: 'Com Oferta Ativa', value: dados?.totalOfertasAtivas || 0 },
     { name: 'Sem Oferta', value: produtosSemOferta },
   ];
-  const CORES_PIE = ['#23a889', '#e9ecef']; // Verde da marca e Cinza neutro
+  const CORES_PIE = ['#23a889', '#e9ecef'];
 
-  // Gráfico 2 (Bar): Top 5 Ofertas com mais cliques
+  // Gráfico Bar: Top Ofertas
   const dadosBar = dados?.topOfertasEngajamento?.map(oferta => ({
-    name: oferta.tituloProduto?.substring(0, 15) + '...', // Trunca nomes muito grandes
+    name: oferta.tituloProduto?.substring(0, 15) + '...',
     Cliques: oferta.cliquesContato || 0
   })) || [];
 
+  // Gráfico Area: Evolução Diária
+  const dadosEvolucao = dados?.engajamentoEvolucao?.map(item => ({
+    data: formatarDataCurta(item.data),
+    Interações: item.interacoes
+  })) || [];
+
+  // Gráfico Funnel: Funil de Conversão
+  const dadosFunil = [
+    { name: 'Ofertas no Catálogo', value: dados?.totalOfertasAtivas || 0, fill: '#1E3A5F' },
+    { name: 'Visualizações de Detalhes', value: dados?.totalCliquesDetalhe || 0, fill: '#eeab45' },
+    { name: 'Ações Diretas (Contato)', value: dados?.totalCliquesContato || 0, fill: '#25D366' }
+  ];
+
+  // Gráfico Breakdown: Detalhamento de Engajamentos
+  const dadosDetalhados = [
+    { name: 'Visualizações do Card', Engajamento: dados?.totalCliquesDetalhe || 0, fill: '#eeab45' },
+    { name: 'Cliques no WhatsApp', Engajamento: dados?.totalWhatsApp || 0, fill: '#25D366' },
+    { name: 'Cliques no E-mail', Engajamento: dados?.totalEmail || 0, fill: '#0d6efd' },
+    { name: 'Acessos "Como Chegar"', Engajamento: dados?.totalComoChegar || 0, fill: '#1E3A5F' },
+    { name: 'Favoritados', Engajamento: dados?.totalFavoritos || 0, fill: '#e63946' },
+    { name: 'Visitas ao Perfil', Engajamento: dados?.totalPerfil || 0, fill: '#6c757d' }
+  ];
+
+  const hasNoProducts = dados?.totalProdutosAtivos === 0;
+  const hasNoOffers = dados?.totalProdutosAtivos > 0 && dados?.totalOfertasAtivas === 0;
+  const needsOnboarding = hasNoProducts || hasNoOffers;
+
   return (
     <>
-      <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
+      <div style={{ filter: needsOnboarding ? 'grayscale(100%) opacity(40%)' : 'none', pointerEvents: needsOnboarding ? 'none' : 'auto', transition: 'filter 0.3s ease' }}>
+      <div className="d-flex justify-content-between align-items-center pt-1 pb-2 mb-4 border-bottom">
         <div>
-          <h2 className="fw-bold text-dark m-0">Painel de Insights 📊</h2>
-          <p className="text-muted small m-0 mt-1">Visão geral do desempenho das suas ofertas e engajamento dos clientes.</p>
+          <h2 className="fw-bold text-dark m-0">Painel de Insights 📈</h2>
+          <p className="text-muted small m-0 mt-1">Acompanhe a performance do seu catálogo e o comportamento dos clientes.</p>
         </div>
-        <Link to="/nova-oferta" className="btn text-white fw-bold px-4 py-2 shadow-sm rounded-3" style={{ backgroundColor: 'var(--dl-primary)' }}>
-          ➕ Nova Oferta
-        </Link>
       </div>
 
       {/* 4 CARDS DE ESTATÍSTICAS (KPIs) */}
@@ -91,7 +184,9 @@ export default function Dashboard() {
                 <span style={{ fontSize: '1.5rem' }}>📢</span>
               </div>
               <div className="flex-grow-1 ms-3">
-                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>Ofertas Ativas</h6>
+                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
+                  Ofertas Ativas <IconeAjuda texto="Quantidade de ofertas que estão atualmente visíveis no app para os clientes." />
+                </h6>
                 <h3 className="mb-0 fw-bold text-dark">{dados?.totalOfertasAtivas || 0}</h3>
               </div>
             </div>
@@ -105,7 +200,9 @@ export default function Dashboard() {
                 <span style={{ fontSize: '1.5rem' }}>⏳</span>
               </div>
               <div className="flex-grow-1 ms-3">
-                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>Vencem em 7 dias</h6>
+                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
+                  Vencem em 7 dias <IconeAjuda texto="Ofertas cujo prazo de validade termina na próxima semana. Fique atento para não perder estoque!" />
+                </h6>
                 <h3 className="mb-0 fw-bold text-warning">{dados?.ofertasExpirandoBrevemente || 0}</h3>
               </div>
             </div>
@@ -119,7 +216,9 @@ export default function Dashboard() {
                 <span style={{ fontSize: '1.5rem' }}>📦</span>
               </div>
               <div className="flex-grow-1 ms-3">
-                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>Total de Produtos</h6>
+                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
+                  Total de Produtos <IconeAjuda texto="Número total de produtos cadastrados no seu catálogo, tendo oferta vinculada ou não." />
+                </h6>
                 <h3 className="mb-0 fw-bold text-dark">{dados?.totalProdutosAtivos || 0}</h3>
               </div>
             </div>
@@ -133,7 +232,9 @@ export default function Dashboard() {
                 <span style={{ fontSize: '1.5rem' }}>💬</span>
               </div>
               <div className="flex-grow-1 ms-3">
-                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>Engajamentos (Cliques)</h6>
+                <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
+                  Engajamento Geral <IconeAjuda texto="Soma de absolutamente todos os cliques, visualizações e contatos feitos na sua loja." />
+                </h6>
                 <h3 className="mb-0 fw-bold text-success">{dados?.engajamentosTotais || 0}</h3>
               </div>
             </div>
@@ -141,13 +242,100 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* ÁREA DE GRÁFICOS (DASHBOARDS VISUAIS) */}
+      {/* ÁREA DE GRÁFICOS POWER BI STYLE */}
       <div className="row g-4 mb-4">
-        
-        {/* GRÁFICO 1: Engajamento por Produto (Barras) */}
+        {/* GRÁFICO 1: EVOLUÇÃO (AREA CHART) */}
+        <div className="col-12 col-xl-8">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h6 className="fw-bold text-dark mb-4">
+              Evolução de Interações Diárias
+              <IconeAjuda texto="Mostra como foi o engajamento geral com sua loja e ofertas ao longo da última semana." />
+            </h6>
+            {dadosEvolucao.length === 0 ? (
+               <div className="d-flex align-items-center justify-content-center h-100 text-muted">Sem dados recentes.</div>
+            ) : (
+              <div style={{ width: '100%', height: '300px' }}>
+                <ResponsiveContainer>
+                  <AreaChart data={dadosEvolucao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <defs>
+                      <linearGradient id="corInteracoes" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="var(--dl-primary)" stopOpacity={0.4}/>
+                        <stop offset="95%" stopColor="var(--dl-primary)" stopOpacity={0}/>
+                      </linearGradient>
+                    </defs>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9ecef" />
+                    <XAxis dataKey="data" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} allowDecimals={false} />
+                    <RechartsTooltip cursor={{stroke: '#ced4da', strokeWidth: 1}} contentStyle={{borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                    <Area type="monotone" dataKey="Interações" stroke="var(--dl-primary)" strokeWidth={3} fillOpacity={1} fill="url(#corInteracoes)" />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* GRÁFICO 2: FUNIL DE CONVERSÃO */}
+        <div className="col-12 col-xl-4">
+          <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
+            <h6 className="fw-bold text-dark mb-4 text-center">
+              Funil de Conversão
+              <IconeAjuda texto="Mede o fluxo do cliente: quantas ofertas você tem, quantas foram visualizadas em detalhe e quantos desses visitantes efetivamente clicaram para contato direto." />
+            </h6>
+            <div style={{ width: '100%', height: '300px' }}>
+              <ResponsiveContainer>
+                <BarChart data={dadosFunil} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e9ecef" />
+                  <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} allowDecimals={false} />
+                  <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d', fontWeight: '500'}} width={160} />
+                  <RechartsTooltip cursor={{fill: '#f8f9fa'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                  <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={35} label={{ position: 'right', fill: '#6c757d', fontSize: 12, fontWeight: 'bold' }}>
+                    {dadosFunil.map((entry, index) => (
+                      <Cell key={`cell-funil-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ÁREA DETALHADA DE ENGAJAMENTO (NOVO GRÁFICO DE BARRAS) */}
+      <div className="row mb-4">
+        <div className="col-12">
+          <div className="card border-0 shadow-sm rounded-4 p-4">
+            <h6 className="fw-bold text-dark mb-4">
+              Detalhamento de Interações
+              <IconeAjuda texto="Descreve individualmente onde os seus clientes mais clicam: WhatsApp, E-mail, Rota (Como Chegar), botão de favoritar, no perfil da loja ou abrindo os detalhes da oferta." />
+            </h6>
+            <div style={{ width: '100%', height: '320px' }}>
+              <ResponsiveContainer>
+                <BarChart data={dadosDetalhados} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9ecef" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} interval={0} angle={-15} textAnchor="end" />
+                  <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} allowDecimals={false} />
+                  <RechartsTooltip cursor={{fill: '#f8f9fa'}} contentStyle={{borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                  <Bar dataKey="Engajamento" radius={[6, 6, 0, 0]} barSize={40}>
+                    {dadosDetalhados.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="row g-4 mb-4">
+        {/* GRÁFICO 3: TOP OFERTAS (BARRAS) */}
         <div className="col-12 col-lg-8">
           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
-            <h6 className="fw-bold text-dark mb-4">Top 5 Ofertas com Mais Contactos (WhatsApp/E-mail)</h6>
+            <h6 className="fw-bold text-dark mb-4">
+              Top 5 Ofertas (Maior Engajamento de Contato)
+              <IconeAjuda texto="As 5 ofertas que mais geraram ações de contato (WhatsApp, Email ou Como Chegar)." />
+            </h6>
             {dadosBar.length === 0 ? (
                <div className="d-flex align-items-center justify-content-center h-100 text-muted">Sem dados suficientes para o gráfico.</div>
             ) : (
@@ -166,10 +354,13 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* GRÁFICO 2: Aproveitamento de Catálogo (Circular) */}
+        {/* GRÁFICO 4: APROVEITAMENTO DO CATÁLOGO (PIE) */}
         <div className="col-12 col-lg-4">
           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
-            <h6 className="fw-bold text-dark mb-4 text-center">Aproveitamento do Catálogo</h6>
+            <h6 className="fw-bold text-dark mb-4 text-center">
+              Aproveitamento do Catálogo
+              <IconeAjuda texto="Compara quantos produtos você tem ativos vs. quantos deles possuem ofertas rodando no momento." />
+            </h6>
             <div style={{ width: '100%', height: '230px' }}>
               <ResponsiveContainer>
                 <PieChart>
@@ -255,11 +446,12 @@ export default function Dashboard() {
 
             <div className="mt-auto pt-4 border-top" style={{ borderColor: 'rgba(255,255,255,0.1) !important' }}>
               <small className="opacity-75 d-block text-center">
-                Quanto mais ofertas ativas, maior será a sua barra de engajamento no gráfico!
+                Mantenha suas ofertas ativas para maximizar o tráfego no seu funil de conversão!
               </small>
             </div>
           </div>
         </div>
+      </div>
       </div>
     </>
   );

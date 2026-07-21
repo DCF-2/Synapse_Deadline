@@ -3,6 +3,79 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+// Componente reutilizável: ícone de ajuda com tooltip
+function IconeAjuda({ texto }) {
+  const [visivel, setVisivel] = useState(false);
+
+  return (
+    <span
+      className="position-relative d-inline-flex align-items-center ms-1"
+      onMouseEnter={() => setVisivel(true)}
+      onMouseLeave={() => setVisivel(false)}
+      onFocus={() => setVisivel(true)}
+      onBlur={() => setVisivel(false)}
+      tabIndex={0}
+      role="button"
+      aria-label="Ajuda"
+      style={{ cursor: 'help' }}
+    >
+      <span
+        className="d-flex align-items-center justify-content-center rounded-circle fw-bold"
+        style={{
+          width: '16px',
+          height: '16px',
+          fontSize: '11px',
+          backgroundColor: '#d1d5db',
+          color: '#4b5563',
+          lineHeight: 1,
+        }}
+      >
+        ?
+      </span>
+
+      {visivel && (
+        <span
+          className="position-absolute bg-dark text-white rounded-3 shadow-sm p-2"
+          style={{
+            bottom: '135%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: '220px',
+            fontSize: '12px',
+            fontWeight: 400,
+            zIndex: 20,
+            whiteSpace: 'normal',
+            lineHeight: 1.4,
+          }}
+        >
+          {texto}
+          <span
+            className="position-absolute"
+            style={{
+              top: '100%',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              borderWidth: '5px',
+              borderStyle: 'solid',
+              borderColor: '#212529 transparent transparent transparent',
+            }}
+          />
+        </span>
+      )}
+    </span>
+  );
+}
+
+//Label + ícone de ajuda juntos
+function LabelComAjuda({ texto, ajuda }) {
+  return (
+    <label className="form-label fw-bold text-muted small d-flex align-items-center">
+      {texto}
+      <IconeAjuda texto={ajuda} />
+    </label>
+  );
+}
+
 export default function NovaOferta() {
   const [produtos, setProdutos] = useState([]);
   const [produtoId, setProdutoId] = useState('');
@@ -134,7 +207,10 @@ export default function NovaOferta() {
           <form onSubmit={handleCriarOferta}>
             
             <div className="mb-4">
-              <label className="form-label fw-bold text-muted small">Produto Base</label>
+              <LabelComAjuda
+                texto="Produto Base"
+                ajuda="O nome cadastrado aqui é o que aparece na oferta ao público."
+              />
               <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={produtoId} onChange={(e) => setProdutoId(e.target.value)} required>
                 <option value="">Selecione um produto cadastrado...</option>
                 {produtos.map((p) => (
@@ -163,11 +239,17 @@ export default function NovaOferta() {
                 <div className="p-3 border rounded-4 bg-light h-100">
                   <h6 className="fw-bold mb-3 text-success">💲 Precificação da Oferta</h6>
                   <div className="mb-3">
-                    <label className="form-label fw-bold text-muted small">Desconto (%)</label>
+                    <LabelComAjuda
+                      texto="Desconto (%)"
+                      ajuda="Percentual de redução sobre o preço original. Calcula o preço promocional automaticamente."
+                    />
                     <input type="number" className="form-control form-control-lg border-0 shadow-sm" value={percentualDesconto} onChange={handleDescontoChange} min="0" max="100" required />
                   </div>
                   <div>
-                    <label className="form-label fw-bold text-muted small">Preço Promocional (R$)</label>
+                    <LabelComAjuda
+                      texto="Preço Promocional (R$)"
+                      ajuda="Valor final com desconto. Pode digitar direto ou deixar o campo Desconto (%) calcular."
+                    />
                     <input type="number" className="form-control form-control-lg border-0 shadow-sm fw-bold text-success" value={precoPromocional} onChange={handlePrecoChange} min="0.01" step="0.01" required />
                   </div>
                 </div>
@@ -178,11 +260,17 @@ export default function NovaOferta() {
                 <div className="p-3 border rounded-4 bg-light h-100">
                   <h6 className="fw-bold mb-3 text-danger">⏳ Prazos</h6>
                   <div className="mb-3">
-                    <label className="form-label fw-bold text-muted small">Produto Vence em:</label>
+                    <LabelComAjuda
+                      texto="Produto Vence em:"
+                      ajuda="Validade real do produto, impressa na embalagem."
+                    />
                     <input type="date" className="form-control form-control-lg border-0 shadow-sm" value={validadeProduto} onChange={(e) => setValidadeProduto(e.target.value)} required />
                   </div>
                   <div>
-                    <label className="form-label fw-bold text-muted small">Retirar oferta do ar em:</label>
+                    <LabelComAjuda
+                      texto="Retirar oferta do ar em:"
+                      ajuda="Quando a oferta some do site. Pode ser antes da validade do produto."
+                    />
                     <input type="date" className="form-control form-control-lg border-0 shadow-sm" value={dataFimOferta} onChange={(e) => setDataFimOferta(e.target.value)} />
                     <small className="text-muted d-block mt-1">Deixe vazio para usar a data de validade.</small>
                   </div>

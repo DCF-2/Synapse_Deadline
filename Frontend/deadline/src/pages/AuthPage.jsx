@@ -18,6 +18,11 @@ export default function AuthPage() {
   const [step, setStep] = useState(1);
   const [showNovoRamo, setShowNovoRamo] = useState(false);
   
+  // Estados para exibição de senha
+  const [showLoginSenha, setShowLoginSenha] = useState(false);
+  const [showCadSenha, setShowCadSenha] = useState(false);
+  const [showCadConfirmarSenha, setShowCadConfirmarSenha] = useState(false);
+  
   // ESTADO PARA ARMAZENAR OS RAMOS DE ATUAÇÃO VINDOS DA API
   const [ramos, setRamos] = useState([]);
   
@@ -272,8 +277,24 @@ export default function AuthPage() {
                 <form onSubmit={(e) => validarEAvancar(e, 5)} className="dl-animate-in">
                   <div className="ds-input-group"><label className="ds-label">E-mail de Login *</label><input className="ds-input" type="email" placeholder="admin@loja.com" value={cad.emailLogin} onChange={e => setCad({...cad, emailLogin: e.target.value})} required /></div>
                   <div className="ds-row">
-                    <div className="ds-input-group ds-flex-1"><label className="ds-label">Criar Senha *</label><input className="ds-input" type="password" placeholder="••••••••" value={cad.senha} onChange={e => setCad({...cad, senha: e.target.value})} required /></div>
-                    <div className="ds-input-group ds-flex-1"><label className="ds-label">Confirmar Senha *</label><input className="ds-input" type="password" placeholder="••••••••" value={cad.confirmarSenha} onChange={e => setCad({...cad, confirmarSenha: e.target.value})} required /></div>
+                    <div className="ds-input-group ds-flex-1">
+                      <label className="ds-label">Criar Senha *</label>
+                      <div className="input-group" style={{ display: 'flex' }}>
+                        <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showCadSenha ? "text" : "password"} placeholder="••••••••" value={cad.senha} onChange={e => setCad({...cad, senha: e.target.value})} required />
+                        <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCadSenha(!showCadSenha)}>
+                          {showCadSenha ? "🙈" : "👁️"}
+                        </button>
+                      </div>
+                    </div>
+                    <div className="ds-input-group ds-flex-1">
+                      <label className="ds-label">Confirmar Senha *</label>
+                      <div className="input-group" style={{ display: 'flex' }}>
+                        <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showCadConfirmarSenha ? "text" : "password"} placeholder="••••••••" value={cad.confirmarSenha} onChange={e => setCad({...cad, confirmarSenha: e.target.value})} required />
+                        <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCadConfirmarSenha(!showCadConfirmarSenha)}>
+                          {showCadConfirmarSenha ? "🙈" : "👁️"}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   <p className="ds-helper-text" style={{ marginTop: '-10px', marginBottom: '16px' }}>Min. 8 caracteres, com Maiúscula, Número e Símbolo (@!$).</p>
                   <div className="ds-row">
@@ -344,7 +365,12 @@ export default function AuthPage() {
               </div>
               <div className="ds-input-group">
                 <label className="ds-label">Senha</label>
-                <input className="ds-input" type="password" placeholder="••••••••" value={senhaLogin} onChange={e => setSenhaLogin(e.target.value)} required />
+                <div className="input-group" style={{ display: 'flex' }}>
+                  <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showLoginSenha ? "text" : "password"} placeholder="••••••••" value={senhaLogin} onChange={e => setSenhaLogin(e.target.value)} required />
+                  <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowLoginSenha(!showLoginSenha)}>
+                    {showLoginSenha ? "🙈" : "👁️"}
+                  </button>
+                </div>
               </div>
               <button type="submit" disabled={loading} className="ds-btn ds-btn-primary" style={{ marginTop: '20px' }}>
                 {loading ? 'Autenticando...' : 'Entrar no Painel'}

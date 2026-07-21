@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.synapse.deadline.entity.Endereco;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
@@ -177,6 +178,24 @@ class EmpresaServiceTest {
         when(empresaRepository.findByEmailLogin(anyString())).thenReturn(Optional.of(empresaSalva));
 
         assertThrows(IllegalArgumentException.class, () -> empresaService.cadastrarEmpresa(cadastroDTO));
+    }
+
+    @Test
+    @DisplayName("TC_EMP_027: Cadastro - Banner do perfil é persistido")
+    void devePersistirBannerPerfilNoCadastro() {
+        cadastroDTO.setBannerPerfil("https://res.cloudinary.com/test/banner.jpg");
+
+        when(empresaRepository.findByEmailLogin(anyString())).thenReturn(Optional.empty());
+        when(empresaRepository.findByCnpj(anyString())).thenReturn(Optional.empty());
+        when(ramoEmpresaRepository.findById(anyLong())).thenReturn(Optional.of(ramoValido));
+        when(passwordEncoder.encode(cadastroDTO.getSenha())).thenReturn("hash_da_senha");
+        when(empresaRepository.save(any(Empresa.class))).thenAnswer(invocation -> {
+            Empresa empresa = invocation.getArgument(0);
+            assertEquals("https://res.cloudinary.com/test/banner.jpg", empresa.getBannerPerfil());
+            return empresaSalva;
+        });
+
+        empresaService.cadastrarEmpresa(cadastroDTO);
     }
 
     // Mantidos como exemplo de estrutura, mas dependem de validações manuais no Service para passarem (Atualmente falhariam se ativos)

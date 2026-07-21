@@ -56,6 +56,9 @@ public class SecurityConfig {
                 // Permite que o frontend busque a lista de categorias sem token!
                 .requestMatchers(HttpMethod.GET, "/categoria").permitAll() 
                 
+                // Rotas de métricas
+                .requestMatchers(HttpMethod.POST, "/api/publico/metricas/**").permitAll()
+                
                 // Ferramentas de Dev
                 .requestMatchers("/h2-console/**").permitAll()
                 .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**").permitAll()

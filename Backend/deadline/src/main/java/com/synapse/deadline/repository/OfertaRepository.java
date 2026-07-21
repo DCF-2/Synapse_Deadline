@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
@@ -37,4 +39,8 @@ public interface OfertaRepository extends JpaRepository<Oferta, Long>, JpaSpecif
 
     // Método para o Dashboard listar as 5 ofertas mais clicadas:
     List<Oferta> findTop5ByProdutoEmpresaIdOrderByCliquesContatoDesc(Long empresaId);
+
+    @Modifying
+    @Query("DELETE FROM Oferta o WHERE o.produto.empresa.id = :empresaId")
+    void deleteByEmpresaId(@Param("empresaId") Long empresaId);
 }
