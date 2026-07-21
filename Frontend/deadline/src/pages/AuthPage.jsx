@@ -180,7 +180,7 @@ export default function AuthPage() {
 
   return (
     <div className="ds-page-container">
-      <Link to="/" className="ds-back-btn">&larr; Voltar para a Vitrine</Link>
+      <Link to="/" className="ds-back-btn"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar para a Vitrine</Link>
 
       <div className={`ds-container ${!isLogin ? 'right-panel-active' : ''}`}>
         
@@ -282,7 +282,7 @@ export default function AuthPage() {
                       <div className="input-group" style={{ display: 'flex' }}>
                         <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showCadSenha ? "text" : "password"} placeholder="••••••••" value={cad.senha} onChange={e => setCad({...cad, senha: e.target.value})} required />
                         <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCadSenha(!showCadSenha)}>
-                          {showCadSenha ? "🙈" : "👁️"}
+                          {showCadSenha ? <img src="/icons/olho.png" alt="Ocultar" style={{ width: "20px" }} /> : <img src="/icons/olho_aberto.png" alt="Mostrar" style={{ width: "20px" }} />}
                         </button>
                       </div>
                     </div>
@@ -291,7 +291,7 @@ export default function AuthPage() {
                       <div className="input-group" style={{ display: 'flex' }}>
                         <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showCadConfirmarSenha ? "text" : "password"} placeholder="••••••••" value={cad.confirmarSenha} onChange={e => setCad({...cad, confirmarSenha: e.target.value})} required />
                         <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowCadConfirmarSenha(!showCadConfirmarSenha)}>
-                          {showCadConfirmarSenha ? "🙈" : "👁️"}
+                          {showCadConfirmarSenha ? <img src="/icons/olho.png" alt="Ocultar" style={{ width: "20px" }} /> : <img src="/icons/olho_aberto.png" alt="Mostrar" style={{ width: "20px" }} />}
                         </button>
                       </div>
                     </div>
@@ -368,7 +368,7 @@ export default function AuthPage() {
                 <div className="input-group" style={{ display: 'flex' }}>
                   <input className="ds-input" style={{ flex: 1, borderTopRightRadius: 0, borderBottomRightRadius: 0 }} type={showLoginSenha ? "text" : "password"} placeholder="••••••••" value={senhaLogin} onChange={e => setSenhaLogin(e.target.value)} required />
                   <button type="button" style={{ width: 'auto', margin: 0, padding: '0 15px', background: '#f1f5f9', border: '2px solid #E2E8F0', borderLeft: 'none', borderTopRightRadius: '12px', borderBottomRightRadius: '12px', color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowLoginSenha(!showLoginSenha)}>
-                    {showLoginSenha ? "🙈" : "👁️"}
+                    {showLoginSenha ? <img src="/icons/olho.png" alt="Ocultar" style={{ width: "20px" }} /> : <img src="/icons/olho_aberto.png" alt="Mostrar" style={{ width: "20px" }} />}
                   </button>
                 </div>
               </div>

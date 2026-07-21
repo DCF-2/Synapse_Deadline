@@ -183,7 +183,7 @@ export default function OfertasPage() {
           <p className="text-muted small m-0 mt-1">Gerencie seus produtos com desconto ativo</p>
         </div>
         <Link to="/nova-oferta" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#23a889', borderRadius: '10px' }}>
-          <span>➕</span> Nova Oferta
+          <span><img src="/icons/simbolo-de-mais-preto.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Nova Oferta
         </Link>
       </div>
 
@@ -196,7 +196,7 @@ export default function OfertasPage() {
               placeholder="Buscar pelo nome ou EAN..." 
               value={buscaInput} onChange={(e) => setBuscaInput(e.target.value)}
             />
-            <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#23a889' }}>🔍</button>
+            <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#23a889' }}><img src="/icons/lupa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></button>
             {buscaAtiva && (
               <button type="button" className="btn btn-sm text-white px-2" style={{ backgroundColor: '#eeab45' }} onClick={limparBusca}>✕</button>
             )}
@@ -231,14 +231,20 @@ export default function OfertasPage() {
       </div>
 
       {carregando && <div className="text-center my-5 text-muted"><div className="spinner-border text-success"></div></div>}
-      {erro && <div className="alert alert-danger rounded-3">⚠️ {erro}</div>}
-      {!carregando && !erro && ofertas.length === 0 && <div className="text-center my-5 text-muted"><p style={{ fontSize: '3rem' }}>📣</p><p>Nenhuma oferta encontrada.</p></div>}
+      {erro && <div className="alert alert-danger rounded-3"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>}
+      {!carregando && !erro && ofertas.length === 0 && <div className="text-center my-5 text-muted"><p style={{ fontSize: '3rem' }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></p><p>Nenhuma oferta encontrada.</p></div>}
 
       {/* GRID DE OFERTAS */}
       <div className="row g-3">
         {!carregando && !erro && ofertas.map((oferta) => (
           <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" key={oferta.id}>
-            <div className={`card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden ${!oferta.ativo ? 'opacity-50' : ''}`}>
+            <div 
+              className={`card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden ${!oferta.ativo ? 'opacity-50' : ''}`}
+              style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              onClick={() => setOfertaSelecionada(oferta)}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)' }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--bs-box-shadow-sm)' }}
+            >
               
               {!oferta.ativo && <span className="position-absolute badge bg-secondary m-2" style={{zIndex: 2, right: 0}}>Inativo</span>}
               
@@ -252,7 +258,7 @@ export default function OfertasPage() {
                 <div className="text-center mb-3">
                   {oferta.foto ? (
                     <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxHeight: '80px', objectFit: 'contain', maxWidth: '100%' }} />
-                  ) : ( <span style={{ fontSize: '3rem', opacity: 0.15 }}>📣</span> )}
+                  ) : ( <span style={{ fontSize: '3rem', opacity: 0.15 }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
                 </div>
 
                 <span className="fw-bold text-dark small text-truncate d-block">{oferta.tituloProduto}</span>
@@ -264,16 +270,9 @@ export default function OfertasPage() {
                 </div>
 
                 <div className="border-top mt-2 pt-2" style={{ fontSize: '10px', color: '#6c757d' }}>
-                  <div>📅 Validade: {formatarData(oferta.validadeProduto)}</div>
-                  <div>🛑 Fim Oferta: {formatarData(oferta.dataFimOferta)}</div>
+                  <div><img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Validade: {formatarData(oferta.validadeProduto)}</div>
+                  <div><img src="/icons/pausa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Fim Oferta: {formatarData(oferta.dataFimOferta)}</div>
                 </div>
-
-                <button 
-                  className="btn w-100 fw-medium mt-3" 
-                  style={{ backgroundColor: '#f0fdf4', color: '#23a889', borderRadius: '8px', fontSize: '12px', border: '1px solid #bbf7d0' }}
-                  onClick={() => setOfertaSelecionada(oferta)}>
-                  👁 Visualizar Detalhes
-                </button>
               </div>
             </div>
           </div>
@@ -300,7 +299,7 @@ export default function OfertasPage() {
                   <div className="text-center mb-4 position-relative">
                      {ofertaSelecionada.foto ? (
                         <img src={ofertaSelecionada.foto} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
-                     ) : ( <span style={{ fontSize: '5rem', opacity: 0.2 }}>📣</span> )}
+                     ) : ( <span style={{ fontSize: '5rem', opacity: 0.2 }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
                   </div>
                   
                   {/* Linha 1: Preços e Descontos */}
@@ -345,17 +344,21 @@ export default function OfertasPage() {
               {/* Botões de Ação */}
               <div className="modal-footer border-0 pt-0 d-flex flex-column gap-2">
                 <button className="btn btn-success fw-bold rounded-3 py-2 w-100" onClick={() => navigate(`/editar-oferta/${ofertaSelecionada.id}`)}>
-                ✏️ Editar Dados da Oferta
+                <img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Editar Dados da Oferta
                 </button>
                 
                 <button className={`btn fw-bold rounded-3 py-2 w-100 ${ofertaSelecionada.ativo ? 'btn-outline-warning' : 'btn-outline-success'}`} 
                         onClick={() => setShowConfirm({ id: ofertaSelecionada.id, tipoAcao: 'status', ativoAtual: ofertaSelecionada.ativo, nome: ofertaSelecionada.tituloProduto })}>
-                   {ofertaSelecionada.ativo ? '⏸ Pausar Oferta (Inativar)' : '▶️ Reativar Oferta'}
+                   {ofertaSelecionada.ativo ? (
+                     <><img src="/icons/pausa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Pausar Oferta (Inativar)</>
+                   ) : (
+                     <><img src="/icons/refazer.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Reativar Oferta</>
+                   )}
                 </button>
 
                 <button className="btn btn-outline-danger fw-bold rounded-3 py-2 w-100" 
                         onClick={() => setShowConfirm({ id: ofertaSelecionada.id, tipoAcao: 'remover', nome: ofertaSelecionada.tituloProduto })}>
-                   🗑 Apagar Definitivamente
+                   <img src="/icons/excluir.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Apagar Definitivamente
                 </button>
               </div>
 
@@ -369,7 +372,7 @@ export default function OfertasPage() {
         <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1100 }}>
           <div className="modal-dialog modal-dialog-centered modal-sm">
             <div className="modal-content border-0 rounded-4 shadow-lg p-4 text-center">
-               <div className="mb-3"><span style={{fontSize: '3rem'}}>⚠️</span></div>
+               <div className="mb-3"><span style={{fontSize: '3rem'}}><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span></div>
                <h5 className="fw-bold text-dark">Confirmar Ação</h5>
                <p className="text-muted small mb-4">
                  Tem certeza que deseja {showConfirm.tipoAcao === 'remover' ? 'apagar permanentemente' : (showConfirm.ativoAtual ? 'inativar' : 'reativar')} a oferta do produto <strong>{showConfirm.nome}</strong>?

@@ -121,7 +121,7 @@ export default function Dashboard() {
     </div>
   );
 
-  if (erro) return <div className="alert alert-danger m-4 shadow-sm rounded-4">⚠️ {erro}</div>;
+  if (erro) return <div className="alert alert-danger m-4 shadow-sm rounded-4"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>;
 
   // --- DADOS PARA OS GRÁFICOS ---
   // Gráfico Pie: Aproveitamento
@@ -170,7 +170,7 @@ export default function Dashboard() {
       <div style={{ filter: needsOnboarding ? 'grayscale(100%) opacity(40%)' : 'none', pointerEvents: needsOnboarding ? 'none' : 'auto', transition: 'filter 0.3s ease' }}>
       <div className="d-flex justify-content-between align-items-center pt-1 pb-2 mb-4 border-bottom">
         <div>
-          <h2 className="fw-bold text-dark m-0">Painel de Insights 📈</h2>
+          <h2 className="fw-bold text-dark m-0">Painel de Insights <img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></h2>
           <p className="text-muted small m-0 mt-1">Acompanhe a performance do seu catálogo e o comportamento dos clientes.</p>
         </div>
       </div>
@@ -181,7 +181,7 @@ export default function Dashboard() {
           <div className="card border-0 shadow-sm rounded-4 h-100 p-3" style={{ borderLeft: '5px solid var(--dl-primary) !important' }}>
             <div className="d-flex align-items-center">
               <div className="flex-shrink-0 bg-light p-3 rounded-circle text-center" style={{ width: '60px', height: '60px' }}>
-                <span style={{ fontSize: '1.5rem' }}>📢</span>
+                <span style={{ fontSize: '1.5rem' }}><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
               </div>
               <div className="flex-grow-1 ms-3">
                 <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
@@ -213,7 +213,7 @@ export default function Dashboard() {
           <div className="card border-0 shadow-sm rounded-4 h-100 p-3" style={{ borderLeft: '5px solid #1E3A5F !important' }}>
             <div className="d-flex align-items-center">
               <div className="flex-shrink-0 bg-light p-3 rounded-circle text-center" style={{ width: '60px', height: '60px' }}>
-                <span style={{ fontSize: '1.5rem' }}>📦</span>
+                <span style={{ fontSize: '1.5rem' }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
               </div>
               <div className="flex-grow-1 ms-3">
                 <h6 className="text-muted mb-1 fw-bold" style={{fontSize: '0.8rem'}}>
@@ -435,12 +435,12 @@ export default function Dashboard() {
             <h6 className="fw-bold mb-4">Ações Rápidas</h6>
             
             <Link to="/cadastro-produto" className="btn btn-light w-100 text-start d-flex align-items-center gap-3 mb-3 p-3 rounded-4 shadow-sm text-decoration-none" style={{ color: 'var(--dl-secondary)' }}>
-              <span style={{fontSize: '1.5rem'}}>📦</span>
+              <span style={{fontSize: '1.5rem'}}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
               <span className="fw-bold">Adicionar Novo Produto</span>
             </Link>
             
             <Link to="/ofertas" className="btn btn-light w-100 text-start d-flex align-items-center gap-3 mb-3 p-3 rounded-4 shadow-sm text-decoration-none" style={{ color: 'var(--dl-secondary)' }}>
-              <span style={{fontSize: '1.5rem'}}>🔍</span>
+              <span style={{fontSize: '1.5rem'}}><img src="/icons/lupa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
               <span className="fw-bold">Gerir Ofertas Ativas</span>
             </Link>
 

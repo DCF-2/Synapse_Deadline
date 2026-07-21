@@ -135,6 +135,18 @@ export default function ClienteHome() {
     carregarVitrine();
   };
 
+  const limparFiltros = () => {
+    setTermoBusca('');
+    setNomeProduto('');
+    setCategoriaId('');
+    setPrecoMin('');
+    setPrecoMax('');
+    setDiasMaxValidade('');
+    setDistanciaMaxKm('100');
+    // O useEffect chamará carregarVitrine para as dependências que mudarem, mas chamamos explicitamente para garantir que precoMin/Max apliquem:
+    setTimeout(carregarVitrine, 0); 
+  };
+
   // Buscar detalhes ricos do produto ao clicar
   const abrirDetalhes = async (id) => {
     setCarregandoDetalhes(true);
@@ -189,7 +201,7 @@ export default function ClienteHome() {
       <div className="container py-5">
         {statusLocalizacao === 'negado' && (
           <div className="alert alert-warning rounded-4 mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap">
-            <span>📍 {mensagemLocalizacao || 'Ative a localização do navegador para ver distâncias e filtrar ofertas por proximidade.'}</span>
+            <span><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {mensagemLocalizacao || 'Ative a localização do navegador para ver distâncias e filtrar ofertas por proximidade.'}</span>
             <button type="button" className="btn btn-sm btn-outline-dark rounded-pill" onClick={solicitarLocalizacao} disabled={buscandoLocalizacao}>
               {buscandoLocalizacao ? 'Aguardando...' : 'Tentar novamente'}
             </button>
@@ -197,7 +209,7 @@ export default function ClienteHome() {
         )}
         {(statusLocalizacao === 'indisponivel' || statusLocalizacao === 'timeout' || statusLocalizacao === 'inseguro') && (
           <div className="alert alert-secondary rounded-4 mb-4 d-flex align-items-center justify-content-between gap-3 flex-wrap">
-            <span>📍 {mensagemLocalizacao || 'Não foi possível obter sua localização. As distâncias não serão exibidas.'}</span>
+            <span><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {mensagemLocalizacao || 'Não foi possível obter sua localização. As distâncias não serão exibidas.'}</span>
             <button type="button" className="btn btn-sm btn-success rounded-pill" onClick={solicitarLocalizacao} disabled={buscandoLocalizacao}>
               {buscandoLocalizacao ? 'Buscando...' : 'Tentar novamente'}
             </button>
@@ -205,7 +217,7 @@ export default function ClienteHome() {
         )}
         {statusLocalizacao === 'pendente' && buscandoLocalizacao && (
           <div className="alert alert-light border rounded-4 mb-4 d-flex align-items-center gap-2">
-            <span>📍</span>
+            <span><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
             <span>Obtendo sua localização...</span>
           </div>
         )}
@@ -216,7 +228,7 @@ export default function ClienteHome() {
           <div className="col-lg-3">
             <div className="bg-white p-3 rounded-4 shadow-sm position-sticky" style={{ top: '100px' }}>
               <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h6 className="fw-bold text-dark m-0">🔍 Filtros Avançados</h6>
+                <h6 className="fw-bold text-dark m-0"><img src="/icons/lupa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Filtros Avançados</h6>
                 <button 
                   className="btn btn-sm btn-outline-secondary d-lg-none" 
                   type="button" 
@@ -287,9 +299,14 @@ export default function ClienteHome() {
                   </div>
                 </div>
 
-                <button type="submit" className="btn btn-sm text-white w-100 fw-bold rounded-3 mt-2" style={{backgroundColor: 'var(--dl-primary)'}}>
-                  Aplicar Filtros
-                </button>
+                <div className="d-flex flex-column gap-2 mt-3">
+                  <button type="submit" className="btn btn-sm text-white w-100 fw-bold rounded-3" style={{backgroundColor: 'var(--dl-primary)'}}>
+                    Aplicar Filtros
+                  </button>
+                  <button type="button" className="btn btn-sm btn-outline-secondary w-100 fw-bold rounded-3" onClick={limparFiltros}>
+                    Limpar Filtros
+                  </button>
+                </div>
               </form>
               </div>
             </div>
@@ -319,13 +336,13 @@ export default function ClienteHome() {
                       <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '70px', height: '70px' }}>
                         {loja.logotipo ? (
                           <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                        ) : ( <span className="fw-bold text-success fs-3">🏢</span> )}
+                        ) : ( <span className="fw-bold text-success fs-3"><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
                       </div>
                       <div>
                         <span className="text-muted fw-medium d-block mb-1" style={{fontSize: '0.9rem'}}>Você quer ir para a loja da {loja.nomeFantasia}?</span>
                         <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-1">
                           {loja.nomeFantasia} 
-                          <span className="text-primary d-flex align-items-center justify-content-center" style={{fontSize: '0.8rem', width: '16px', height: '16px', backgroundColor: '#e7f1ff', borderRadius: '50%'}}>✓</span>
+                          <span className="text-primary d-flex align-items-center justify-content-center" style={{fontSize: '0.8rem', width: '16px', height: '16px', backgroundColor: '#e7f1ff', borderRadius: '50%'}}><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                         </h5>
                       </div>
                     </div>
@@ -365,7 +382,7 @@ export default function ClienteHome() {
                <div className="text-center py-5"><div className="spinner-border text-success"></div></div>
             ) : ofertas.length === 0 ? (
                <div className="text-center py-5 bg-white rounded-4 shadow-sm">
-                 <span style={{fontSize: '4rem'}}>😕</span>
+                 <span style={{fontSize: '4rem'}}></span>
                  <h5 className="fw-bold mt-3 text-dark">Nenhuma oferta encontrada.</h5>
                  <p className="text-muted">Tente ajustar os seus filtros de busca.</p>
                </div>

@@ -20,12 +20,9 @@ import CookieBanner from './components/CookieBanner';
 export default function App() {
   // Inicializar o tema do app
   useEffect(() => {
-    const savedTheme = localStorage.getItem('deadline_theme') || 'light';
-    if (savedTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
+    // Tema escuro desativado temporariamente ("Em desenvolvimento")
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('deadline_theme', 'light');
   }, []);
 
   return (
