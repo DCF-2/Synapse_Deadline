@@ -127,13 +127,13 @@ export default function CadastroProduto() {
           <h2 className="fw-bold text-dark m-0">Novo Produto</h2>
           <p className="text-muted small m-0 mt-1">Adicione um novo item ao seu catálogo.</p>
         </div>
-        <Link to="/produtos" className="btn btn-outline-secondary fw-bold rounded-3">← Voltar</Link>
+        <Link to="/produtos" className="btn btn-outline-secondary fw-bold rounded-3"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar</Link>
       </div>
 
       <div className="card border-0 shadow-sm rounded-4 p-4 mx-auto" style={{ maxWidth: '800px' }}>
         
-        {erro && <div className="alert alert-danger rounded-3 shadow-sm">⚠️ {erro}</div>}
-        {sucesso && <div className="alert alert-success rounded-3 shadow-sm">✓ Produto cadastrado com sucesso!</div>}
+        {erro && <div className="alert alert-danger rounded-3 shadow-sm"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>}
+        {sucesso && <div className="alert alert-success rounded-3 shadow-sm"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Produto cadastrado com sucesso!</div>}
 
         <form onSubmit={handleCadastrar}>
           <div className="row g-3 mb-4">
@@ -175,11 +175,11 @@ export default function CadastroProduto() {
               ) : imagemUrl ? (
                 <>
                   <img src={imagemUrl} alt="Preview" className="rounded shadow-sm mb-2" style={{ maxWidth: '120px', maxHeight: '120px' }} />
-                  <span className="text-success fw-bold">✓ Imagem carregada</span>
+                  <span className="text-success fw-bold"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Imagem carregada</span>
                 </>
               ) : (
                 <>
-                  <span style={{ fontSize: '2rem', opacity: 0.4 }}>📷</span>
+                  <span style={{ fontSize: '2rem', opacity: 0.4 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   <span className="text-muted small fw-bold mt-2">Clique para enviar uma foto</span>
                 </>
               )}

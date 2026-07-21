@@ -72,7 +72,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
               <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{width: '50px', height: '50px'}}>
                  {detalhesOferta.logotipoEmpresa ? (
                    <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
-                 ) : ( <span className="fw-bold text-success">🏢</span> )}
+                 ) : ( <span className="fw-bold text-success"><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
               </div>
               <div>
                 <small className="text-muted d-block fw-bold" style={{fontSize: '0.75rem'}}>Vendido e entregue por:</small>
@@ -91,7 +91,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
                   {detalhesOferta.foto ? (
                     <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   ) : (
-                    <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span>
+                    <span style={{ fontSize: '4rem', opacity: 0.1 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   )}
                 </div>
                 <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded-4 border border-success border-opacity-25">
@@ -100,6 +100,13 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
                     <h3 className="fw-bold text-success m-0">{formatarMoeda(detalhesOferta.precoPromocional)}</h3>
                   </div>
                   <div className="badge bg-danger fs-6 rounded-3">-{detalhesOferta.percentualDesconto?.toFixed(0)}%</div>
+                </div>
+                <div className="alert alert-danger small mt-2 py-2 px-3 mb-0 text-start d-flex align-items-start gap-2 border-0 bg-danger bg-opacity-10 text-danger">
+                  <span className="mt-1"><img src="/icons/notificacao.png" alt="aviso" style={{ width: "16px", height: "16px", objectFit: "contain" }} /></span>
+                  <div>
+                    <strong>Confirmação de Disponibilidade:</strong><br/>
+                    Contate a empresa para confirmar a disponibilidade do item antes de se deslocar.
+                  </div>
                 </div>
               </div>
 
@@ -123,7 +130,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
                 </div>
 
                 <div className="mt-auto border-top pt-4">
-                  <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2">📍</span> Informações de Retirada</h6>
+                  <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2"><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Informações de Retirada</h6>
                   {detalhesOferta.distanciaKm != null && (
                     <p className="small fw-bold text-primary mb-2">
                       Distância de você: {formatarDistancia(detalhesOferta.distanciaKm)}

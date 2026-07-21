@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import BotaoFavorito from './BotaoFavorito';
+import BotaoCompartilhar from './BotaoCompartilhar';
 
 const formatarMoeda = (valor) => {
   if (valor == null) return 'R$ 0,00';
@@ -27,8 +28,9 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
            fetch(`${apiUrl}/api/publico/metricas/ofertas/${oferta.id}/engajamento/detalhe`, { method: 'POST' }).catch(() => {});
          }} style={{ cursor: 'pointer', transition: 'transform 0.2s' }}>
       
-      <div className="position-absolute top-0 end-0 m-3" onClick={(e) => e.stopPropagation()}>
+      <div className="position-absolute top-0 end-0 m-3 d-flex flex-column gap-2" onClick={(e) => e.stopPropagation()}>
         <BotaoFavorito oferta={oferta} />
+        <BotaoCompartilhar oferta={oferta} />
       </div>
 
       <div className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold shadow-sm" 
@@ -40,7 +42,7 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
         {oferta.foto ? (
           <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
         ) : (
-          <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span>
+          <span style={{ fontSize: '4rem', opacity: 0.1 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
         )}
       </div>
       
@@ -49,7 +51,7 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
           <span className="text-success small fw-bold text-uppercase">{oferta.nomeCategoria}</span>
           {oferta.distanciaKm != null && (
             <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill" style={{ fontSize: '0.7rem' }}>
-              📍 {formatarDistancia(oferta.distanciaKm)}
+              <img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {formatarDistancia(oferta.distanciaKm)}
             </span>
           )}
         </div>
@@ -67,7 +69,7 @@ const OfertaCard = ({ oferta, onClickCard, esconderLoja = false }) => {
             <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{width: '36px', height: '36px', flexShrink: 0}}>
                {oferta.logotipoEmpresa ? (
                  <img src={oferta.logotipoEmpresa} alt="Logo" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
-               ) : ( <span style={{fontSize: '0.9rem'}}>🏢</span> )}
+               ) : ( <span style={{fontSize: '0.9rem'}}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
             </div>
             <div className="overflow-hidden">
               <small className="text-muted d-block fw-bold lh-1 mb-1" style={{fontSize: '0.65rem'}}>Vendido por:</small>

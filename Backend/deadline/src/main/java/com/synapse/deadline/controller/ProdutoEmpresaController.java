@@ -82,4 +82,10 @@ public class ProdutoEmpresaController {
         return ResponseEntity.ok(service.listarProdutosPorEmpresaLogada(pageable, filtro));
     }
     
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<Void> alternarStatus(@PathVariable Long id, @RequestParam Boolean ativo) {
+        service.alternarStatus(id, ativo);
+        return ResponseEntity.noContent().build();
+    }
+
 }

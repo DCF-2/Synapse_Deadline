@@ -59,7 +59,7 @@ export default function Favoritos() {
 
       <div className="container py-5">
         <div className="d-flex align-items-center gap-3 mb-4">
-          <Link to="/" className="btn btn-light rounded-pill px-3">← Voltar</Link>
+          <Link to="/" className="btn btn-light rounded-pill px-3"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar</Link>
           <div>
             <h2 className="fw-bold text-dark m-0">Meus Favoritos</h2>
             <p className="text-muted mb-0 small">Ofertas salvas no seu navegador</p>

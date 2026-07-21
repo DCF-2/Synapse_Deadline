@@ -293,7 +293,7 @@ export default function ConfiguracoesPage() {
           </div>
         ) : (
           <button className="btn btn-light d-flex align-items-center gap-2 px-3 py-2 fw-bold shadow-sm rounded-pill border" onClick={() => { setActiveTab('menu'); setErro(null); setSucesso(false); }}>
-            <span style={{ fontSize: '1.2rem' }}>⬅️</span> Voltar para Configurações
+            <span style={{ fontSize: '1.2rem' }}><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Configurações
           </button>
         )}
       </div>
@@ -307,17 +307,17 @@ export default function ConfiguracoesPage() {
             <h6 className="fw-bold mt-2 mb-2 ps-2 text-uppercase" style={{ color: 'var(--dl-text-secondary)', fontSize: '0.8rem', letterSpacing: '1px' }}>Sistema e Preferências</h6>
             
             <div className="list-group rounded-4 shadow-sm border-0 mb-3 bg-white">
-              <button onClick={() => setActiveTab('geral')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0 border-bottom">
-                <span className="fs-3 me-3">🎨</span>
+              <button disabled className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0 border-bottom" style={{opacity: 0.6}}>
+                <span className="fs-3 me-3"><img src="/icons/paleta-de-cores.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
-                  <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Aparência e Idioma</h6>
+                  <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Aparência e Idioma <span className="badge bg-warning text-dark ms-2" style={{fontSize: '0.65rem'}}>Em desenvolvimento</span></h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>Modo escuro, fuso horário, linguagem global</small>
                 </div>
                 <span className="ms-auto fs-4 text-muted">›</span>
               </button>
 
               <button onClick={() => setActiveTab('notificacoes')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0">
-                <span className="fs-3 me-3">🔔</span>
+                <span className="fs-3 me-3"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
                   <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Notificações e Alertas</h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>Emails semanais, vencimento de ofertas</small>
@@ -330,7 +330,7 @@ export default function ConfiguracoesPage() {
             
             <div className="list-group rounded-4 shadow-sm border-0 mb-3 bg-white">
               <button onClick={() => setActiveTab('identidade')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0 border-bottom">
-                <span className="fs-3 me-3">🏢</span>
+                <span className="fs-3 me-3"><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
                   <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Identidade da Empresa</h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>Logo, nome fantasia, ramo de atividade</small>
@@ -339,7 +339,7 @@ export default function ConfiguracoesPage() {
               </button>
 
               <button onClick={() => setActiveTab('contato')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0 border-bottom">
-                <span className="fs-3 me-3">📞</span>
+                <span className="fs-3 me-3"><img src="/icons/chamada-telefonica.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
                   <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Canais de Atendimento</h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>WhatsApp, telefone fixo, horário de funcionamento</small>
@@ -348,7 +348,7 @@ export default function ConfiguracoesPage() {
               </button>
 
               <button onClick={() => setActiveTab('endereco')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0">
-                <span className="fs-3 me-3">📍</span>
+                <span className="fs-3 me-3"><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
                   <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Endereço de Retirada</h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>Localização física, CEP, cidade e bairro</small>
@@ -361,7 +361,7 @@ export default function ConfiguracoesPage() {
             
             <div className="list-group rounded-4 shadow-sm border-0 mb-5 bg-white">
               <button onClick={() => setActiveTab('seguranca')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0">
-                <span className="fs-3 me-3">🔒</span>
+                <span className="fs-3 me-3"><img src="/icons/cadeado.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
                   <h6 className="fw-bold mb-1 text-danger">Segurança e Exclusão</h6>
                   <small className="text-danger opacity-75">Alteração de senha, encerramento de conta</small>
@@ -376,8 +376,8 @@ export default function ConfiguracoesPage() {
         {/* ======================= MENSAGENS GLOBAIS DE SUBMIT ======================= */}
         {activeTab !== 'menu' && (
           <>
-            {erro && <div className="alert alert-danger rounded-4 shadow-sm mb-4">⚠️ {erro}</div>}
-            {sucesso && <div className="alert alert-success rounded-4 shadow-sm mb-4">✅ Alterações salvas com sucesso!</div>}
+            {erro && <div className="alert alert-danger rounded-4 shadow-sm mb-4"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>}
+            {sucesso && <div className="alert alert-success rounded-4 shadow-sm mb-4"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Alterações salvas com sucesso!</div>}
           </>
         )}
 
@@ -390,13 +390,13 @@ export default function ConfiguracoesPage() {
             <div className="row g-3 mb-5">
               <div className="col-12 col-sm-6">
                 <div className={`p-4 rounded-4 border text-center transition-all ${tema === 'light' ? 'border-primary bg-primary bg-opacity-10' : 'border-light bg-light'}`} onClick={() => changeTheme('light')} style={{ cursor: 'pointer' }}>
-                  <span style={{fontSize: '2rem'}}>☀️</span>
+                  <span style={{fontSize: '2rem'}}><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   <h6 className="fw-bold mt-2 text-dark">Modo Claro</h6>
                 </div>
               </div>
               <div className="col-12 col-sm-6">
                 <div className={`p-4 rounded-4 border text-center transition-all ${tema === 'dark' ? 'border-primary bg-dark' : 'border-light bg-light'}`} onClick={() => changeTheme('dark')} style={{ cursor: 'pointer' }}>
-                  <span style={{fontSize: '2rem'}}>🌙</span>
+                  <span style={{fontSize: '2rem'}}><img src="/icons/pausa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   <h6 className="fw-bold mt-2" style={tema === 'dark' ? {color: 'white'} : {color: '#333'}}>Modo Escuro</h6>
                 </div>
               </div>
@@ -475,7 +475,7 @@ export default function ConfiguracoesPage() {
                   <img src={bannerPerfil} alt="Banner da empresa" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 ) : (
                   <div className="h-100 d-flex flex-column align-items-center justify-content-center text-center" style={{ background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}>
-                    <span style={{ fontSize: '2.3rem' }}>🖼️</span>
+                    <span style={{ fontSize: '2.3rem' }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                     <p className="mb-0 mt-2 fw-bold text-white">Adicionar banner do perfil</p>
                   </div>
                 )}
@@ -494,7 +494,7 @@ export default function ConfiguracoesPage() {
 
             <div className="d-flex flex-column flex-sm-row align-items-center bg-light p-4 rounded-4 mb-5 border">
                <div className="mb-3 mb-sm-0 me-sm-4 bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center border overflow-hidden flex-shrink-0" style={{ width: '120px', height: '120px' }}>
-                  {logotipo ? ( <img src={logotipo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> ) : ( <span style={{ fontSize: '3rem', opacity: 0.3 }}>🏢</span> )}
+                  {logotipo ? ( <img src={logotipo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> ) : ( <span style={{ fontSize: '3rem', opacity: 0.3 }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
                </div>
                <div className="text-center text-sm-start w-100">
                   <label className="form-label text-dark fw-bold mb-2">Logotipo da Empresa</label>
@@ -584,7 +584,7 @@ export default function ConfiguracoesPage() {
             </div>
 
             <div className="alert bg-primary bg-opacity-10 border-0 text-primary rounded-4 mb-5 p-3 d-flex align-items-start gap-3">
-              <span className="fs-4">💡</span>
+              <span className="fs-4"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
               <p className="mb-0 small">Os clientes utilizarão este endereço para clicar em "Como Chegar" no aplicativo. Certifique-se de preencher dados precisos para que o GPS (Google Maps/Waze) trace a rota corretamente.</p>
             </div>
 
@@ -662,7 +662,7 @@ export default function ConfiguracoesPage() {
           <div className="modal-dialog modal-dialog-centered">
             <div className="modal-content border-0 rounded-4 shadow-lg" style={{ backgroundColor: 'var(--dl-surface)' }}>
               <div className="modal-header border-bottom-0 pb-0 px-4 pt-4">
-                <h5 className="modal-title fw-bold text-danger">⚠️ Confirmar Exclusão</h5>
+                <h5 className="modal-title fw-bold text-danger"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Confirmar Exclusão</h5>
                 <button type="button" className="btn-close" onClick={() => setShowDeleteModal(false)}></button>
               </div>
               <form onSubmit={handleDeleteAccount}>
@@ -690,7 +690,7 @@ export default function ConfiguracoesPage() {
                         onClick={() => setShowDeletePassword(!showDeletePassword)}
                         style={{ padding: '0 15px' }}
                       >
-                        {showDeletePassword ? "🙈" : "👁️"}
+                        {showDeletePassword ? <img src="/icons/olho.png" alt="Ocultar" style={{ width: "20px" }} /> : <img src="/icons/olho_aberto.png" alt="Mostrar" style={{ width: "20px" }} />}
                       </button>
                     </div>
                   </div>

@@ -124,7 +124,7 @@ export default function LojaPerfil() {
       <nav className="navbar navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
-            <span className="text-success fs-4">←</span> Voltar para Vitrine
+            <span className="text-success fs-4"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Vitrine
           </Link>
           <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
         </div>
@@ -151,13 +151,13 @@ export default function LojaPerfil() {
                style={{ width: '140px', height: '140px', top: '-70px', left: '15px' }}>
              {loja.logotipo ? (
                <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-             ) : ( <span style={{ fontSize: '3.5rem' }}>🏢</span> )}
+             ) : ( <span style={{ fontSize: '3.5rem' }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
           </div>
           
           <div style={{ paddingTop: '80px', paddingLeft: '15px' }}>
              <div className="d-flex align-items-center gap-2 mb-1">
                <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 small rounded-pill">
-                 ✓ Loja Oficial Parceira
+                 <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Loja Oficial Parceira
                </span>
              </div>
              
@@ -165,11 +165,11 @@ export default function LojaPerfil() {
                <div>
                  <h1 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h1>
                  <div className="d-flex flex-wrap gap-4 mt-2 text-muted small">
-                    <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    <span><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
                     {ofertas[0]?.distanciaKm != null && (
                       <span className="fw-bold text-primary">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
                     )}
-                    <span>🕒 {loja.horarioFuncionamento}</span>
+                    <span><img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {loja.horarioFuncionamento}</span>
                     {loja.cnpj && <span><strong className="text-dark">CNPJ:</strong> {loja.cnpj}</span>}
                     {loja.contato1 && <span><strong className="text-dark">Tel 1:</strong> {loja.contato1}</span>}
                     {loja.contato2 && <span><strong className="text-dark">Tel 2:</strong> {loja.contato2}</span>}
@@ -203,7 +203,7 @@ export default function LojaPerfil() {
          
          {ofertas.length === 0 ? (
             <div className="text-center py-5 bg-white rounded-4 shadow-sm">
-               <span style={{fontSize: '3rem'}}>🏷️</span>
+               <span style={{fontSize: '3rem'}}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                <p className="text-muted mt-3 mb-0">Esta loja não tem ofertas ativas no momento.</p>
             </div>
          ) : (
@@ -224,7 +224,7 @@ export default function LojaPerfil() {
       <div id="mapa" className="container py-5 mt-4 border-top">
          <div className="bg-white rounded-4 shadow-sm p-4">
             <h5 className="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-               📍 Como chegar à {loja.nomeFantasia}
+               <img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Como chegar à {loja.nomeFantasia}
             </h5>
             <div className="row g-4 align-items-center">
                <div className="col-lg-4">

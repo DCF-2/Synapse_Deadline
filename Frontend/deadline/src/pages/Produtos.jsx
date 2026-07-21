@@ -178,6 +178,23 @@ export default function ProdutosPage() {
     }
   };
 
+  const alternarStatusProduto = async (id, novoStatus) => {
+    try {
+      const token = localStorage.getItem('deadline_token');
+      const res = await fetch(`${API_URL}/produto/${id}/status?ativo=${novoStatus}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.status === 401 || res.status === 403) { handleLogout(); return; }
+      if (!res.ok) throw new Error('Erro ao alterar status.');
+      
+      setProdutoSelecionado(null);
+      await carregarProdutos(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
  return (
     <> {/* Usamos Fragment (<> e </>) pois o Layout já cuida das tags <div> envolventes */}
       <div className="d-flex justify-content-between align-items-center pt-3 pb-2 mb-4 border-bottom">
@@ -186,7 +203,7 @@ export default function ProdutosPage() {
           <p className="text-muted small m-0 mt-1">Gerencie todo o catálogo de itens cadastrados</p>
         </div>
         <Link to="/cadastro-produto" className="btn text-white fw-bold px-3 py-2 shadow-sm d-flex align-items-center gap-2" style={{ backgroundColor: '#52b788', borderRadius: '10px' }}>
-          <span>➕</span> Novo Produto
+          <span><img src="/icons/simbolo-de-mais-preto.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Novo Produto
         </Link>
       </div>
 
@@ -201,7 +218,7 @@ export default function ProdutosPage() {
               onChange={(e) => setBuscaInput(e.target.value)}
             />
             <button type="submit" className="btn btn-sm text-white px-3" style={{ backgroundColor: '#52b788' }}>
-              🔍
+              <img src="/icons/lupa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} />
             </button>
             {buscaAtiva && (
               <button type="button" className="btn btn-sm text-white px-2" style={{ backgroundColor: '#eeab45' }} onClick={limparBusca}>
@@ -248,10 +265,10 @@ export default function ProdutosPage() {
           <p>Buscando produtos...</p>
         </div>
       )}
-      {erro && <div className="alert alert-danger shadow-sm rounded-3">⚠️ {erro}</div>}
+      {erro && <div className="alert alert-danger shadow-sm rounded-3"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>}
       {!carregando && !erro && produtos.length === 0 && (
         <div className="text-center my-5 text-muted">
-          <p style={{ fontSize: '3rem' }}>📦</p>
+          <p style={{ fontSize: '3rem' }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></p>
           <p className="fw-medium">Nenhum produto encontrado.</p>
         </div>
       )}
@@ -259,7 +276,13 @@ export default function ProdutosPage() {
       <div className="row g-3">
         {!carregando && !erro && produtos.map((produto) => (
           <div className="col-12 col-sm-6 col-md-4 col-lg-3 col-xl-2" key={produto.id}>
-            <div className={`card border-0 shadow-sm rounded-4 h-100 p-3 d-flex flex-column ${!produto.ativo ? 'opacity-50' : ''}`} style={{ minHeight: '220px' }}>
+            <div 
+              className={`card border-0 shadow-sm rounded-4 h-100 p-3 d-flex flex-column ${!produto.ativo ? 'opacity-50' : ''}`} 
+              style={{ minHeight: '220px', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              onClick={() => abrirModalVisualizar(produto)}
+              onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)' }}
+              onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--bs-box-shadow-sm)' }}
+            >
               
               {!produto.ativo && (
                 <span className="badge bg-danger position-absolute" style={{ top: '10px', right: '10px' }}>Inativo</span>
@@ -269,19 +292,13 @@ export default function ProdutosPage() {
                   {produto.foto ? (
                     <img src={produto.foto} alt={produto.tituloProduto} style={{ maxWidth: '100%', maxHeight: '80px', objectFit: 'contain' }} />
                   ) : (
-                    <span style={{ fontSize: '3rem', opacity: 0.2 }}>📦</span>
+                    <span style={{ fontSize: '3rem', opacity: 0.2 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   )}
               </div>
               <div>
                 <h6 className="fw-bold mb-1 text-truncate" title={produto.tituloProduto}>{produto.tituloProduto}</h6>
                 <p className="text-muted small mb-2">{produto.nomeCategoria || 'Sem Categoria'}</p>
-                <p className="fw-bold text-success mb-3">R$ {produto.precoOriginal?.toFixed(2)}</p>
-                <button 
-                  className="btn w-100 fw-medium" 
-                  style={{ backgroundColor: '#f0fdf4', color: '#3aad77', borderRadius: '8px', fontSize: '14px', border: '1px solid #bbf7d0' }}
-                  onClick={() => abrirModalVisualizar(produto)}>
-                  👁 Visualizar
-                </button>
+                <p className="fw-bold text-success m-0">R$ {produto.precoOriginal?.toFixed(2)}</p>
               </div>
             </div>
           </div>
@@ -309,7 +326,7 @@ export default function ProdutosPage() {
                      {produtoSelecionado.foto ? (
                         <img src={produtoSelecionado.foto} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
                      ) : (
-                        <span style={{ fontSize: '5rem', opacity: 0.2 }}>📦</span>
+                        <span style={{ fontSize: '5rem', opacity: 0.2 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                      )}
                   </div>
                   
@@ -359,19 +376,25 @@ export default function ProdutosPage() {
               <div className="modal-footer border-0 pt-0 d-flex flex-column gap-2">
                 {produtoSelecionado.ativo ? (
                   <button className="btn btn-success fw-bold rounded-3 py-2 w-100" onClick={() => navigate(`/nova-oferta?produtoId=${produtoSelecionado.id}`)}>
-                    ➕ Criar Nova Oferta
+                    <img src="/icons/simbolo-de-mais-preto.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Criar Nova Oferta
                   </button>
                 ) : (
-                  <div className="alert alert-warning small py-2 mb-0 text-center w-100 border-0">⚠️ Reative o produto para criar ofertas.</div>
+                  <button className="btn btn-success fw-bold rounded-3 py-2 w-100" onClick={() => alternarStatusProduto(produtoSelecionado.id, true)}>
+                    <img src="/icons/refazer.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Reativar Produto
+                  </button>
                 )}
                 
                 <button className="btn fw-bold rounded-3 py-2 w-100" style={{backgroundColor: '#e9ecef', color: '#495057'}} onClick={() => navigate(`/editar-produto/${produtoSelecionado.id}`)}>
-                  ✏️ Editar Dados do Produto
+                  <img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Editar Dados do Produto
                 </button>
                 
                 <button className={`btn fw-bold rounded-3 py-2 w-100 ${produtoSelecionado.ativo ? 'btn-outline-danger' : 'btn-outline-secondary'}`} 
                         onClick={() => setShowConfirm(produtoSelecionado)}>
-                   {produtoSelecionado.ativo ? '🚫 Inativar Produto' : '🗑 Apagar Definitivamente'}
+                   {produtoSelecionado.ativo ? (
+                     <><img src="/icons/pausa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Inativar Produto</>
+                   ) : (
+                     <><img src="/icons/excluir.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Apagar Definitivamente</>
+                   )}
                 </button>
               </div>
 
@@ -386,7 +409,7 @@ export default function ProdutosPage() {
           <div className="modal-dialog modal-dialog-centered modal-sm">
             <div className="modal-content border-0 rounded-4 shadow-lg p-4 text-center">
                <div className="mb-3">
-                  <span style={{fontSize: '3rem'}}>⚠️</span>
+                  <span style={{fontSize: '3rem'}}><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                </div>
                <h5 className="fw-bold text-dark">Confirmar Ação</h5>
                <p className="text-muted small mb-4">

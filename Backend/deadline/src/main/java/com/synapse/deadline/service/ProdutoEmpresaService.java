@@ -321,4 +321,16 @@ public class ProdutoEmpresaService {
     public List<CategoriaProduto> listarCategorias() {
         return categoriaRepository.findByAtivoTrue();
     }
+
+    @Transactional
+    public void alternarStatus(Long id, Boolean novoStatus) {
+        Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Produto produto = produtoRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Produto não encontrado"));
+        if (!produto.getEmpresa().getId().equals(empresaLogada.getId())) {
+            throw new SecurityException("Acesso negado.");
+        }
+        produto.setAtivo(novoStatus);
+        produtoRepository.save(produto);
+    }
 }

@@ -37,7 +37,7 @@ export default function Ajuda() {
 
           {/* SESSÃO 1: DASHBOARD */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4" style={{ borderLeft: '5px solid #52b788' }}>
-            <h5 className="fw-bold text-dark mb-3">📊 1. Dashboard (Painel Inicial)</h5>
+            <h5 className="fw-bold text-dark mb-3"><img src="/icons/painel-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> 1. Dashboard (Painel Inicial)</h5>
             <p className="text-muted mb-3">
               Essa é a primeira página que você vê assim que entra com seu login e senha. É o "resumo" do seu negócio.
             </p>
@@ -49,7 +49,7 @@ export default function Ajuda() {
 
           {/* SESSÃO 2: MEUS PRODUTOS */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4" style={{ borderLeft: '5px solid #1E3A5F' }}>
-            <h5 className="fw-bold text-dark mb-3">📦 2. Meus Produtos</h5>
+            <h5 className="fw-bold text-dark mb-3"><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> 2. Meus Produtos</h5>
             <p className="text-muted mb-3">
               Aqui é onde você gerencia tudo o que a sua empresa vende. É o seu estoque no sistema.
             </p>
@@ -74,7 +74,7 @@ export default function Ajuda() {
 
           {/* SESSÃO 3: MINHAS OFERTAS */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4" style={{ borderLeft: '5px solid #e63946' }}>
-            <h5 className="fw-bold text-dark mb-3">🏷️ 3. Minhas Ofertas</h5>
+            <h5 className="fw-bold text-dark mb-3"><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> 3. Minhas Ofertas</h5>
             <p className="text-muted mb-3">
               Nesta página é onde a mágica acontece! É aqui que você cria as promoções que os clientes finais vão enxergar no site.
             </p>
@@ -86,7 +86,7 @@ export default function Ajuda() {
             </ul>
 
             <div className="alert alert-warning border-warning-subtle rounded-3 small text-dark mb-3">
-              <h6 className="fw-bold text-danger mb-2">⚠️ Atenção às Datas (Muito Importante):</h6>
+              <h6 className="fw-bold text-danger mb-2"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Atenção às Datas (Muito Importante):</h6>
               <p className="mb-2">Para evitar confusões, existem dois campos de data diferentes:</p>
               <ul className="mb-0">
                 <li className="mb-1"><strong>"Produto vence em":</strong> É a data de validade real que está impressa na embalagem do produto.</li>
@@ -101,7 +101,7 @@ export default function Ajuda() {
 
           {/* SESSÃO 4: CONFIGURAÇÕES */}
           <div className="card border-0 shadow-sm rounded-4 p-4 mb-4" style={{ borderLeft: '5px solid #eeab45' }}>
-            <h5 className="fw-bold text-dark mb-3">⚙️ 4. Configurações (Dados da Empresa)</h5>
+            <h5 className="fw-bold text-dark mb-3"><img src="/icons/roda-dentada.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> 4. Configurações (Dados da Empresa)</h5>
             <p className="text-muted mb-3">
               Nesta aba você confere e atualiza todas as informações do seu negócio. Ela é dividida em três partes:
             </p>
@@ -114,13 +114,13 @@ export default function Ajuda() {
 
           {/* FOOTER DE SUPORTE */}
           <div className="bg-light border rounded-4 p-4 text-center mt-5">
-            <h5 className="fw-bold text-dark mb-2">💡 Ainda tem dúvidas?</h5>
+            <h5 className="fw-bold text-dark mb-2"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Ainda tem dúvidas?</h5>
             <p className="text-muted small mb-4">
               Se precisar de ajuda com algum passo, nossa equipe de suporte está sempre à disposição!
             </p>
             <div className="d-flex justify-content-center gap-3">
               <a href="mailto:suporte@deadline.com" className="btn btn-outline-dark fw-bold rounded-pill px-4">
-                ✉️ Enviar E-mail
+                <img src="/icons/e-mail.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Enviar E-mail
               </a>
             </div>
           </div>
