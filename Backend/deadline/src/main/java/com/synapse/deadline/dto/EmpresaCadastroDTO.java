@@ -1,10 +1,11 @@
 package com.synapse.deadline.dto;
 
+import org.hibernate.validator.constraints.br.CNPJ;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import org.hibernate.validator.constraints.br.CNPJ;
 
 /**
  * DTO para o registo inicial de uma nova Empresa parceira no marketplace.
@@ -22,6 +23,7 @@ public class EmpresaCadastroDTO {
     private String cnpj;
 
     private String logotipo;
+    private String bannerPerfil;
 
     @NotNull(message = "O ID do ramo de atuação é obrigatório.")
     private Long idRamo;
@@ -57,6 +59,8 @@ public class EmpresaCadastroDTO {
     public void setCnpj(String cnpj) { this.cnpj = cnpj; }
     public String getLogotipo() { return logotipo; }
     public void setLogotipo(String logotipo) { this.logotipo = logotipo; }
+    public String getBannerPerfil() { return bannerPerfil; }
+    public void setBannerPerfil(String bannerPerfil) { this.bannerPerfil = bannerPerfil; }
     public Long getIdRamo() { return idRamo; }
     public void setIdRamo(Long idRamo) { this.idRamo = idRamo; }
     public EnderecoDTO getEndereco() { return endereco; }

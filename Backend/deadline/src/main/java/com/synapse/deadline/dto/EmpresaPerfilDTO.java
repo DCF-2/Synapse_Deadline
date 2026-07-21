@@ -10,6 +10,7 @@ public class EmpresaPerfilDTO {
     private String razaoSocial;
     private String cnpj;
     private String logotipo;
+    private String bannerPerfil;
     private Long idRamo;
     private EnderecoDTO endereco;
     private String contatoWhatsapp;
@@ -31,6 +32,8 @@ public class EmpresaPerfilDTO {
     public void setCnpj(String cnpj) { this.cnpj = cnpj; }
     public String getLogotipo() { return logotipo; }
     public void setLogotipo(String logotipo) { this.logotipo = logotipo; }
+    public String getBannerPerfil() { return bannerPerfil; }
+    public void setBannerPerfil(String bannerPerfil) { this.bannerPerfil = bannerPerfil; }
     public Long getIdRamo() { return idRamo; }
     public void setIdRamo(Long idRamo) { this.idRamo = idRamo; }
     public EnderecoDTO getEndereco() { return endereco; }
