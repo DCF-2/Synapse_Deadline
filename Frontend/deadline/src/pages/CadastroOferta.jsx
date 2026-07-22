@@ -209,7 +209,7 @@ export default function NovaOferta() {
             <div className="mb-4">
               <LabelComAjuda
                 texto="Produto Base"
-                ajuda="O nome cadastrado aqui é o que aparece na oferta ao público."
+                ajuda="Produto do catálogo que receberá o desconto."
               />
               <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={produtoId} onChange={(e) => setProdutoId(e.target.value)} required>
                 <option value="">Selecione um produto cadastrado...</option>
