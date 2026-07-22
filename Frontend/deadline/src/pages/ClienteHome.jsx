@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterLocalizacaoConsumidor, formatarDistancia, mensagemErroGeolocalizacao, statusDeErroGeolocalizacao } from '../utils/geolocalizacao';
 import { contarFavoritos } from '../utils/favoritos';
+import { obterHistoricoBuscas, salvarNovaBusca, removerBuscaDoHistorico, limparHistoricoBuscas } from '../utils/historicoBusca';
 import BotaoFavorito from '../components/BotaoFavorito';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
@@ -16,7 +17,9 @@ export default function ClienteHome() {
   
   // Estados para Filtros
   const [termoBusca, setTermoBusca] = useState(''); 
-  const [nomeProduto, setNomeProduto] = useState(''); 
+  const [nomeProduto, setNomeProduto] = useState('');
+  const [historicoBuscas, setHistoricoBuscas] = useState(() => obterHistoricoBuscas());
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [categoriaId, setCategoriaId] = useState('');
   const [precoMin, setPrecoMin] = useState('');
   const [precoMax, setPrecoMax] = useState('');
@@ -41,9 +44,14 @@ export default function ClienteHome() {
   const [totalFavoritos, setTotalFavoritos] = useState(() => contarFavoritos());
 
   useEffect(() => {
-    const atualizar = () => setTotalFavoritos(contarFavoritos());
-    window.addEventListener('favoritos-atualizados', atualizar);
-    return () => window.removeEventListener('favoritos-atualizados', atualizar);
+    const atualizarFavoritos = () => setTotalFavoritos(contarFavoritos());
+    const atualizarHistorico = () => setHistoricoBuscas(obterHistoricoBuscas());
+    window.addEventListener('favoritos-atualizados', atualizarFavoritos);
+    window.addEventListener('historico-busca-atualizado', atualizarHistorico);
+    return () => {
+      window.removeEventListener('favoritos-atualizados', atualizarFavoritos);
+      window.removeEventListener('historico-busca-atualizado', atualizarHistorico);
+    };
   }, []);
 
   // Carrega as categorias na inicialização
@@ -77,10 +85,25 @@ export default function ClienteHome() {
     solicitarLocalizacao();
   }, [solicitarLocalizacao]);
 
-  // Busca Estática acionada por submit
+  const executarBusca = (termoOpcional) => {
+    const termo = (typeof termoOpcional === 'string' ? termoOpcional : termoBusca).trim();
+    setTermoBusca(termo);
+    setNomeProduto(termo);
+    if (termo.length >= 3) {
+      salvarNovaBusca(termo);
+    }
+    setMostrarHistorico(false);
+  };
+
   const aplicarBusca = (e) => {
     e.preventDefault();
-    setNomeProduto(termoBusca.trim());
+    executarBusca();
+  };
+
+  const removerItemHistorico = (e, termo) => {
+    e.stopPropagation();
+    e.preventDefault();
+    removerBuscaDoHistorico(termo);
   };
 
   // Carrega os dados filtrados e ordenados
@@ -317,8 +340,59 @@ export default function ClienteHome() {
 
             {/* BARRA DE PESQUISA SUPERIOR */}
             <form onSubmit={aplicarBusca} className="mb-4 d-flex gap-2">
-              <input type="text" className="form-control form-control-lg border-0 shadow-sm" placeholder="Buscar produtos, lojas ou categorias..." 
-                     value={termoBusca} onChange={(e) => setTermoBusca(e.target.value)} />
+              <div className="position-relative flex-grow-1">
+                <input
+                  type="text"
+                  className="form-control form-control-lg border-0 shadow-sm"
+                  placeholder="Buscar produtos, lojas ou categorias..."
+                  value={termoBusca}
+                  onChange={(e) => setTermoBusca(e.target.value)}
+                  onFocus={() => setMostrarHistorico(true)}
+                  onBlur={() => setTimeout(() => setMostrarHistorico(false), 200)}
+                />
+
+                {mostrarHistorico && historicoBuscas.length > 0 && (
+                  <div
+                    className="position-absolute bg-white rounded-bottom shadow border w-100"
+                    style={{ top: '100%', left: 0, zIndex: 10, maxHeight: '280px', overflowY: 'auto' }}
+                  >
+                    <div className="d-flex justify-content-between align-items-center px-3 py-2 border-bottom bg-light">
+                      <small className="text-muted fw-bold">Buscas recentes</small>
+                      <button
+                        type="button"
+                        className="btn btn-link btn-sm text-muted p-0"
+                        onMouseDown={(e) => { e.preventDefault(); limparHistoricoBuscas(); }}
+                      >
+                        Limpar
+                      </button>
+                    </div>
+                    {historicoBuscas.map((busca) => (
+                      <div
+                        key={busca}
+                        className="d-flex align-items-center justify-content-between px-3 py-2 border-bottom"
+                        style={{ cursor: 'pointer' }}
+                        onMouseDown={(e) => { e.preventDefault(); executarBusca(busca); }}
+                      >
+                        <div className="d-flex align-items-center gap-2 text-truncate">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" className="text-muted flex-shrink-0" viewBox="0 0 16 16">
+                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0"/>
+                          </svg>
+                          <span className="text-dark text-truncate">{busca}</span>
+                        </div>
+                        <button
+                          type="button"
+                          className="btn btn-sm btn-link text-muted p-0 ms-2 flex-shrink-0"
+                          title="Remover do histórico"
+                          onMouseDown={(e) => removerItemHistorico(e, busca)}
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <button type="submit" className="btn text-white px-4 shadow-sm fw-bold d-flex align-items-center gap-2" style={{backgroundColor: 'var(--dl-primary)'}}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
