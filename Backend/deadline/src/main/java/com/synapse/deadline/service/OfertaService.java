@@ -69,6 +69,7 @@ public class OfertaService {
         dto.setId(oferta.getId());
         dto.setProdutoId(oferta.getProduto().getId());
         dto.setTituloProduto(oferta.getProduto().getTituloProduto());
+        dto.setNomeCategoria(oferta.getProduto().getCategoria() != null ? oferta.getProduto().getCategoria().getNome() : "Sem Categoria");
 
         if (oferta.getProduto().getCategoria() != null) {
             dto.setNomeCategoria(oferta.getProduto().getCategoria().getNome());
@@ -299,6 +300,7 @@ public class OfertaService {
         com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO dto = new com.synapse.deadline.dto.OfertaConsumidorDetalhesDTO();
         dto.setId(oferta.getId());
         dto.setTituloProduto(oferta.getProduto().getTituloProduto());
+        dto.setNomeCategoria(oferta.getProduto().getCategoria() != null ? oferta.getProduto().getCategoria().getNome() : "Sem Categoria");
         dto.setDescricao(oferta.getProduto().getDescricao());
         dto.setFoto(oferta.getProduto().getFoto());
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());

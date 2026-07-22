@@ -228,7 +228,7 @@ export default function ClienteHome() {
           <div className="col-lg-3">
             <div className="bg-white p-3 rounded-4 shadow-sm position-sticky" style={{ top: '100px' }}>
               <div className="d-flex justify-content-between align-items-center mb-3 border-bottom pb-2">
-                <h6 className="fw-bold text-dark m-0"><img src="/icons/lupa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Filtros Avançados</h6>
+                <h6 className="fw-bold text-dark m-0"><img src="/icons/filtro.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Filtros Avançados</h6>
                 <button 
                   className="btn btn-sm btn-outline-secondary d-lg-none" 
                   type="button" 
