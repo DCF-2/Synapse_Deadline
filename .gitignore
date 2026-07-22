@@ -21,7 +21,7 @@ Backend/deadline/data/
 # ==========================================
 # SEGURANÇA — NUNCA COMMITAR
 # ==========================================
-.env
+*.env
 .env.*
 !.env.example
 *.pem

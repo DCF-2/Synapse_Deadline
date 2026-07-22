@@ -16,6 +16,7 @@ import '@ionic/react/css/typography.css';
 // Páginas
 import ClienteHome from './pages/ClienteHome';
 import LojaPerfil from './pages/LojaPerfil';
+import Favoritos from './pages/Favoritos';
 
 setupIonicReact();
 
@@ -31,6 +32,10 @@ export default function App() {
           
           <Route path="/loja/:id">
             <LojaPerfil />
+          </Route>
+
+          <Route path="/favoritos">
+            <Favoritos />
           </Route>
 
         </IonRouterOutlet>
