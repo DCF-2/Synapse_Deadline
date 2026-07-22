@@ -2,59 +2,27 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 
 // Componentes Oficiais do Ionic para o projeto mobile
-import { IonPage, IonContent, IonModal, IonHeader, IonToolbar, IonButtons, IonButton, IonTitle } from '@ionic/react';
+import { IonPage, IonContent, IonModal, IonHeader, IonToolbar, IonButtons, IonButton, IonTitle, IonRefresher, IonRefresherContent } from '@ionic/react';
+import OfertaCard from '../components/OfertaCard';
+import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 import '../styles/theme.css';
 
 // Plugin Nativo do Capacitor para permissões e coordenadas de GPS no Celular
 import { Geolocation } from '@capacitor/geolocation';
+import { Share } from '@capacitor/share';
+import { 
+  obterFavoritos, 
+  alternarFavorito, 
+  isFavorito, 
+  obterHistoricoBuscas, 
+  salvarNovaBusca, 
+  limparHistoricoBuscas, 
+  removerBuscaDoHistorico,
+  obterLocalizacaoConsumidor
+} from '../utils/storage_mobile';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://10.0.2.2:8080';
+const API_URL = import.meta.env.VITE_API_URL;
 
-/* ==========================================================================
-   FUNÇÕES DE GEOLOCALIZAÇÃO NATIVA + FALLBACK
-   ========================================================================== */
-const obterLocalizacaoConsumidor = async () => {
-  try {
-    const statusPermissao = await Geolocation.checkPermissions();
-
-    if (statusPermissao.location !== 'granted') {
-      const resultadoSolicitacao = await Geolocation.requestPermissions();
-      if (resultadoSolicitacao.location !== 'granted') {
-        console.warn("Permissão de GPS negada pelo usuário.");
-        return null;
-      }
-    }
-
-    const posicao = await Geolocation.getCurrentPosition({
-      enableHighAccuracy: true,
-      timeout: 10000
-    });
-
-    return {
-      latitude: posicao.coords.latitude,
-      longitude: posicao.coords.longitude
-    };
-  } catch (error) {
-    console.error("Erro ao usar Capacitor Geolocation, tentando fallback para Web...", error);
-
-    return new Promise((resolve) => {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            resolve({
-              latitude: position.coords.latitude,
-              longitude: position.coords.longitude
-            });
-          },
-          () => resolve(null),
-          { enableHighAccuracy: true, timeout: 10000 }
-        );
-      } else {
-        resolve(null);
-      }
-    });
-  }
-};
 
 const formatarDistancia = (dist) => {
   if (dist == null) return '';
@@ -72,6 +40,9 @@ export default function ClienteHome() {
   // Estados para a Barra de Busca (Externa)
   const [termoBusca, setTermoBusca] = useState('');
   const [nomeProduto, setNomeProduto] = useState('');
+  const [historicoBuscas, setHistoricoBuscas] = useState(obterHistoricoBuscas());
+  const [mostrarHistorico, setMostrarHistorico] = useState(false);
+  const [favoritosIds, setFavoritosIds] = useState(obterFavoritos());
 
   // Estados para os Filtros (Internos ao Modal)
   const [categoriaId, setCategoriaId] = useState('');
@@ -91,24 +62,17 @@ export default function ClienteHome() {
 
   const debounceTimer = useRef(null);
 
-  const abrirMapa = (oferta) => {
-    const end = oferta.enderecoEmpresa;
-    const query = encodeURIComponent(`${end.logradouro}, ${end.numero} - ${end.bairro}, ${end.cidade} - ${end.uf}`);
-    window.open(`https://maps.google.com/?q=${query}`, '_blank');
-  };
 
-  const abrirWhatsApp = (oferta) => {
-    fetch(`${API_URL}/oferta/publico/${oferta.id}/engajamento`, { method: 'POST' }).catch(console.error);
-    const fone = oferta.contatoWhatsapp?.replace(/\D/g, '');
-    const mensagem = encodeURIComponent(`Olá! Vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional.toFixed(2)} no Deadline. Ainda está disponível?`);
-    window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
-  };
 
   useEffect(() => {
     fetch(`${API_URL}/categoria`)
       .then(res => res.json())
       .then(data => setCategorias(data))
       .catch(err => console.error("Erro ao carregar categorias:", err));
+      
+    // Carregar histórico de buscas e favoritos
+    setHistoricoBuscas(obterHistoricoBuscas());
+    setFavoritosIds(obterFavoritos());
   }, []);
 
   useEffect(() => {
@@ -127,16 +91,16 @@ export default function ClienteHome() {
       });
   }, []);
 
-  useEffect(() => {
-    if (debounceTimer.current) clearTimeout(debounceTimer.current);
-    debounceTimer.current = setTimeout(() => {
-      const termo = termoBusca.trim();
-      if (termo.length >= 3 || termo.length === 0) {
-        setNomeProduto(termo);
-      }
-    }, 600);
-    return () => clearTimeout(debounceTimer.current);
-  }, [termoBusca]);
+  const handleBuscar = (termoOpcional) => {
+    const termo = (typeof termoOpcional === 'string' ? termoOpcional : termoBusca).trim();
+    setTermoBusca(termo);
+    setNomeProduto(termo);
+    if (termo.length >= 3) {
+      salvarNovaBusca(termo);
+      setHistoricoBuscas(obterHistoricoBuscas());
+    }
+    setMostrarHistorico(false);
+  };
 
   const carregarVitrine = async () => {
     setCarregando(true);
@@ -179,7 +143,12 @@ export default function ClienteHome() {
 
   useEffect(() => {
     carregarVitrine();
-  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao]);
+  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao, precoMin, precoMax]);
+
+  const handleRefresh = async (event) => {
+    await carregarVitrine();
+    event.detail.complete();
+  };
 
   // Função para Limpar todos os filtros do Modal
   const limparFiltros = () => {
@@ -216,13 +185,23 @@ export default function ClienteHome() {
     }
   };
 
+  const handleToggleFavorito = (ofertaId, e) => {
+    e.stopPropagation();
+    alternarFavorito(ofertaId);
+    setFavoritosIds(obterFavoritos());
+  };
+
   const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
 
   return (
     <IonPage>
       <IonContent fullscreen>
-        <div style={{ backgroundColor: 'var(--dl-background, #f8f9fa)', minHeight: '100vh' }}>
+        <IonRefresher slot="fixed" onIonRefresh={handleRefresh}>
+          <IonRefresherContent pullingIcon="lines" refreshingSpinner="circles" />
+        </IonRefresher>
+
+        <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '80px' }}>
 
           <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div className="container px-3 d-flex justify-content-center align-items-center">
@@ -242,39 +221,50 @@ export default function ClienteHome() {
 
 
           <div className="bg-white border-bottom shadow-xs py-2 mb-2">
-            <div
-              className="container px-3 d-flex align-items-center gap-2 overflow-auto"
-              style={{
-                scrollbarWidth: 'none',
-                msOverflowStyle: 'none',
-                WebkitOverflowScrolling: 'touch',
-                paddingRight: '2rem' // Cria uma área elástica no final do arrasto
-              }}
-            >
-              {[
-                { value: 'validadeProduto,asc', label: 'Vence Cedo', icon: '⏳' },
-                { value: 'precoPromocional,asc', label: 'Menor Preço', icon: '💰' },
-                { value: 'percentualDesconto,desc', label: 'Maior Desct.', icon: '🏷️' },
-                { value: 'id,desc', label: 'Mais Recentes', icon: '✨' },
-                ...(localizacao ? [{ value: 'distanciaKm,asc', label: 'Mais Próximo', icon: '📍' }] : [])
-              ].map((opcao) => {
-                const statusAtivo = ordenacao === opcao.value;
-                return (
-                  <button
-                    key={opcao.value}
-                    onClick={() => setOrdenacao(opcao.value)}
-                    className={`btn btn-sm rounded-pill px-4 py-2 fw-bold text-nowrap transition-all ${statusAtivo ? 'btn-success text-white shadow-sm' : 'btn-light text-muted border-0'
-                      }`}
-                    style={{
-                      fontSize: '0.8rem',
-                      ...(statusAtivo ? { backgroundColor: 'var(--dl-primary, #9bf4c9)', borderColor: 'var(--dl-primary, #9bf4c9)' } : {})
-                    }}
-                  >
-                    <span className="me-1.5" style={{ fontSize: '0.9rem' }}>{opcao.icon}</span>
-                    {opcao.label}
-                  </button>
-                );
-              })}
+            <div className="container px-3 d-flex align-items-center gap-2">
+              <div
+                className="d-flex align-items-center gap-2 overflow-auto flex-grow-1"
+                style={{
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                  paddingRight: '1rem'
+                }}
+              >
+                {[
+                  { value: 'validadeProduto,asc', label: 'Vence Cedo', icon: '/icons/data-limite.png' },
+                  { value: 'precoPromocional,asc', label: 'Menor Preço', icon: '/icons/menor-preco.png' },
+                  { value: 'percentualDesconto,desc', label: 'Maior Desct.', icon: '/icons/maior-desct.png' },
+                  { value: 'id,desc', label: 'Mais Recentes', icon: '/icons/recente.png' },
+                  ...(localizacao ? [{ value: 'distanciaKm,asc', label: 'Mais Próximo', icon: '/icons/proximo.png' }] : [])
+                ].map((opcao) => {
+                  const statusAtivo = ordenacao === opcao.value;
+                  return (
+                    <button
+                      key={opcao.value}
+                      onClick={() => setOrdenacao(opcao.value)}
+                      className={`btn btn-sm rounded-pill px-4 py-2 fw-bold text-nowrap transition-all ${statusAtivo ? 'btn-success text-white shadow-sm' : 'btn-light text-muted border-0'
+                        }`}
+                      style={{
+                        fontSize: '0.8rem',
+                        ...(statusAtivo ? { backgroundColor: 'var(--dl-primary, #9bf4c9)', borderColor: 'var(--dl-primary, #9bf4c9)' } : {})
+                      }}
+                    >
+                      <img src={opcao.icon} alt="icon" style={{ width: "14px", height: "14px", objectFit: "contain", marginRight: "4px" }} />
+                      {opcao.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ width: '1px', height: '24px', backgroundColor: '#e2e8f0', margin: '0 2px' }}></div>
+              <button
+                className="btn btn-sm rounded-pill px-3 py-2 fw-bold text-nowrap transition-all btn-light text-muted border-0 shadow-sm flex-shrink-0"
+                style={{ fontSize: '0.8rem', backgroundColor: '#f8fafc', borderColor: '#d0dae6' }}
+                onClick={() => setMostrarFiltros(true)}
+              >
+                <span className="me-1" style={{ display: 'inline-flex', alignItems: 'center' }}><img src="/icons/filtro.png" alt="icon" style={{ width: "14px", height: "14px", objectFit: "contain", opacity: 0.6 }} /></span> Filtros
+              </button>
             </div>
           </div>
 
@@ -319,10 +309,10 @@ export default function ClienteHome() {
 
                     {/* Ícone de Lupa elegante no início */}
                     <span
-                      className="position-absolute top-50 start-0 translate-middle-y ms-3 text-muted"
-                      style={{ pointerEvents: 'none', fontSize: '0.9rem', opacity: 0.5 }}
+                      className="position-absolute top-50 start-0 translate-middle-y ms-3 d-flex align-items-center"
+                      style={{ pointerEvents: 'none', opacity: 0.5 }}
                     >
-                      🔍
+                      <img src="/icons/lupa.png" alt="buscar" style={{ width: "16px", height: "16px", objectFit: "contain" }} />
                     </span>
 
                     <input
@@ -347,33 +337,49 @@ export default function ClienteHome() {
                         e.target.style.borderColor = 'var(--dl-primary, #0f9b58)';
                         e.target.style.backgroundColor = '#ffffff';
                         e.target.style.boxShadow = '0 0 0 3px rgba(15, 155, 88, 0.12)';
+                        setMostrarHistorico(true);
                       }}
                       onBlur={(e) => {
                         e.target.style.borderColor = '#e2e8f0';
                         e.target.style.backgroundColor = '#f8fafc';
                         e.target.style.boxShadow = 'none';
+                        setTimeout(() => setMostrarHistorico(false), 200);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') handleBuscar();
                       }}
                     />
 
                     {/* Botão de Limpar */}
                     {termoBusca && (
                       <button
-                        className="btn position-absolute top-50 end-0 translate-middle-y me-2 text-muted border-0 bg-transparent py-1 px-2 d-flex align-items-center justify-content-center"
-                        onClick={() => setTermoBusca('')}
-                        style={{ fontSize: '0.75rem', zIndex: 5, opacity: 0.6 }}
+                        className="btn position-absolute top-50 end-0 translate-middle-y text-muted border-0 bg-transparent py-1 px-2 d-flex align-items-center justify-content-center"
+                        onClick={() => { setTermoBusca(''); setNomeProduto(''); }}
+                        style={{ fontSize: '0.75rem', zIndex: 5, opacity: 0.6, right: '10px' }}
                       >
                         ✕
                       </button>
+                    )}
+
+                    {mostrarHistorico && historicoBuscas.length > 0 && (
+                      <div className="position-absolute bg-white rounded-bottom shadow-sm border w-100" style={{ top: '100%', left: 0, zIndex: 10, marginTop: '0', overflowY: 'auto', maxHeight: '250px', borderTop: 'none', borderBottomLeftRadius: '14px', borderBottomRightRadius: '14px' }}>
+                        {historicoBuscas.map((busca, idx) => (
+                          <div key={idx} className="d-flex align-items-center px-3 py-3 border-bottom" style={{ cursor: 'pointer' }} onMouseDown={(e) => { e.preventDefault(); handleBuscar(busca); }}>
+                            <span style={{ opacity: 0.3, fontSize: '1rem', marginRight: '12px' }}>🕒</span>
+                            <span className="text-dark fw-medium" style={{ fontSize: '0.9rem' }}>{busca}</span>
+                          </div>
+                        ))}
+                      </div>
                     )}
                   </div>
 
                   <div className="d-flex align-items-center text-nowrap">
                     <button
-                      className="btn btn-sm text-white fw-bold d-flex align-items-center gap-1 rounded-4 shadow-sm px-1 py-1.5 rounded-pill px-4 py-2 fw-bold text-nowrap"
-                      style={{ backgroundColor: 'var(--dl-primary, #0f9b58)', fontSize: '0.75rem', border: "2" }}
-                      onClick={() => setMostrarFiltros(true)}
+                      className="btn btn-sm text-white fw-bold d-flex align-items-center justify-content-center rounded-4 shadow-sm px-4 py-2 text-nowrap"
+                      style={{ backgroundColor: 'var(--dl-primary, #0f9b58)', fontSize: '0.85rem', border: 'none', height: '100%' }}
+                      onClick={handleBuscar}
                     >
-                    Filtros
+                      Buscar
                     </button>
                   </div>
                 </div>
@@ -397,53 +403,12 @@ export default function ClienteHome() {
                   <div className="row g-2">
                     {ofertas.map((oferta) => (
                       <div className="col-6 col-md-4 col-xl-3" key={oferta.id}>
-                        <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative" style={{ minHeight: '270px' }}>
-
-                          <div className="position-absolute top-0 start-0 m-2 px-2 py-0.5 rounded-3 text-white fw-bold shadow-sm"
-                            style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.75rem' }}>
-                            -{oferta.percentualDesconto?.toFixed(0)}%
-                          </div>
-
-                          <div className="bg-light text-center p-2 d-flex align-items-center justify-content-center" style={{ height: '115px' }}>
-                            {oferta.foto ? (
-                              <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                            ) : (
-                              <span style={{ fontSize: '2.5rem', opacity: 0.15 }}>📦</span>
-                            )}
-                          </div>
-
-                          <div className="card-body d-flex flex-column p-2">
-                            <div className="d-flex justify-content-between align-items-start mb-1">
-                              <span className="text-success fw-bold text-uppercase" style={{ fontSize: '0.65rem' }}>{oferta.nomeCategoria}</span>
-                              {oferta.distanciaKm != null && (
-                                <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill px-1.5 py-0.5" style={{ fontSize: '0.6rem' }}>
-                                  📍 {formatarDistancia(oferta.distanciaKm)}
-                                </span>
-                              )}
-                            </div>
-
-                            <h6 className="fw-bold text-dark mb-1 text-truncate small" title={oferta.tituloProduto} style={{ fontSize: '0.85rem', lineHeight: '1.2' }}>
-                              {oferta.tituloProduto}
-                            </h6>
-
-                            <div className="my-1">
-                              <span className="text-muted text-decoration-line-through d-block" style={{ fontSize: '0.7rem' }}>De: {formatarMoeda(oferta.precoOriginal)}</span>
-                              <span className="fw-bold text-dark" style={{ fontSize: '0.95rem' }}>Por: {formatarMoeda(oferta.precoPromocional)}</span>
-                            </div>
-
-                            <div className="mt-auto pt-2 border-top d-flex flex-column gap-1">
-                              <div className="d-flex justify-content-between align-items-center">
-                                <span className="text-muted" style={{ fontSize: '0.65rem' }}>Vence em:</span>
-                                <span className="fw-bold text-danger" style={{ fontSize: '0.7rem' }}>{formatarData(oferta.validadeProduto)}</span>
-                              </div>
-                              <button className="btn btn-sm text-white fw-bold py-1.5 px-2 rounded-3 w-100 mt-1 shadow-xs"
-                                style={{ backgroundColor: 'var(--dl-primary, #0f9b58)', fontSize: '0.75rem', border: 'none' }}
-                                onClick={() => abrirDetalhes(oferta.id)}>
-                                {carregandoDetalhes ? '...' : 'Ver Detalhes'}
-                              </button>
-                            </div>
-                          </div>
-                        </div>
+                        <OfertaCard 
+                          oferta={oferta} 
+                          favoritosIds={favoritosIds} 
+                          handleToggleFavorito={handleToggleFavorito} 
+                          abrirDetalhes={abrirDetalhes} 
+                        />
                       </div>
                     ))}
                   </div>
@@ -456,7 +421,9 @@ export default function ClienteHome() {
           <IonModal isOpen={mostrarFiltros} onDidDismiss={() => setMostrarFiltros(false)}>
             <IonHeader>
               <IonToolbar>
-                <IonTitle style={{ fontSize: '1rem', fontWeight: 'bold' }}>🔍 Filtrar Ofertas</IonTitle>
+                <IonTitle style={{ fontSize: '1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <img src="/icons/filtro.png" alt="icon" style={{ width: "16px", height: "16px", objectFit: "contain" }} /> Filtrar Ofertas
+                </IonTitle>
                 <IonButtons slot="end">
                   <IonButton onClick={() => setMostrarFiltros(false)} color="dark">Fechar</IonButton>
                 </IonButtons>
@@ -537,91 +504,38 @@ export default function ClienteHome() {
           </IonModal>
 
           {/* MODAL DE DETALHES COMPLETO */}
-          {detalhesOferta && (
-            <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 1050 }}>
-              <div className="modal-dialog modal-dialog-centered modal-lg">
-                <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-                  <div className="modal-header border-0 bg-light p-3">
-                    <Link to={`/loja/${detalhesOferta.empresaId}`} className="d-flex align-items-center gap-2 text-decoration-none">
-                      <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden" style={{ width: '40px', height: '40px' }}>
-                        {detalhesOferta.logotipoEmpresa ? (
-                          <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                        ) : (<span className="fw-bold text-success">🏢</span>)}
-                      </div>
-                      <div>
-                        <small className="text-muted d-block fw-bold" style={{ fontSize: '0.65rem' }}>Vendido por:</small>
-                        <h6 className="fw-bold text-dark m-0 small d-flex align-items-center gap-1">
-                          {detalhesOferta.nomeFantasiaEmpresa} <span>↗️</span>
-                        </h6>
-                      </div>
-                    </Link>
-                    <button type="button" className="btn-close" onClick={() => setDetalhesOferta(null)}></button>
-                  </div>
-                  <div className="modal-body p-3" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
-                    <div className="row g-3">
-                      <div className="col-md-5 text-center">
-                        <div className="bg-light rounded-4 p-2 mb-2 d-flex align-items-center justify-content-center" style={{ height: '180px' }}>
-                          {detalhesOferta.foto ? (
-                            <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                          ) : (<span style={{ fontSize: '3rem', opacity: 0.1 }}>📦</span>)}
-                        </div>
-                        <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-2 rounded-4 border border-success border-opacity-25">
-                          <div className="text-start">
-                            <span className="text-muted text-decoration-line-through small d-block" style={{ fontSize: '0.75rem' }}>De: {formatarMoeda(detalhesOferta.precoOriginal)}</span>
-                            <h4 className="fw-bold text-success m-0" style={{ fontSize: '1.25rem' }}>{formatarMoeda(detalhesOferta.precoPromocional)}</h4>
-                          </div>
-                          <div className="badge bg-danger rounded-3">-{detalhesOferta.percentualDesconto?.toFixed(0)}%</div>
-                        </div>
-                      </div>
-                      <div className="col-md-7 d-flex flex-column">
-                        <h5 className="fw-bold text-dark mb-1">{detalhesOferta.tituloProduto}</h5>
-                        <p className="text-muted small mb-3">{detalhesOferta.descricao || "Sem descrição disponível."}</p>
-                        <div className="row g-2 mb-3">
-                          <div className="col-6">
-                            <div className="p-2 border rounded-3 bg-light text-center">
-                              <small className="text-muted fw-bold d-block" style={{ fontSize: '0.6rem' }}>PRODUTO VENCE EM</small>
-                              <span className="fw-bold text-danger small">{formatarData(detalhesOferta.validadeProduto)}</span>
-                            </div>
-                          </div>
-                          <div className="col-6">
-                            <div className="p-2 border rounded-3 bg-light text-center">
-                              <small className="text-muted fw-bold d-block" style={{ fontSize: '0.6rem' }}>OFERTA ENCERRA EM</small>
-                              <span className="fw-bold text-dark small">{formatarData(detalhesOferta.dataFimOferta)}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-auto pt-2 border-top">
-                          <h6 className="fw-bold text-dark small mb-1">📍 Retirada</h6>
-                          {detalhesOferta.distanciaKm != null && (
-                            <p className="small fw-bold text-primary mb-1" style={{ fontSize: '0.75rem' }}>
-                              Distância de você: {formatarDistancia(detalhesOferta.distanciaKm)}
-                            </p>
-                          )}
-                          <p className="text-muted mb-2" style={{ fontSize: '0.75rem' }}>
-                            {detalhesOferta.enderecoEmpresa?.logradouro}, {detalhesOferta.enderecoEmpresa?.numero} - {detalhesOferta.enderecoEmpresa?.bairro}
-                          </p>
-                          <div className="alert alert-warning small py-1.5 px-2 mb-0 d-flex gap-1" style={{ fontSize: '0.75rem' }}>
-                            <span>📋</span>
-                            <div><strong>Instruções:</strong> {detalhesOferta.instrucoesRetirada}</div>
-                          </div>
-                        </div>
-                        <div className="d-flex gap-2 mt-3">
-                          <button className="btn btn-sm btn-outline-dark fw-bold rounded-pill flex-grow-1 py-2" style={{ fontSize: '0.8rem' }} onClick={() => abrirMapa(detalhesOferta)}>
-                            Mapa
-                          </button>
-                          <button className="btn btn-sm text-white fw-bold rounded-pill flex-grow-1 py-2" style={{ backgroundColor: '#25D366', fontSize: '0.8rem', border: 'none' }} onClick={() => abrirWhatsApp(detalhesOferta)}>
-                            WhatsApp
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
+          <OfertaDetalhesModal 
+            detalhesOferta={detalhesOferta} 
+            setDetalhesOferta={setDetalhesOferta} 
+            formatarMoeda={formatarMoeda} 
+            formatarData={formatarData} 
+            formatarDistancia={formatarDistancia} 
+          />
 
         </div>
+
+        {/* FAB de Favoritos */}
+        <Link to="/favoritos"
+          className="position-fixed shadow-lg d-flex align-items-center justify-content-center rounded-circle bg-warning border border-2 border-white"
+          style={{
+            bottom: '20px',
+            right: '20px',
+            width: '56px',
+            height: '56px',
+            cursor: 'pointer',
+            zIndex: 1000,
+            textDecoration: 'none'
+          }}
+        >
+          <img 
+            src="/icons/favorito.png" 
+            alt="Favoritos" 
+            style={{ width: '28px', height: '28px', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
+          />
+        </Link>
+        
+
+
       </IonContent>
     </IonPage>
   );

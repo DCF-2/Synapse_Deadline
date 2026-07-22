@@ -47,6 +47,68 @@
 }
 
 /* ===================================
+   DARK MODE
+   =================================== */
+[data-theme='dark'] {
+  --dl-background: #0F172A;       /* Fundo muito escuro */
+  --dl-surface: #1E293B;          /* Cards no dark mode */
+  --dl-text-primary: #F1F5F9;     /* Texto claro */
+  --dl-text-secondary: #94A3B8;   /* Texto secundário claro */
+  --dl-text-muted: #475569;       /* Texto desabilitado no dark mode */
+  --dl-border: #334155;           /* Bordas escuras */
+  
+  /* Ajustes nas cores para contrastar melhor com o fundo escuro */
+  --dl-primary: #3DB896;          /* Verde mais claro no dark mode */
+  --dl-primary-dark: #2D9B83;
+  --dl-primary-light: #6EE7B7;
+  
+  --dl-secondary: #3B82F6;        /* Azul mais vibrante no dark */
+  --dl-secondary-light: #60A5FA;
+  
+  --dl-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --dl-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --dl-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.3);
+  --dl-shadow-xl: 0 20px 40px rgba(0, 0, 0, 0.25);
+}
+
+[data-theme='dark'] .bg-white {
+  background-color: var(--dl-surface) !important;
+}
+
+[data-theme='dark'] .bg-light {
+  background-color: var(--dl-background) !important;
+}
+
+[data-theme='dark'] .text-dark {
+  color: var(--dl-text-primary) !important;
+}
+
+[data-theme='dark'] .text-muted {
+  color: var(--dl-text-secondary) !important;
+}
+
+[data-theme='dark'] .border-light {
+  border-color: var(--dl-border) !important;
+}
+
+[data-theme='dark'] .list-group-item {
+  background-color: var(--dl-surface);
+  color: var(--dl-text-primary);
+  border-color: var(--dl-border);
+}
+
+[data-theme='dark'] .form-control, [data-theme='dark'] .form-select {
+  background-color: var(--dl-background);
+  color: var(--dl-text-primary);
+  border-color: var(--dl-border);
+}
+
+[data-theme='dark'] .form-control:focus, [data-theme='dark'] .form-select:focus {
+  background-color: var(--dl-background);
+  color: var(--dl-text-primary);
+}
+
+/* ===================================
    ESTILOS GLOBAIS & ANIMAÇÕES (MANTIDOS)
    =================================== */
 body {
@@ -54,6 +116,7 @@ body {
   color: var(--dl-text-primary);
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   margin: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ... (Mantenha aqui as suas classes dl-card, dl-btn-primary, animações, etc, que você já me mandou) ... */

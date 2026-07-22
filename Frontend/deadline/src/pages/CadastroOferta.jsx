@@ -194,12 +194,12 @@ export default function NovaOferta() {
           <h2 className="fw-bold text-dark m-0">Nova Oferta</h2>
           <p className="text-muted small m-0 mt-1">Defina a promoção para um produto do seu catálogo.</p>
         </div>
-        <Link to="/ofertas" className="btn btn-outline-secondary fw-bold rounded-3">← Voltar</Link>
+        <Link to="/ofertas" className="btn btn-outline-secondary fw-bold rounded-3"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar</Link>
       </div>
 
       <div className="card border-0 shadow-sm rounded-4 p-4 mx-auto" style={{ maxWidth: '800px' }}>
-        {erro && <div className="alert alert-danger rounded-3 shadow-sm">⚠️ {erro}</div>}
-        {sucesso && <div className="alert alert-success rounded-3 shadow-sm">✓ Oferta criada com sucesso!</div>}
+        {erro && <div className="alert alert-danger rounded-3 shadow-sm"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}</div>}
+        {sucesso && <div className="alert alert-success rounded-3 shadow-sm"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Oferta criada com sucesso!</div>}
 
         {carregandoProdutos ? (
           <div className="text-center py-5"><div className="spinner-border text-success"></div></div>
@@ -209,7 +209,7 @@ export default function NovaOferta() {
             <div className="mb-4">
               <LabelComAjuda
                 texto="Produto Base"
-                ajuda="Produto do catálogo que receberá o desconto."
+                ajuda="O nome cadastrado aqui é o que aparece na oferta ao público."
               />
               <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={produtoId} onChange={(e) => setProdutoId(e.target.value)} required>
                 <option value="">Selecione um produto cadastrado...</option>
@@ -224,7 +224,7 @@ export default function NovaOferta() {
                  <div className="me-3 bg-white p-2 rounded-3 shadow-sm text-center" style={{ width: '60px', height: '60px' }}>
                     {produtoSelecionado.foto ? (
                       <img src={produtoSelecionado.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                    ) : ( <span style={{ fontSize: '1.5rem' }}>📦</span> )}
+                    ) : ( <span style={{ fontSize: '1.5rem' }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
                  </div>
                  <div>
                     <h6 className="fw-bold mb-1">{produtoSelecionado.tituloProduto}</h6>

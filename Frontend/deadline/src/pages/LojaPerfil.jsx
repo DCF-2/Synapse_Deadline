@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
+import OfertaCard from '../components/OfertaCard';
+import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -122,7 +124,7 @@ export default function LojaPerfil() {
       <nav className="navbar navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
-            <span className="text-success fs-4">←</span> Voltar para Vitrine
+            <span className="text-success fs-4"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Vitrine
           </Link>
           <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
         </div>
@@ -130,20 +132,32 @@ export default function LojaPerfil() {
 
       {/* HEADER / CAPA DA LOJA (Estilo Mercado Livre / Premium) */}
       <div className="bg-white shadow-sm mb-4">
-        <div style={{ height: '180px', background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)' }}></div>
+        <div
+          style={{
+            height: '180px',
+            backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
+            backgroundColor: loja.bannerPerfil ? '#f3f4f6' : 'var(--dl-primary)',
+            backgroundPosition: 'center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+            ...(loja.bannerPerfil ? {} : {
+              background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'
+            })
+          }}
+        ></div>
         
         <div className="container position-relative pb-4">
           <div className="bg-white rounded-circle shadow-lg d-flex align-items-center justify-content-center overflow-hidden border border-4 border-white position-absolute" 
                style={{ width: '140px', height: '140px', top: '-70px', left: '15px' }}>
              {loja.logotipo ? (
                <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-             ) : ( <span style={{ fontSize: '3.5rem' }}>🏢</span> )}
+             ) : ( <span style={{ fontSize: '3.5rem' }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
           </div>
           
           <div style={{ paddingTop: '80px', paddingLeft: '15px' }}>
              <div className="d-flex align-items-center gap-2 mb-1">
                <span className="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 px-2 py-1 small rounded-pill">
-                 ✓ Loja Oficial Parceira
+                 <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Loja Oficial Parceira
                </span>
              </div>
              
@@ -151,11 +165,15 @@ export default function LojaPerfil() {
                <div>
                  <h1 className="fw-bold text-dark m-0">{loja.nomeFantasia}</h1>
                  <div className="d-flex flex-wrap gap-4 mt-2 text-muted small">
-                    <span>📍 {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
+                    <span><img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {loja.endereco?.cidade} - {loja.endereco?.uf}</span>
                     {ofertas[0]?.distanciaKm != null && (
                       <span className="fw-bold text-primary">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
                     )}
-                    <span>🕒 {loja.horarioFuncionamento}</span>
+                    <span><img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {loja.horarioFuncionamento}</span>
+                    {loja.cnpj && <span><strong className="text-dark">CNPJ:</strong> {loja.cnpj}</span>}
+                    {loja.contato1 && <span><strong className="text-dark">Tel 1:</strong> {loja.contato1}</span>}
+                    {loja.contato2 && <span><strong className="text-dark">Tel 2:</strong> {loja.contato2}</span>}
+                    {loja.razaoSocial && <span><strong className="text-dark">Razão Social:</strong> {loja.razaoSocial}</span>}
                  </div>
                </div>
 
@@ -185,47 +203,17 @@ export default function LojaPerfil() {
          
          {ofertas.length === 0 ? (
             <div className="text-center py-5 bg-white rounded-4 shadow-sm">
-               <span style={{fontSize: '3rem'}}>🏷️</span>
+               <span style={{fontSize: '3rem'}}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                <p className="text-muted mt-3 mb-0">Esta loja não tem ofertas ativas no momento.</p>
             </div>
          ) : (
             <div className="row g-4">
               {ofertas.map((oferta) => (
                 <div className="col-12 col-md-6 col-xl-3" key={oferta.id}>
-                  <div className="card h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative">
-                    <div className="position-absolute top-0 start-0 m-3 px-2 py-1 rounded-3 text-white fw-bold shadow-sm" style={{ backgroundColor: '#e63946', zIndex: 2, fontSize: '0.85rem' }}>
-                      -{oferta.percentualDesconto?.toFixed(0)}%
-                    </div>
-                    <div className="bg-white text-center p-4 border-bottom" style={{ height: '200px' }}>
-                      {oferta.foto ? (
-                        <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                      ) : ( <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span> )}
-                    </div>
-                    <div className="card-body d-flex flex-column p-4 bg-white">
-                      <div className="d-flex justify-content-between align-items-start mb-1">
-                        <span className="text-success small fw-bold text-uppercase">{oferta.nomeCategoria}</span>
-                        {oferta.distanciaKm != null && (
-                          <span className="badge bg-primary bg-opacity-10 text-primary rounded-pill" style={{ fontSize: '0.7rem' }}>
-                            📍 {formatarDistancia(oferta.distanciaKm)}
-                          </span>
-                        )}
-                      </div>
-                      <h6 className="fw-bold text-dark mb-3 text-truncate" title={oferta.tituloProduto}>{oferta.tituloProduto}</h6>
-                      <div className="mb-3">
-                        <span className="text-muted text-decoration-line-through small d-block">De: {formatarMoeda(oferta.precoOriginal)}</span>
-                        <span className="fw-bold text-dark fs-4">Por: {formatarMoeda(oferta.precoPromocional)}</span>
-                      </div>
-                      <div className="mt-auto pt-3 border-top d-flex justify-content-between align-items-center">
-                        <div>
-                          <small className="text-muted d-block" style={{fontSize: '0.7rem'}}>Vence em:</small>
-                          <span className="fw-bold text-danger small">{formatarData(oferta.validadeProduto)}</span>
-                        </div>
-                        <button className="btn btn-sm text-white fw-bold px-3 rounded-pill" style={{backgroundColor: 'var(--dl-primary)'}} onClick={() => abrirDetalhes(oferta.id)}>
-                          Ver Detalhes
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+                  <OfertaCard 
+                    oferta={oferta} 
+                    onClickCard={abrirDetalhes} 
+                  />
                 </div>
               ))}
             </div>
@@ -236,7 +224,7 @@ export default function LojaPerfil() {
       <div id="mapa" className="container py-5 mt-4 border-top">
          <div className="bg-white rounded-4 shadow-sm p-4">
             <h5 className="fw-bold text-dark mb-4 d-flex align-items-center gap-2">
-               📍 Como chegar à {loja.nomeFantasia}
+               <img src="/icons/mapa.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Como chegar à {loja.nomeFantasia}
             </h5>
             <div className="row g-4 align-items-center">
                <div className="col-lg-4">
@@ -276,69 +264,10 @@ export default function LojaPerfil() {
       </div>
 
       {/* MODAL DE DETALHES INTEGRADO (Permite comprar direto do perfil) */}
-      {detalhesOferta && (
-        <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 1050 }}>
-          <div className="modal-dialog modal-dialog-centered modal-lg">
-            <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
-              <div className="modal-header border-0 bg-light p-4">
-                <div className="d-flex align-items-center gap-3">
-                  <h5 className="fw-bold text-dark m-0">Detalhes da Oferta</h5>
-                </div>
-                <button type="button" className="btn-close" onClick={() => setDetalhesOferta(null)}></button>
-              </div>
-              <div className="modal-body p-4">
-                <div className="row g-4">
-                  <div className="col-md-5 text-center">
-                    <div className="bg-light rounded-4 p-3 mb-3 d-flex align-items-center justify-content-center border" style={{ height: '220px' }}>
-                      {detalhesOferta.foto ? (
-                        <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                      ) : ( <span style={{ fontSize: '4rem', opacity: 0.1 }}>📦</span> )}
-                    </div>
-                    <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded-4 border border-success border-opacity-25">
-                      <div className="text-start">
-                        <span className="text-muted text-decoration-line-through small d-block">{formatarMoeda(detalhesOferta.precoOriginal)}</span>
-                        <h3 className="fw-bold text-success m-0">{formatarMoeda(detalhesOferta.precoPromocional)}</h3>
-                      </div>
-                      <div className="badge bg-danger fs-6 rounded-3">-{detalhesOferta.percentualDesconto?.toFixed(0)}%</div>
-                    </div>
-                  </div>
-                  <div className="col-md-7 d-flex flex-column">
-                    <h4 className="fw-bold text-dark mb-2">{detalhesOferta.tituloProduto}</h4>
-                    <p className="text-muted small mb-4">{detalhesOferta.descricao || "Sem descrição disponível."}</p>
-                    <div className="row g-2 mb-4">
-                      <div className="col-6">
-                        <div className="p-2 border rounded-3 bg-light text-center h-100">
-                          <small className="text-muted fw-bold d-block" style={{fontSize: '0.7rem'}}>PRODUTO VENCE EM</small>
-                          <span className="fw-bold text-danger">{formatarData(detalhesOferta.validadeProduto)}</span>
-                        </div>
-                      </div>
-                      <div className="col-6">
-                        <div className="p-2 border rounded-3 bg-light text-center h-100">
-                          <small className="text-muted fw-bold d-block" style={{fontSize: '0.7rem'}}>OFERTA ENCERRA EM</small>
-                          <span className="fw-bold text-dark">{formatarData(detalhesOferta.dataFimOferta)}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-auto border-top pt-4">
-                      <h6 className="fw-bold text-dark mb-3"><span className="text-success me-2">📍</span> Informações de Retirada</h6>
-                      {detalhesOferta.distanciaKm != null && (
-                        <p className="small fw-bold text-primary mb-2">
-                          Distância de você: {formatarDistancia(detalhesOferta.distanciaKm)}
-                        </p>
-                      )}
-                      <p className="small text-muted mb-2"><strong>Horário: </strong> {detalhesOferta.horarioFuncionamento}</p>
-                      <div className="alert alert-warning small py-2 mb-0 d-flex align-items-start gap-2 border">
-                        <span className="mt-1">📋</span>
-                        <div><strong>Instruções do Lojista:</strong><br/>{detalhesOferta.instrucoesRetirada}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <OfertaDetalhesModal 
+        detalhesOferta={detalhesOferta} 
+        onClose={() => setDetalhesOferta(null)} 
+      />
 
     </div>
   );

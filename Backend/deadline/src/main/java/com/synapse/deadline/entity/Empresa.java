@@ -1,6 +1,14 @@
 package com.synapse.deadline.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "empresa")
@@ -20,6 +28,7 @@ public class Empresa {
     private String cnpj;
 
     private String logotipo;
+    private String bannerPerfil;
 
     @ManyToOne
     @JoinColumn(name = "ramo_id", nullable = false)
@@ -63,6 +72,9 @@ public class Empresa {
     
     public String getLogotipo() { return logotipo; }
     public void setLogotipo(String logotipo) { this.logotipo = logotipo; }
+
+    public String getBannerPerfil() { return bannerPerfil; }
+    public void setBannerPerfil(String bannerPerfil) { this.bannerPerfil = bannerPerfil; }
     
     public RamoEmpresa getRamo() { return ramo; }
     public void setRamo(RamoEmpresa ramo) { this.ramo = ramo; }

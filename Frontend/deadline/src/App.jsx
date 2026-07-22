@@ -1,3 +1,4 @@
+import React, { useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import ClienteHome from './pages/ClienteHome';
 import AuthPage from './pages/AuthPage';
@@ -12,9 +13,20 @@ import EditarOferta from './pages/EditarOferta';
 import Layout from './components/Layout';
 import ConfiguracoesPage from "./pages/Configuracoes";
 import LojaPerfil from './pages/LojaPerfil';
+import Favoritos from './pages/Favoritos';
+import Ajuda from './pages/Ajuda';
+import CookieBanner from './components/CookieBanner';
 
 export default function App() {
+  // Inicializar o tema do app
+  useEffect(() => {
+    // Tema escuro desativado temporariamente ("Em desenvolvimento")
+    document.documentElement.removeAttribute('data-theme');
+    localStorage.setItem('deadline_theme', 'light');
+  }, []);
+
   return (
+    <>
     <Routes>
       {/* Rotas Públicas (Sem o menu lateral) */}
       <Route path="/" element={<ClienteHome />} />
@@ -24,6 +36,7 @@ export default function App() {
 
       {/* Rota de perfil da loja (pública) */}
       <Route path="/loja/:id" element={<LojaPerfil />} />
+      <Route path="/favoritos" element={<Favoritos />} />
 
       {/* ROTAS ADMINISTRATIVAS  */}
       <Route element={<Layout />}>
@@ -42,8 +55,13 @@ export default function App() {
 
         {/* Configurações */}
         <Route path="/configuracoes" element={<ConfiguracoesPage />} />
+        
+        {/* Ajuda */}
+        <Route path="/ajuda" element={<Ajuda />} />
       </Route>
       
     </Routes>
+    <CookieBanner />
+    </>
   );
 }

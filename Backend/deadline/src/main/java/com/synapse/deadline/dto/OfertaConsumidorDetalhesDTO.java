@@ -6,6 +6,7 @@ import java.time.LocalDate;
 public class OfertaConsumidorDetalhesDTO {
     private Long id;
     private String tituloProduto;
+    private String nomeCategoria;
     private String descricao;
     private String foto;
     private BigDecimal precoOriginal;
@@ -30,6 +31,8 @@ public class OfertaConsumidorDetalhesDTO {
     public void setId(Long id) { this.id = id; }
     public String getTituloProduto() { return tituloProduto; }
     public void setTituloProduto(String tituloProduto) { this.tituloProduto = tituloProduto; }
+    public String getNomeCategoria() { return nomeCategoria; }
+    public void setNomeCategoria(String nomeCategoria) { this.nomeCategoria = nomeCategoria; }
     public String getDescricao() { return descricao; }
     public void setDescricao(String descricao) { this.descricao = descricao; }
     public String getFoto() { return foto; }

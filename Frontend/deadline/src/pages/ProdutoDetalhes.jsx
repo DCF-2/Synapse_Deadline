@@ -95,14 +95,14 @@ export default function ProdutoDetalhes() {
               <h4 className="fw-bold d-flex align-items-center gap-2">⏱️ Deadline</h4>
             </div>
             <ul className="nav flex-column mt-4">
-              <li><Link to="/dashboard" className="nav-link text-white opacity-75">📊 Dashboard</Link></li>
-              <li><Link to="/produtos" className="nav-link text-white fw-bold">📦 Meus Produtos</Link></li>
-              <li><Link to="/ofertas" className="nav-link text-white opacity-75">📢 Minhas Ofertas</Link></li>
+              <li><Link to="/dashboard" className="nav-link text-white opacity-75"><img src="/icons/painel-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Dashboard</Link></li>
+              <li><Link to="/produtos" className="nav-link text-white fw-bold"><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Meus Produtos</Link></li>
+              <li><Link to="/ofertas" className="nav-link text-white opacity-75"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Minhas Ofertas</Link></li>
             </ul>
           </div>
           <div className="mt-4">
             <button className="btn text-white w-100 text-start p-2 opacity-75 d-flex align-items-center gap-2 border-0" onClick={handleLogout}>
-              <span>🚪</span> Sair
+              <span><img src="/icons/sair.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Sair
             </button>
           </div>
         </nav>
@@ -112,7 +112,7 @@ export default function ProdutoDetalhes() {
           
           <div className="d-flex justify-content-between align-items-center mb-4">
             <button onClick={() => navigate('/produtos')} className="btn btn-link text-muted text-decoration-none ps-0 fw-bold">
-              ← Voltar para produtos
+              <img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar para produtos
             </button>
           </div>
 
@@ -125,7 +125,7 @@ export default function ProdutoDetalhes() {
 
           {erro && (
             <div className="alert alert-danger rounded-4 shadow-sm border-0">
-              ⚠️ {erro}
+              <img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {erro}
             </div>
           )}
 
@@ -144,7 +144,7 @@ export default function ProdutoDetalhes() {
                     <img src={produto.foto} alt={produto.tituloProduto} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px' }} />
                   ) : (
                     <div className="d-flex align-items-center justify-content-center w-100 h-100" style={{ background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)' }}>
-                      <span style={{ fontSize: '6rem', opacity: 0.3 }}>📦</span>
+                      <span style={{ fontSize: '6rem', opacity: 0.3 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                     </div>
                   )}
                 </div>
@@ -180,7 +180,7 @@ export default function ProdutoDetalhes() {
                      <div className="p-4 rounded-4 mb-4 mt-auto" style={{ backgroundColor: '#fff7ed', border: '1px solid #fed7aa' }}>
                        <div className="d-flex justify-content-between align-items-center mb-3">
                            <h6 className="fw-bold text-warning-emphasis m-0 d-flex align-items-center gap-2">
-                               <span style={{ fontSize: '1.2rem' }}>📢</span> Oferta Ativa
+                               <span style={{ fontSize: '1.2rem' }}><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Oferta Ativa
                            </h6>
                            <span className="badge bg-warning text-dark fs-6 rounded-pill">
                                -{produto.percentualDesconto?.toFixed(0)}%
@@ -208,17 +208,17 @@ export default function ProdutoDetalhes() {
                         className="btn fw-bold px-4 py-3 shadow-sm d-flex align-items-center justify-content-center gap-2 flex-grow-1" 
                         style={{ backgroundColor: '#e9ecef', color: '#495057', borderRadius: '10px' }}
                      >
-                        ✏️ Editar Dados do Produto
+                        <img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Editar Dados do Produto
                      </button>
                      {produto.ativo ? (
                         <button 
                             onClick={() => navigate(`/nova-oferta?produtoId=${produto.id}`)} 
                             className="btn btn-success fw-bold px-4 py-3 rounded-3 d-flex align-items-center justify-content-center gap-2 flex-grow-1 shadow-sm"
                         >
-                            ➕ Nova Oferta
+                            <img src="/icons/simbolo-de-mais-preto.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Nova Oferta
                         </button>
                      ) : (
-                         <div className="alert alert-warning small py-2 mb-0 text-center w-50 d-flex align-items-center justify-content-center border-0">⚠️ Reative para criar ofertas.</div>
+                         <div className="alert alert-warning small py-2 mb-0 text-center w-50 d-flex align-items-center justify-content-center border-0"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Reative para criar ofertas.</div>
                      )}
                   </div>
 
