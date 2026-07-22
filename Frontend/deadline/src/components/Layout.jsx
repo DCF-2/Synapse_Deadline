@@ -212,7 +212,7 @@ export default function Layout() {
               <div className="alert shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between p-4" style={{ backgroundColor: '#fff3cd', border: '1px solid #ffe69c' }}>
                 <div>
                   <h5 className="fw-bold mb-2 text-dark">
-                    {dashboardStats.totalProdutosAtivos === 0 ? 'Bem-vindo ao Deadline! 🎉' : 'Ótimo começo! <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} />'}
+                    {dashboardStats.totalProdutosAtivos === 0 ? 'Bem-vindo ao Deadline! 🎉' : <>Ótimo começo! <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></>}
                   </h5>
                   <p className="mb-0 fs-6 text-dark opacity-75">
                     {dashboardStats.totalProdutosAtivos === 0 
