@@ -4,11 +4,14 @@ import '../styles/theme.css';
 import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
+import Footer from '../components/Footer';
+import { useModal } from '../contexts/ModalContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
 export default function LojaPerfil() {
   const { id } = useParams();
+  const { showAlert } = useModal();
   const [loja, setLoja] = useState(null);
   const [ofertas, setOfertas] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -60,12 +63,15 @@ export default function LojaPerfil() {
     setCarregandoDetalhes(true);
     try {
       const url = new URL(`${API_URL}/oferta/publico/${ofertaId}`);
-      if (localizacao) {
-        url.searchParams.append('latitude', localizacao.latitude);
-        url.searchParams.append('longitude', localizacao.longitude);
-      }
       const res = await fetch(url.toString());
-      if (res.ok) setDetalhesOferta(await res.json());
+      if (res.ok) {
+         const data = await res.json();
+         const ofertaListagem = ofertas.find(o => o.id === ofertaId);
+         if (ofertaListagem && ofertaListagem.distanciaKm != null) {
+            data.distanciaKm = ofertaListagem.distanciaKm;
+         }
+         setDetalhesOferta(data);
+      }
     } catch (error) {
       console.error(error);
     } finally {
@@ -76,7 +82,7 @@ export default function LojaPerfil() {
   // --- FUNÇÕES DE CONTACTO DIRETO DA LOJA (Gera engajamento no Dashboard) ---
   const entrarEmContatoWhatsApp = () => {
     if (!loja?.contatoWhatsapp) {
-      alert("Esta loja não disponibilizou um número de WhatsApp.");
+      showAlert("Indisponível", "Esta loja não disponibilizou um número de WhatsApp.");
       return;
     }
     // Registra a métrica de clique no backend (Usamos a primeira oferta ou ID geral se mapeado)
@@ -91,7 +97,7 @@ export default function LojaPerfil() {
 
   const enviarEmailLoja = () => {
     if (!loja?.emailContato) {
-      alert("Esta loja não disponibilizou um e-mail de contacto.");
+      showAlert("Indisponível", "Esta loja não disponibilizou um e-mail de contacto.");
       return;
     }
     if (ofertas.length > 0) {
@@ -118,9 +124,10 @@ export default function LojaPerfil() {
   if (!loja) return <div className="text-center py-5 mt-5 fw-bold text-muted">Loja não encontrada.</div>;
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '60px' }}>
+    <div className="d-flex flex-column min-vh-100" style={{ backgroundColor: '#f5f5f5' }}>
       
-      {/* NAVBAR */}
+      <div className="flex-grow-1">
+        {/* NAVBAR */}
       <nav className="navbar navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
@@ -134,11 +141,11 @@ export default function LojaPerfil() {
       <div className="bg-white shadow-sm mb-4">
         <div
           style={{
-            height: '180px',
+            height: '250px',
             backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
-            backgroundColor: loja.bannerPerfil ? '#f3f4f6' : 'var(--dl-primary)',
+            backgroundColor: loja.bannerPerfil ? 'rgba(0, 0, 0, 0.8)' : 'var(--dl-primary)',
             backgroundPosition: 'center',
-            backgroundSize: 'cover',
+            backgroundSize: 'contain',
             backgroundRepeat: 'no-repeat',
             ...(loja.bannerPerfil ? {} : {
               background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'
@@ -150,8 +157,8 @@ export default function LojaPerfil() {
           <div className="bg-white rounded-circle shadow-lg d-flex align-items-center justify-content-center overflow-hidden border border-4 border-white position-absolute" 
                style={{ width: '140px', height: '140px', top: '-70px', left: '15px' }}>
              {loja.logotipo ? (
-               <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-             ) : ( <span style={{ fontSize: '3.5rem' }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
+               <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
+             ) : ( <img src="/icons/companhia.png" alt="icon" style={{ width: "60px", height: "60px", objectFit: "contain", opacity: 0.6 }} /> )}
           </div>
           
           <div style={{ paddingTop: '80px', paddingLeft: '15px' }}>
@@ -262,6 +269,7 @@ export default function LojaPerfil() {
             </div>
          </div>
       </div>
+      </div>
 
       {/* MODAL DE DETALHES INTEGRADO (Permite comprar direto do perfil) */}
       <OfertaDetalhesModal 
@@ -269,6 +277,7 @@ export default function LojaPerfil() {
         onClose={() => setDetalhesOferta(null)} 
       />
 
+      <Footer />
     </div>
   );
 }

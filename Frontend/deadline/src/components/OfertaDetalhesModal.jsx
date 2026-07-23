@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { obterFavoritos } from '../utils/favoritos';
+import BotaoFavorito from './BotaoFavorito';
+import BotaoCompartilhar from './BotaoCompartilhar';
+import { useModal } from '../contexts/ModalContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -19,12 +23,12 @@ const formatarData = (dataStr) => {
   return data.toLocaleDateString('pt-BR');
 };
 
-const abrirMapa = (oferta) => {
+const abrirMapa = (oferta, showAlert) => {
   fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/como_chegar`, { method: 'POST' }).catch(console.error);
   
   const end = oferta.enderecoEmpresa;
   if (!end || !end.logradouro) {
-    alert("Esta oferta não possui informações detalhadas de endereço.");
+    showAlert("Indisponível", "Esta oferta não possui informações detalhadas de endereço.");
     return;
   }
   const query = encodeURIComponent(`${end.logradouro}, ${end.numero} - ${end.bairro}, ${end.cidade} - ${end.uf}`);
@@ -41,12 +45,12 @@ const abrirWhatsApp = (oferta) => {
   window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
 };
 
-const abrirEmail = (oferta) => {
+const abrirEmail = (oferta, showAlert) => {
   // Regista o clique também para o lojista saber que houve interesse!
   fetch(`${API_URL}/api/publico/metricas/ofertas/${oferta.id}/engajamento/email`, { method: 'POST' }).catch(console.error);
   
   if (!oferta.emailContato) {
-    alert("Este lojista não disponibilizou um e-mail de contacto.");
+    showAlert("Indisponível", "Este lojista não disponibilizou um e-mail de contacto.");
     return;
   }
   
@@ -56,6 +60,17 @@ const abrirEmail = (oferta) => {
 };
 
 const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
+  const { showAlert } = useModal();
+  const [isFavorito, setIsFavorito] = useState(false);
+  const [imagemAtiva, setImagemAtiva] = useState(null);
+
+  useEffect(() => {
+    if (detalhesOferta) {
+      setIsFavorito(obterFavoritos().includes(detalhesOferta.id));
+      setImagemAtiva(detalhesOferta.foto);
+    }
+  }, [detalhesOferta]);
+
   if (!detalhesOferta) return null;
 
   return (
@@ -64,36 +79,62 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
         <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
           
           <div className="modal-header border-0 bg-light p-4">
-            <Link to={`/loja/${detalhesOferta.empresaId}`} className="d-flex align-items-center gap-3 text-decoration-none" title="Visitar perfil da loja" onClick={(e) => {
+            <Link to={`/loja/${detalhesOferta.empresaId}`} className="d-flex align-items-center gap-3 text-decoration-none flex-grow-1" title="Visitar perfil da loja" onClick={(e) => {
               const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8080';
               fetch(`${apiUrl}/api/publico/metricas/empresas/${detalhesOferta.empresaId}/engajamento/perfil`, { method: 'POST' }).catch(() => {});
               onClose();
             }}>
-              <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{width: '50px', height: '50px'}}>
+              <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border flex-shrink-0" style={{width: '50px', height: '50px'}}>
                  {detalhesOferta.logotipoEmpresa ? (
-                   <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} />
+                   <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{maxWidth: '100%', maxHeight: '100%', objectFit: 'contain'}} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                  ) : ( <span className="fw-bold text-success"><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
               </div>
-              <div>
-                <small className="text-muted d-block fw-bold" style={{fontSize: '0.75rem'}}>Vendido e entregue por:</small>
-                <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-2 hover-primary" style={{ transition: 'color 0.2s' }}>
+              <div className="text-truncate">
+                <small className="text-muted d-block fw-bold lh-1 mb-1" style={{fontSize: '0.75rem'}}>Vendido e entregue por:</small>
+                <h5 className="fw-bold text-dark m-0 d-flex align-items-center gap-2 hover-primary text-truncate" style={{ transition: 'color 0.2s' }}>
                    {detalhesOferta.nomeFantasiaEmpresa}
                 </h5>
               </div>
             </Link>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+            <div className="d-none d-md-flex align-items-center gap-2">
+              <BotaoFavorito oferta={detalhesOferta} style={{ width: '38px', height: '38px' }} />
+              <BotaoCompartilhar oferta={detalhesOferta} style={{ width: '38px', height: '38px' }} />
+              <button type="button" className="btn-close ms-2" onClick={onClose}></button>
+            </div>
+            <div className="d-flex d-md-none align-items-center gap-2">
+              <button type="button" className="btn-close ms-2" onClick={onClose}></button>
+            </div>
           </div>
 
           <div className="modal-body p-4">
             <div className="row g-4">
               <div className="col-md-5 text-center">
-                <div className="bg-light rounded-4 p-3 mb-3 d-flex align-items-center justify-content-center border" style={{ height: '220px' }}>
-                  {detalhesOferta.foto ? (
-                    <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                <div className="bg-light rounded-4 p-3 mb-3 d-flex align-items-center justify-content-center border position-relative" style={{ height: '220px' }}>
+                  <div className="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style={{ zIndex: 10 }}>
+                    <BotaoFavorito oferta={detalhesOferta} />
+                    <BotaoCompartilhar oferta={detalhesOferta} />
+                  </div>
+                  {imagemAtiva ? (
+                    <img src={imagemAtiva} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   ) : (
                     <span style={{ fontSize: '4rem', opacity: 0.1 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                   )}
                 </div>
+                
+                {detalhesOferta.fotosAdicionais && detalhesOferta.fotosAdicionais.length > 0 && (
+                  <div className="d-flex gap-2 overflow-auto pb-2 mb-3 justify-content-center">
+                    {[detalhesOferta.foto, ...detalhesOferta.fotosAdicionais].filter(Boolean).map((imgUrl, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setImagemAtiva(imgUrl)}
+                        className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 ${imagemAtiva === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
+                        style={{ width: '60px', height: '60px', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-3 rounded-4 border border-success border-opacity-25">
                   <div className="text-start">
                     <span className="text-muted text-decoration-line-through small d-block">{formatarMoeda(detalhesOferta.precoOriginal)}</span>
@@ -157,7 +198,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
           </div>
 
           <div className="modal-footer border-top bg-light p-3 d-flex flex-wrap gap-2">
-             <button className="btn btn-outline-dark fw-bold rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center gap-2" onClick={() => abrirMapa(detalhesOferta)}>
+             <button className="btn btn-outline-dark fw-bold rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center gap-2" onClick={() => abrirMapa(detalhesOferta, showAlert)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                   <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
                 </svg>
@@ -174,7 +215,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
                </button>
                
                <button className="btn text-white fw-bold rounded-pill px-3 flex-grow-1 d-flex align-items-center justify-content-center gap-2 shadow-sm" 
-                       style={{backgroundColor: '#0d6efd'}} onClick={() => abrirEmail(detalhesOferta)}>
+                       style={{backgroundColor: '#0d6efd'}} onClick={() => abrirEmail(detalhesOferta, showAlert)}>
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/>
                   </svg>

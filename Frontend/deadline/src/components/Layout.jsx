@@ -82,7 +82,7 @@ export default function Layout() {
       {/* HEADER MOBILE UNIFICADO */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }}>
         <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2">
-          <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
+          <img src="/logo_deadline.png" alt="Deadline" style={{ height: '35px' }} />
         </Link>
         
         {/* Informações rápidas da Empresa no mobile */}
@@ -115,7 +115,7 @@ export default function Layout() {
             <div className={`d-none d-md-flex my-3 pb-3 border-bottom align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'}`} style={{ borderColor: 'rgba(255,255,255,0.15) !important' }}>
               {!isCollapsed && (
                 <Link to="/dashboard">
-                  <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '36px', maxWidth: '100%', objectFit: 'contain' }} />
+                  <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '55px', maxWidth: '100%', objectFit: 'contain' }} />
                 </Link>
               )}
               <button className="btn btn-sm text-white" onClick={() => setIsCollapsed(!isCollapsed)} style={{ padding: '0.25rem' }}>

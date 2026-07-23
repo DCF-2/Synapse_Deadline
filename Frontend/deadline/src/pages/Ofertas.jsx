@@ -1,10 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useModal } from '../contexts/ModalContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
+const OfertaImagemAutoPlay = ({ oferta }) => {
+  const [imgIdx, setImgIdx] = useState(0);
+  const fotos = [oferta.foto, ...(oferta.fotosAdicionais || [])].filter(Boolean);
+
+  useEffect(() => {
+    let intv;
+    if (fotos.length > 1) {
+      intv = setInterval(() => {
+        setImgIdx(prev => (prev + 1) % fotos.length);
+      }, 3000);
+    }
+    return () => clearInterval(intv);
+  }, [fotos.length]);
+
+  if (fotos.length === 0) {
+    return <span style={{ fontSize: '3rem', opacity: 0.15 }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>;
+  }
+  return <img src={fotos[imgIdx]} alt={oferta.tituloProduto} style={{ maxHeight: '80px', objectFit: 'contain', maxWidth: '100%' }} />;
+};
+
 export default function OfertasPage() {
   const navigate = useNavigate();
+  const { showAlert } = useModal();
 
   // Estados da API e Filtros
   const [ofertas, setOfertas] = useState([]);
@@ -20,8 +42,14 @@ export default function OfertasPage() {
 
   // Estados para os Modals
   const [ofertaSelecionada, setOfertaSelecionada] = useState(null); 
+  const [imagemAtivaModal, setImagemAtivaModal] = useState(null);
   const [showConfirm, setShowConfirm] = useState(null); 
   const [processandoAcao, setProcessandoAcao] = useState(false);
+
+  const handleLogout = () => {
+    localStorage.removeItem('deadline_token');
+    navigate('/');
+  };
 
   // Ref para controlar o debounce (igual ao ProdutosPage)
   const debounceTimer = useRef(null);
@@ -159,7 +187,7 @@ export default function OfertasPage() {
       carregarOfertas(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
 
     } catch (error) {
-      alert("Erro: " + error.message);
+      showAlert("Erro", "Erro: " + error.message);
     } finally {
       setProcessandoAcao(false);
     }
@@ -241,7 +269,7 @@ export default function OfertasPage() {
             <div 
               className={`card border-0 shadow-sm rounded-4 h-100 position-relative overflow-hidden ${!oferta.ativo ? 'opacity-50' : ''}`}
               style={{ cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
-              onClick={() => setOfertaSelecionada(oferta)}
+              onClick={() => { setOfertaSelecionada(oferta); setImagemAtivaModal(oferta.foto); }}
               onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-3px)'; e.currentTarget.style.boxShadow = '0 6px 12px rgba(0,0,0,0.1)' }}
               onMouseOut={(e) => { e.currentTarget.style.transform = 'none'; e.currentTarget.style.boxShadow = 'var(--bs-box-shadow-sm)' }}
             >
@@ -256,9 +284,7 @@ export default function OfertasPage() {
 
               <div className="card-body p-3 d-flex flex-column">
                 <div className="text-center mb-3">
-                  {oferta.foto ? (
-                    <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxHeight: '80px', objectFit: 'contain', maxWidth: '100%' }} />
-                  ) : ( <span style={{ fontSize: '3rem', opacity: 0.15 }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
+                  <OfertaImagemAutoPlay oferta={oferta} />
                 </div>
 
                 <span className="fw-bold text-dark small text-truncate d-block">{oferta.tituloProduto}</span>
@@ -296,10 +322,25 @@ export default function OfertasPage() {
               </div>
               
               <div className="modal-body">
-                  <div className="text-center mb-4 position-relative">
-                     {ofertaSelecionada.foto ? (
-                        <img src={ofertaSelecionada.foto} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
+                  <div className="text-center mb-4 position-relative pb-4">
+                     {imagemAtivaModal ? (
+                        <img src={imagemAtivaModal} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
                      ) : ( <span style={{ fontSize: '5rem', opacity: 0.2 }}><img src="/icons/oferta.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> )}
+                     
+                     {ofertaSelecionada.fotosAdicionais && ofertaSelecionada.fotosAdicionais.length > 0 && (
+                        <div className="position-absolute bottom-0 w-100 d-flex gap-2 overflow-auto pb-2 justify-content-center" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.02), transparent)'}}>
+                          {[ofertaSelecionada.foto, ...ofertaSelecionada.fotosAdicionais].filter(Boolean).map((imgUrl, idx) => (
+                            <div 
+                              key={idx} 
+                              onClick={() => setImagemAtivaModal(imgUrl)}
+                              className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 bg-white ${imagemAtivaModal === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
+                              style={{ width: '40px', height: '40px', cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                              <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
                   
                   {/* Linha 1: Preços e Descontos */}

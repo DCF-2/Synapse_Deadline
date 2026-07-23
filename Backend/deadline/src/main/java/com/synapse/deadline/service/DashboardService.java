@@ -40,58 +40,82 @@ public class DashboardService {
     private OfertaService ofertaService; // Para reutilizar o método de conversão DTO
 
     @Transactional(readOnly = true)
-    public DashboardResponseDTO obterEstatisticas() {
+    public DashboardResponseDTO obterEstatisticas(LocalDate dataInicio, LocalDate dataFim) {
         Empresa empresaLogada = (Empresa) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Long idEmpresa = empresaLogada.getId();
         LocalDate hoje = LocalDate.now();
 
         DashboardResponseDTO dashboard = new DashboardResponseDTO();
+        
+        LocalDate inicio = dataInicio != null ? dataInicio : LocalDate.of(1970, 1, 1);
+        LocalDate fim = dataFim != null ? dataFim : LocalDate.of(2100, 1, 1);
 
         // 1. Contagens
         dashboard.setTotalProdutosAtivos(produtoRepository.countByEmpresaIdAndAtivoTrue(idEmpresa));
         dashboard.setTotalOfertasAtivas(ofertaRepository.countByProdutoEmpresaIdAndAtivoTrue(idEmpresa));
         
-        Long engajamentosOfertas = metricasOfertasRepository.sumEngajamentosByEmpresaId(idEmpresa);
-        Long engajamentosEmpresa = metricasEmpresasRepository.sumEngajamentosByEmpresaId(idEmpresa);
+        Long engajamentosOfertas = metricasOfertasRepository.sumEngajamentosByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        Long engajamentosEmpresa = metricasEmpresasRepository.sumEngajamentosByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         long totalEngajamentos = (engajamentosOfertas != null ? engajamentosOfertas : 0L) + 
                                  (engajamentosEmpresa != null ? engajamentosEmpresa : 0L);
         dashboard.setEngajamentosTotais(totalEngajamentos);
         
         // Dados para o Funil e Detalhamento
-        Long cliquesDetalhe = metricasOfertasRepository.sumCliquesDetalheByEmpresaId(idEmpresa);
+        Long cliquesDetalhe = metricasOfertasRepository.sumCliquesDetalheByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalCliquesDetalhe(cliquesDetalhe != null ? cliquesDetalhe : 0L);
         
-        Long cliquesContato = metricasOfertasRepository.sumCliquesContatoByEmpresaId(idEmpresa);
+        Long cliquesContato = metricasOfertasRepository.sumCliquesContatoByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalCliquesContato(cliquesContato != null ? cliquesContato : 0L);
 
         // Detalhamento Específico
-        Long wOferta = metricasOfertasRepository.sumWhatsAppByEmpresaId(idEmpresa);
-        Long wEmpresa = metricasEmpresasRepository.sumWhatsAppByEmpresaId(idEmpresa);
+        Long wOferta = metricasOfertasRepository.sumWhatsAppByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        Long wEmpresa = metricasEmpresasRepository.sumWhatsAppByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalWhatsApp((wOferta != null ? wOferta : 0L) + (wEmpresa != null ? wEmpresa : 0L));
 
-        Long eOferta = metricasOfertasRepository.sumEmailByEmpresaId(idEmpresa);
-        Long eEmpresa = metricasEmpresasRepository.sumEmailByEmpresaId(idEmpresa);
+        Long eOferta = metricasOfertasRepository.sumEmailByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        Long eEmpresa = metricasEmpresasRepository.sumEmailByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalEmail((eOferta != null ? eOferta : 0L) + (eEmpresa != null ? eEmpresa : 0L));
 
-        Long cOferta = metricasOfertasRepository.sumComoChegarByEmpresaId(idEmpresa);
-        Long cEmpresa = metricasEmpresasRepository.sumComoChegarByEmpresaId(idEmpresa);
+        Long cOferta = metricasOfertasRepository.sumComoChegarByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        Long cEmpresa = metricasEmpresasRepository.sumComoChegarByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalComoChegar((cOferta != null ? cOferta : 0L) + (cEmpresa != null ? cEmpresa : 0L));
 
-        Long favoritos = metricasOfertasRepository.sumFavoritosByEmpresaId(idEmpresa);
+        Long favoritos = metricasOfertasRepository.sumFavoritosByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalFavoritos(favoritos != null ? favoritos : 0L);
 
-        Long perfil = metricasEmpresasRepository.sumPerfilByEmpresaId(idEmpresa);
+        Long perfil = metricasEmpresasRepository.sumPerfilByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
         dashboard.setTotalPerfil(perfil != null ? perfil : 0L);
         
-        // Dados para o Gráfico de Evolução (Últimos 7 dias)
-        LocalDate inicioSemana = hoje.minusDays(6); // 7 dias incluindo hoje
-        List<Object[]> evolucaoOfertas = metricasOfertasRepository.findEvolucaoDiariaByEmpresaId(idEmpresa, inicioSemana);
-        List<Object[]> evolucaoEmpresa = metricasEmpresasRepository.findEvolucaoDiariaByEmpresaId(idEmpresa, inicioSemana);
+        List<Object[]> evolucaoOfertas = metricasOfertasRepository.findEvolucaoDiariaByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        List<Object[]> evolucaoEmpresa = metricasEmpresasRepository.findEvolucaoDiariaByEmpresaIdAndPeriodo(idEmpresa, inicio, fim);
+        
+        LocalDate inicioGrafico = dataInicio != null ? dataInicio : hoje;
+        LocalDate fimGrafico = fim.isBefore(hoje) ? fim : hoje;
+        
+        if (dataInicio == null) {
+            LocalDate minDate = hoje;
+            for (Object[] row : evolucaoOfertas) {
+                LocalDate d = (LocalDate) row[0];
+                if (d.isBefore(minDate)) minDate = d;
+            }
+            for (Object[] row : evolucaoEmpresa) {
+                LocalDate d = (LocalDate) row[0];
+                if (d.isBefore(minDate)) minDate = d;
+            }
+            inicioGrafico = minDate;
+        }
+
+        long diasDiff = java.time.temporal.ChronoUnit.DAYS.between(inicioGrafico, fimGrafico);
+        if (diasDiff < 0) diasDiff = 0;
+        if (diasDiff > 365) {
+            inicioGrafico = fimGrafico.minusDays(365);
+            diasDiff = 365;
+        }
         
         Map<LocalDate, Long> mapaEvolucao = new HashMap<>();
-        // Inicializa 7 dias com 0
-        for (int i = 0; i < 7; i++) {
-            mapaEvolucao.put(inicioSemana.plusDays(i), 0L);
+        // Inicializa dias com 0
+        for (int i = 0; i <= diasDiff; i++) {
+            mapaEvolucao.put(inicioGrafico.plusDays(i), 0L);
         }
         
         for (Object[] row : evolucaoOfertas) {
@@ -106,9 +130,8 @@ public class DashboardService {
         }
         
         List<EngajamentoDiarioDTO> listaEvolucao = new ArrayList<>();
-        // Para manter a ordem crescente de data
-        for (int i = 0; i < 7; i++) {
-            LocalDate dataCorrente = inicioSemana.plusDays(i);
+        for (int i = 0; i <= diasDiff; i++) {
+            LocalDate dataCorrente = inicioGrafico.plusDays(i);
             listaEvolucao.add(new EngajamentoDiarioDTO(dataCorrente, mapaEvolucao.get(dataCorrente)));
         }
         dashboard.setEngajamentoEvolucao(listaEvolucao);

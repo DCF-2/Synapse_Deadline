@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * DTO para receber os dados de criação ou edição do catálogo base de um Produto.
@@ -27,6 +28,8 @@ public class ProdutoRequestDTO {
     private BigDecimal precoOriginal;
 
     private String foto;
+
+    private List<String> fotosAdicionais;
 
     private Boolean ativo; // Por padrão, o produto é criado como ativo
 
@@ -52,4 +55,7 @@ public class ProdutoRequestDTO {
 
    public Boolean getAtivo() { return ativo; }
    public void setAtivo(Boolean ativo) { this.ativo = ativo; }
+   
+   public List<String> getFotosAdicionais() { return fotosAdicionais; }
+   public void setFotosAdicionais(List<String> fotosAdicionais) { this.fotosAdicionais = fotosAdicionais; }
 }

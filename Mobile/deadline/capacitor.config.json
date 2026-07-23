@@ -1,6 +1,6 @@
 {
   "appId": "io.deadline.app",
-  "appName": "deadline-mobile",
+  "appName": "Deadline",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": {

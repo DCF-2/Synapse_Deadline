@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
+import { useModal } from '../contexts/ModalContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
 const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
 export default function ConfiguracoesPage() {
+  const { showAlert, showConfirm } = useModal();
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' é a lista principal (Android style)
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
@@ -207,6 +209,22 @@ export default function ConfiguracoesPage() {
     }
   };
 
+  const handleRemoverLogo = () => {
+    showConfirm(
+      "Remover Logotipo",
+      "Tem certeza que deseja remover a foto de perfil? Uma imagem padrão será usada em seu lugar.",
+      () => setLogotipo('')
+    );
+  };
+
+  const handleRemoverBanner = () => {
+    showConfirm(
+      "Remover Banner",
+      "Tem certeza que deseja remover o banner? Uma imagem padrão será usada em seu lugar.",
+      () => setBannerPerfil('')
+    );
+  };
+
   const handleSalvar = async (e) => {
     e.preventDefault();
     setSalvando(true);
@@ -260,13 +278,15 @@ export default function ConfiguracoesPage() {
         throw new Error(msg);
       }
 
-      alert("Conta e dados excluídos com sucesso. Você será desconectado.");
-      localStorage.removeItem('deadline_token');
-      localStorage.removeItem('deadline_empresa');
-      window.location.href = '/login'; // Força recarregamento limpo
+      showAlert("Sucesso", "Conta e dados excluídos com sucesso. Você será desconectado.");
+      setTimeout(() => {
+        localStorage.removeItem('deadline_token');
+        localStorage.removeItem('deadline_empresa');
+        window.location.href = '/login'; // Força recarregamento limpo
+      }, 2000);
 
     } catch (err) {
-      alert(err.message);
+      showAlert("Erro", err.message);
     } finally {
       setExcluindoConta(false);
       setShowDeleteModal(false);
@@ -484,10 +504,17 @@ export default function ConfiguracoesPage() {
                     <div className="fw-bold">Banner do Perfil</div>
                     <small className="opacity-75">Recomendado: 1600x500px</small>
                   </div>
-                  <label className="btn btn-light btn-sm fw-bold rounded-pill mb-0" style={{ cursor: 'pointer' }}>
-                    {enviandoBanner ? 'Enviando...' : 'Escolher imagem'}
-                    <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
-                  </label>
+                  <div className="d-flex gap-2">
+                    {bannerPerfil && (
+                      <button type="button" className="btn btn-danger btn-sm fw-bold rounded-pill mb-0" onClick={handleRemoverBanner}>
+                        Remover
+                      </button>
+                    )}
+                    <label className="btn btn-light btn-sm fw-bold rounded-pill mb-0" style={{ cursor: 'pointer' }}>
+                      {enviandoBanner ? 'Enviando...' : (bannerPerfil ? 'Trocar' : 'Escolher imagem')}
+                      <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
+                    </label>
+                  </div>
                 </div>
               </div>
             </div>
@@ -498,7 +525,14 @@ export default function ConfiguracoesPage() {
                </div>
                <div className="text-center text-sm-start w-100">
                   <label className="form-label text-dark fw-bold mb-2">Logotipo da Empresa</label>
-                  <input type="file" accept="image/*" className="form-control border-0 bg-white shadow-sm" onChange={handleUploadLogo} disabled={enviandoLogo} />
+                  <div className="d-flex flex-column flex-sm-row gap-2 align-items-center">
+                    <input type="file" accept="image/*" className="form-control border-0 bg-white shadow-sm flex-grow-1" onChange={handleUploadLogo} disabled={enviandoLogo} />
+                    {logotipo && (
+                      <button type="button" className="btn btn-danger shadow-sm flex-shrink-0 fw-bold" onClick={handleRemoverLogo}>
+                        Remover
+                      </button>
+                    )}
+                  </div>
                   <small className="text-muted d-block mt-2">{enviandoLogo ? "Enviando arquivo ao servidor..." : "Recomendado: Imagem quadrada em formato PNG ou JPG (Max 5MB)."}</small>
                </div>
             </div>

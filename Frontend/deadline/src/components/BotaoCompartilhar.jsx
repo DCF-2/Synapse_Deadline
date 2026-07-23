@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useModal } from '../contexts/ModalContext';
 
 export default function BotaoCompartilhar({ oferta, className = '', style = {} }) {
+  const { showAlert } = useModal();
   const [aberto, setAberto] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -39,23 +41,23 @@ export default function BotaoCompartilhar({ oferta, className = '', style = {} }
         break;
       case 'facebook':
         navigator.clipboard.writeText(`${textoCompartilhamento} ${getLink()}`);
-        alert('Link e texto copiados! Cole no chat do Messenger.');
-        window.open('https://www.facebook.com/messages/', '_blank');
+        showAlert('Sucesso', 'Link e texto copiados! Cole no chat do Messenger.');
+        window.open('https://www.messenger.com/', '_blank');
         break;
       case 'twitter':
         window.open(`https://twitter.com/intent/tweet?text=${texto}&url=${link}`, '_blank');
         break;
       case 'instagram':
         navigator.clipboard.writeText(`${textoCompartilhamento} ${getLink()}`);
-        alert('Link e texto copiados! Você será redirecionado para o Direct do Instagram.');
-        window.open('https://www.instagram.com/direct/', '_blank');
+        showAlert('Sucesso', 'Link e texto copiados! Você será redirecionado para o Direct do Instagram.');
+        window.open('https://www.instagram.com/direct/inbox/', '_blank');
         break;
       case 'email':
         window.open(`mailto:?subject=${encodeURIComponent("Olha essa oferta no Deadline!")}&body=${texto}%20${link}`, '_blank');
         break;
       case 'copiar':
         navigator.clipboard.writeText(`${textoCompartilhamento} ${getLink()}`);
-        alert('Link copiado para a área de transferência!');
+        showAlert('Sucesso', 'Link copiado para a área de transferência!');
         break;
       default:
         break;

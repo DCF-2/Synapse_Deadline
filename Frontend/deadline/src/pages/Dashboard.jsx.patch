@@ -1,0 +1,279 @@
+--- src/pages/Dashboard.jsx
++++ src/pages/Dashboard.jsx
+@@ -75,9 +75,17 @@
+   const [dados, setDados] = useState(null);
+   const [carregando, setCarregando] = useState(true);
+   const [erro, setErro] = useState(null);
+-  const [filtroPeriodo, setFiltroPeriodo] = useState('7');
+-  const [dataInicioManual, setDataInicioManual] = useState('');
+-  const [dataFimManual, setDataFimManual] = useState('');
++
++  // Filtros Individuais
++  const [filtroEvolucao, setFiltroEvolucao] = useState('7');
++  const [filtroFunil, setFiltroFunil] = useState('30');
++  const [filtroDetalhados, setFiltroDetalhados] = useState('30');
++  const [filtroTop, setFiltroTop] = useState('30');
++
++  const [dadosEvolucao, setDadosEvolucao] = useState(null);
++  const [dadosFunil, setDadosFunil] = useState(null);
++  const [dadosDetalhados, setDadosDetalhados] = useState(null);
++  const [dadosTop, setDadosTop] = useState(null);
+ 
+-  const buscarDashboard = async () => {
++  const fetchDashboard = async (filtroPeriodo) => {
+     try {
+-      setCarregando(true);
+       const token = localStorage.getItem('deadline_token');
+-      if (!token) { navigate('/'); return; }
++      if (!token) { navigate('/'); return null; }
+ 
+       let url = `${API_URL}/dashboard`;
+@@ -102,11 +110,6 @@
+         inicio = d.toISOString().split('T')[0];
+-      } else if (filtroPeriodo === 'personalizado') {
+-        if (dataInicioManual) inicio = dataInicioManual;
+-        if (dataFimManual) fim = dataFimManual;
+       }
+ 
+       if (filtroPeriodo !== 'sempre') {
+@@ -118,6 +121,6 @@
+ 
+       if (!res.ok) throw new Error('Não foi possível carregar as estatísticas.');
+-
+-      const data = await res.json();
+-      setDados(data);
++      return await res.json();
+     } catch (err) {
+       setErro(err.message);
++      return null;
+     } finally {
+       setCarregando(false);
+     }
+   };
+ 
++  // Efeito Inicial (Geral)
+   useEffect(() => {
+-    buscarDashboard();
+-  }, [navigate, filtroPeriodo]);
++    const init = async () => {
++      setCarregando(true);
++      const dataGlobal = await fetchDashboard('sempre');
++      setDados(dataGlobal);
++      setCarregando(false);
++    };
++    init();
++  }, [navigate]);
++
++  // Efeitos Individuais
++  useEffect(() => { fetchDashboard(filtroEvolucao).then(d => d && setDadosEvolucao(d)); }, [filtroEvolucao]);
++  useEffect(() => { fetchDashboard(filtroFunil).then(d => d && setDadosFunil(d)); }, [filtroFunil]);
++  useEffect(() => { fetchDashboard(filtroDetalhados).then(d => d && setDadosDetalhados(d)); }, [filtroDetalhados]);
++  useEffect(() => { fetchDashboard(filtroTop).then(d => d && setDadosTop(d)); }, [filtroTop]);
+ 
+@@ -156,23 +166,23 @@
+   const produtosSemOferta = Math.max(0, (dados?.totalProdutosAtivos || 0) - (dados?.totalOfertasAtivas || 0));
+-  const dadosPie = [
+-    { name: 'Com Oferta Ativa', value: dados?.totalOfertasAtivas || 0 },
+-    { name: 'Sem Oferta', value: produtosSemOferta },
+-  ];
+-  const CORES_PIE = ['#23a889', '#e9ecef'];
++  const dadosPie = [{ name: 'Com Oferta Ativa', value: dados?.totalOfertasAtivas || 0 }, { name: 'Sem Oferta', value: produtosSemOferta }];
+ 
+   // Gráfico Bar: Top Ofertas
+-  const dadosBar = dados?.topOfertasEngajamento?.map(oferta => ({
++  const grafTop = dadosTop?.topOfertasEngajamento?.map(oferta => ({
+     name: oferta.tituloProduto?.substring(0, 15) + '...',
+     Cliques: oferta.cliquesContato || 0
+   })) || [];
+ 
+   // Gráfico Area: Evolução Diária
+-  const dadosEvolucao = dados?.engajamentoEvolucao?.map(item => ({
++  const grafEvolucao = dadosEvolucao?.engajamentoEvolucao?.map(item => ({
+     data: formatarDataCurta(item.data),
+     Interações: item.interacoes
+   })) || [];
+ 
+   // Gráfico Funnel: Funil de Conversão
+-  const dadosFunil = [
+-    { name: 'Ofertas no Catálogo', value: dados?.totalOfertasAtivas || 0, fill: '#1E3A5F' },
+-    { name: 'Visualizações de Detalhes', value: dados?.totalCliquesDetalhe || 0, fill: '#eeab45' },
+-    { name: 'Ações Diretas (Contato)', value: dados?.totalCliquesContato || 0, fill: '#25D366' }
++  const grafFunil = [
++    { name: 'Ofertas no Catálogo', value: dadosFunil?.totalOfertasAtivas || 0, fill: '#1E3A5F' },
++    { name: 'Visualizações de Detalhes', value: dadosFunil?.totalCliquesDetalhe || 0, fill: '#eeab45' },
++    { name: 'Ações Diretas (Contato)', value: dadosFunil?.totalCliquesContato || 0, fill: '#25D366' }
+   ];
+ 
+   // Gráfico Breakdown: Detalhamento de Engajamentos
+-  const dadosDetalhados = [
+-    { name: 'Visualizações do Card', Engajamento: dados?.totalCliquesDetalhe || 0, fill: '#eeab45' },
+-    { name: 'Cliques no WhatsApp', Engajamento: dados?.totalWhatsApp || 0, fill: '#25D366' },
+-    { name: 'Cliques no E-mail', Engajamento: dados?.totalEmail || 0, fill: '#0d6efd' },
+-    { name: 'Acessos "Como Chegar"', Engajamento: dados?.totalComoChegar || 0, fill: '#1E3A5F' },
+-    { name: 'Favoritados', Engajamento: dados?.totalFavoritos || 0, fill: '#e63946' },
+-    { name: 'Visitas ao Perfil', Engajamento: dados?.totalPerfil || 0, fill: '#6c757d' }
++  const grafDetalhados = [
++    { name: 'Visualizações do Card', Engajamento: dadosDetalhados?.totalCliquesDetalhe || 0, fill: '#eeab45' },
++    { name: 'Cliques no WhatsApp', Engajamento: dadosDetalhados?.totalWhatsApp || 0, fill: '#25D366' },
++    { name: 'Cliques no E-mail', Engajamento: dadosDetalhados?.totalEmail || 0, fill: '#0d6efd' },
++    { name: 'Acessos "Como Chegar"', Engajamento: dadosDetalhados?.totalComoChegar || 0, fill: '#1E3A5F' },
++    { name: 'Favoritados', Engajamento: dadosDetalhados?.totalFavoritos || 0, fill: '#e63946' },
++    { name: 'Visitas ao Perfil', Engajamento: dadosDetalhados?.totalPerfil || 0, fill: '#6c757d' }
+   ];
+@@ -201,23 +211,6 @@
+       <div style={{ filter: needsOnboarding ? 'grayscale(100%) opacity(40%)' : 'none', pointerEvents: needsOnboarding ? 'none' : 'auto', transition: 'filter 0.3s ease' }}>
+-      <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center pt-1 pb-2 mb-4 border-bottom gap-3">
++      <div className="d-flex justify-content-between align-items-center pt-1 pb-2 mb-4 border-bottom">
+         <div>
+           <h2 className="fw-bold text-dark m-0">Painel de Insights <img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></h2>
+           <p className="text-muted small m-0 mt-1">Acompanhe a performance do seu catálogo e o comportamento dos clientes.</p>
+         </div>
+-        
+-        <div className="d-flex flex-wrap gap-2 align-items-center">
+-          <span className="text-muted small fw-bold">Período:</span>
+-          <div className="btn-group shadow-sm">
+-            <button className={`btn btn-sm ${filtroPeriodo === '7' ? 'btn-success text-white fw-bold' : 'btn-light border'}`} onClick={() => setFiltroPeriodo('7')}>7 dias</button>
+-            <button className={`btn btn-sm ${filtroPeriodo === '15' ? 'btn-success text-white fw-bold' : 'btn-light border'}`} onClick={() => setFiltroPeriodo('15')}>15 dias</button>
+-            <button className={`btn btn-sm ${filtroPeriodo === '30' ? 'btn-success text-white fw-bold' : 'btn-light border'}`} onClick={() => setFiltroPeriodo('30')}>30 dias</button>
+-            <button className={`btn btn-sm ${filtroPeriodo === 'sempre' ? 'btn-success text-white fw-bold' : 'btn-light border'}`} onClick={() => setFiltroPeriodo('sempre')}>Sempre</button>
+-            <button className={`btn btn-sm ${filtroPeriodo === 'personalizado' ? 'btn-success text-white fw-bold' : 'btn-light border'}`} onClick={() => setFiltroPeriodo('personalizado')}>Personalizado</button>
+-          </div>
+-          
+-          {filtroPeriodo === 'personalizado' && (
+-            <div className="d-flex gap-2 align-items-center bg-white p-1 rounded-3 shadow-sm border">
+-              <input type="date" className="form-control form-control-sm border-0" value={dataInicioManual} onChange={e => setDataInicioManual(e.target.value)} />
+-              <span className="text-muted small">até</span>
+-              <input type="date" className="form-control form-control-sm border-0" value={dataFimManual} onChange={e => setDataFimManual(e.target.value)} />
+-            </div>
+-          )}
+-        </div>
+       </div>
+@@ -300,14 +293,22 @@
+-            <h6 className="fw-bold text-dark mb-4">
+-              Evolução de Interações Diárias
+-              <IconeAjuda texto="Mostra como foi o engajamento geral com sua loja e ofertas ao longo da última semana." />
+-            </h6>
+-            {dadosEvolucao.length === 0 ? (
++            <div className="d-flex justify-content-between align-items-center mb-4">
++              <h6 className="fw-bold text-dark m-0">
++                Evolução de Interações
++                <IconeAjuda texto="Mostra como foi o engajamento geral com sua loja e ofertas ao longo do período." />
++              </h6>
++              <select className="form-select form-select-sm w-auto bg-light border-0" value={filtroEvolucao} onChange={(e) => setFiltroEvolucao(e.target.value)}>
++                <option value="7">7 dias</option>
++                <option value="15">15 dias</option>
++                <option value="30">30 dias</option>
++                <option value="sempre">Sempre</option>
++              </select>
++            </div>
++            {grafEvolucao.length === 0 ? (
+                <div className="d-flex align-items-center justify-content-center h-100 text-muted">Sem dados recentes.</div>
+             ) : (
+               <div style={{ width: '100%', height: '250px' }}>
+                 <ResponsiveContainer>
+-                  <AreaChart data={dadosEvolucao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
++                  <AreaChart data={grafEvolucao} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                     <defs>
+@@ -328,19 +329,26 @@
+         {/* GRÁFICO 2: FUNIL DE CONVERSÃO */}
+         <div className="col-12 col-xl-4">
+           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
+-            <h6 className="fw-bold text-dark mb-4 text-center">
+-              Funil de Conversão
+-              <IconeAjuda texto="Mede o fluxo do cliente: quantas ofertas você tem, quantas foram visualizadas em detalhe e quantos desses visitantes efetivamente clicaram para contato direto." />
+-            </h6>
++            <div className="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center mb-4 gap-2">
++              <h6 className="fw-bold text-dark m-0">
++                Funil de Conversão
++                <IconeAjuda texto="Mede o fluxo do cliente: quantas ofertas você tem, quantas foram visualizadas em detalhe e quantos efetivamente clicaram para contato." />
++              </h6>
++              <select className="form-select form-select-sm w-auto bg-light border-0" value={filtroFunil} onChange={(e) => setFiltroFunil(e.target.value)}>
++                <option value="7">7 dias</option>
++                <option value="15">15 dias</option>
++                <option value="30">30 dias</option>
++                <option value="sempre">Sempre</option>
++              </select>
++            </div>
+             <div style={{ width: '100%', height: '250px' }}>
+               <ResponsiveContainer>
+-                <BarChart data={dadosFunil} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
++                <BarChart data={grafFunil} layout="vertical" margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+                   <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e9ecef" />
+                   <XAxis type="number" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} allowDecimals={false} />
+                   <YAxis type="category" dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d', fontWeight: '500'}} width={160} />
+                   <RechartsTooltip cursor={{fill: '#f8f9fa'}} contentStyle={{borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                   <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={35} label={{ position: 'right', fill: '#6c757d', fontSize: 12, fontWeight: 'bold' }}>
+-                    {dadosFunil.map((entry, index) => (
++                    {grafFunil.map((entry, index) => (
+                       <Cell key={`cell-funil-${index}`} fill={entry.fill} />
+                     ))}
+@@ -355,20 +363,27 @@
+         <div className="col-12">
+           <div className="card border-0 shadow-sm rounded-4 p-4">
+-            <h6 className="fw-bold text-dark mb-4">
+-              Detalhamento de Interações
+-              <IconeAjuda texto="Descreve individualmente onde os seus clientes mais clicam: WhatsApp, E-mail, Rota (Como Chegar), botão de favoritar, no perfil da loja ou abrindo os detalhes da oferta." />
+-            </h6>
++            <div className="d-flex justify-content-between align-items-center mb-4">
++              <h6 className="fw-bold text-dark m-0">
++                Detalhamento de Interações
++                <IconeAjuda texto="Descreve individualmente onde os seus clientes mais clicam (WhatsApp, Perfil, Detalhes, etc)." />
++              </h6>
++              <select className="form-select form-select-sm w-auto bg-light border-0" value={filtroDetalhados} onChange={(e) => setFiltroDetalhados(e.target.value)}>
++                <option value="7">7 dias</option>
++                <option value="15">15 dias</option>
++                <option value="30">30 dias</option>
++                <option value="sempre">Sempre</option>
++              </select>
++            </div>
+             <div style={{ width: '100%', height: '250px' }}>
+               <ResponsiveContainer>
+-                <BarChart data={dadosDetalhados} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
++                <BarChart data={grafDetalhados} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
+                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9ecef" />
+                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} interval={0} angle={-15} textAnchor="end" />
+                   <YAxis axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} allowDecimals={false} />
+                   <RechartsTooltip cursor={{fill: '#f8f9fa'}} contentStyle={{borderRadius: '10px', border: 'none', boxShadow: '0 4px 6px rgba(0,0,0,0.1)'}} />
+                   <Bar dataKey="Engajamento" radius={[6, 6, 0, 0]} barSize={40}>
+-                    {dadosDetalhados.map((entry, index) => (
++                    {grafDetalhados.map((entry, index) => (
+                       <Cell key={`cell-${index}`} fill={entry.fill} />
+                     ))}
+@@ -382,16 +397,23 @@
+         <div className="col-12 col-lg-8">
+           <div className="card border-0 shadow-sm rounded-4 p-4 h-100">
+-            <h6 className="fw-bold text-dark mb-4">
+-              Top 5 Ofertas (Maior Engajamento de Contato)
+-              <IconeAjuda texto="As 5 ofertas que mais geraram ações de contato (WhatsApp, Email ou Como Chegar)." />
+-            </h6>
+-            {dadosBar.length === 0 ? (
++            <div className="d-flex justify-content-between align-items-center mb-4">
++              <h6 className="fw-bold text-dark m-0">
++                Top 5 Ofertas (Contatos)
++                <IconeAjuda texto="As ofertas que mais geraram ações de contato." />
++              </h6>
++              <select className="form-select form-select-sm w-auto bg-light border-0" value={filtroTop} onChange={(e) => setFiltroTop(e.target.value)}>
++                <option value="7">7 dias</option>
++                <option value="15">15 dias</option>
++                <option value="30">30 dias</option>
++                <option value="sempre">Sempre</option>
++              </select>
++            </div>
++            {grafTop.length === 0 ? (
+                <div className="d-flex align-items-center justify-content-center h-100 text-muted">Sem dados suficientes para o gráfico.</div>
+             ) : (
+               <div style={{ width: '100%', height: '250px' }}>
+                 <ResponsiveContainer>
+-                  <BarChart data={dadosBar} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
++                  <BarChart data={grafTop} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e9ecef" />
+                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fontSize: 12, fill: '#6c757d'}} />
+@@ -423,7 +445,7 @@
+                     dataKey="value"
+                     stroke="none"
+                   >
+-                    {dadosPie.map((entry, index) => (
++                    {dadosPie.map((entry, index) => (
+-                      <Cell key={`cell-${index}`} fill={CORES_PIE[index % CORES_PIE.length]} />
++                      <Cell key={`cell-${index}`} fill={['#23a889', '#e9ecef'][index % 2]} />
+                     ))}

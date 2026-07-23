@@ -5,11 +5,14 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './styles/theme.css'
 
 import App from './App'
+import { ModalProvider } from './contexts/ModalContext'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <App />
+      <ModalProvider>
+        <App />
+      </ModalProvider>
     </BrowserRouter>
   </React.StrictMode>,
 )

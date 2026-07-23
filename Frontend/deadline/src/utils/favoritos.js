@@ -7,7 +7,17 @@ function dispararAtualizacao() {
 function lerLista() {
   try {
     const raw = localStorage.getItem(CHAVE);
-    return raw ? JSON.parse(raw) : [];
+    if (!raw) return [];
+    
+    // Limpeza de itens corrompidos que possam ter sido salvos anteriormente
+    const lista = JSON.parse(raw);
+    const listaLimpa = lista.filter(item => item && item.id !== undefined && item.tituloProduto !== undefined);
+    
+    if (listaLimpa.length !== lista.length) {
+      localStorage.setItem(CHAVE, JSON.stringify(listaLimpa));
+    }
+    
+    return listaLimpa;
   } catch {
     return [];
   }

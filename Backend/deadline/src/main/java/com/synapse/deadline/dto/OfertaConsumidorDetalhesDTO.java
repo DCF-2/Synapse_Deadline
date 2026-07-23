@@ -2,6 +2,7 @@ package com.synapse.deadline.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class OfertaConsumidorDetalhesDTO {
     private Long id;
@@ -9,6 +10,7 @@ public class OfertaConsumidorDetalhesDTO {
     private String nomeCategoria;
     private String descricao;
     private String foto;
+    private List<String> fotosAdicionais;
     private BigDecimal precoOriginal;
     private BigDecimal precoPromocional;
     private Double percentualDesconto;
@@ -37,6 +39,8 @@ public class OfertaConsumidorDetalhesDTO {
     public void setDescricao(String descricao) { this.descricao = descricao; }
     public String getFoto() { return foto; }
     public void setFoto(String foto) { this.foto = foto; }
+    public List<String> getFotosAdicionais() { return fotosAdicionais; }
+    public void setFotosAdicionais(List<String> fotosAdicionais) { this.fotosAdicionais = fotosAdicionais; }
     public BigDecimal getPrecoOriginal() { return precoOriginal; }
     public void setPrecoOriginal(BigDecimal precoOriginal) { this.precoOriginal = precoOriginal; }
     public BigDecimal getPrecoPromocional() { return precoPromocional; }

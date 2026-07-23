@@ -34,6 +34,7 @@ export default function ClienteHome() {
   const [ofertas, setOfertas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [limiteExibicao, setLimiteExibicao] = useState(20);
 
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
@@ -206,7 +207,7 @@ export default function ClienteHome() {
           <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div className="container px-3 d-flex justify-content-center align-items-center">
               <Link className="navbar-brand d-flex align-items-center gap-2 m-0" to="/">
-                <img src="/logo_deadline.png" alt="Deadline" style={{ height: '32px' }} />
+                <img src="/logo_deadline.png" alt="Deadline" style={{ height: '45px' }} />
               </Link>
             </div>
           </nav>
@@ -285,7 +286,7 @@ export default function ClienteHome() {
                         <div className="d-flex align-items-center gap-2">
                           <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '45px', height: '45px', flexShrink: 0 }}>
                             {loja.logotipo ? (
-                              <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                              <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                             ) : (<span className="fs-5">🏢</span>)}
                           </div>
                           <div>
@@ -400,17 +401,30 @@ export default function ClienteHome() {
                     <p className="text-muted small">Tente alterar os filtros ou categoria acima.</p>
                   </div>
                 ) : (
-                  <div className="row g-2">
-                    {ofertas.map((oferta) => (
-                      <div className="col-6 col-md-4 col-xl-3" key={oferta.id}>
-                        <OfertaCard 
-                          oferta={oferta} 
-                          favoritosIds={favoritosIds} 
-                          handleToggleFavorito={handleToggleFavorito} 
-                          abrirDetalhes={abrirDetalhes} 
-                        />
+                  <div>
+                    <div className="row g-2">
+                      {ofertas.slice(0, limiteExibicao).map((oferta) => (
+                        <div className="col-6 col-md-4 col-xl-3" key={oferta.id}>
+                          <OfertaCard 
+                            oferta={oferta} 
+                            favoritosIds={favoritosIds} 
+                            handleToggleFavorito={handleToggleFavorito} 
+                            abrirDetalhes={abrirDetalhes} 
+                          />
+                        </div>
+                      ))}
+                    </div>
+                    {ofertas.length > limiteExibicao && (
+                      <div className="text-center mt-4 mb-3">
+                        <button 
+                          className="btn fw-bold rounded-pill px-5 py-2 shadow-sm"
+                          style={{ backgroundColor: 'var(--dl-primary, #0f9b58)', color: 'white', border: 'none' }}
+                          onClick={() => setLimiteExibicao(prev => prev + 20)}
+                        >
+                          Ver Mais
+                        </button>
                       </div>
-                    ))}
+                    )}
                   </div>
                 )}
               </div>

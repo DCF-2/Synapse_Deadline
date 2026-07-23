@@ -2,6 +2,7 @@ package com.synapse.deadline.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 public class OfertaResponseDTO {
 
@@ -11,6 +12,7 @@ public class OfertaResponseDTO {
     private String nomeCategoria;
     private BigDecimal precoOriginal;
     private String foto;
+    private List<String> fotosAdicionais;
     private BigDecimal precoPromocional;
     private Double percentualDesconto;
     private LocalDate validadeProduto;
@@ -69,6 +71,14 @@ public class OfertaResponseDTO {
 
     public void setFoto(String foto) {
         this.foto = foto;
+    }
+
+    public List<String> getFotosAdicionais() {
+        return fotosAdicionais;
+    }
+
+    public void setFotosAdicionais(List<String> fotosAdicionais) {
+        this.fotosAdicionais = fotosAdicionais;
     }
 
     public BigDecimal getPrecoPromocional() {
