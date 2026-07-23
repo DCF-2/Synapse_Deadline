@@ -85,8 +85,7 @@ export default function CadastroProduto() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [imagem, setImagem] = useState(null);
-  const [imagemUrl, setImagemUrl] = useState('');
+  const [imagensUrls, setImagensUrls] = useState([]);
   
   const [erro, setErro] = useState(null);
   const [sucesso, setSucesso] = useState(false);
@@ -137,14 +136,37 @@ export default function CadastroProduto() {
   };
 
   const handleImagemChange = async (e) => {
-    const arquivo = e.target.files?.[0];
-    if (!arquivo) return;
-    setImagem(arquivo);
-    const url = await uploadarImagemCloudinary(arquivo);
-    if (url) {
-      setImagemUrl(url);
-      setErro(null);
+    const arquivos = Array.from(e.target.files);
+    if (!arquivos || arquivos.length === 0) return;
+    
+    setUploadandoImagem(true);
+    try {
+      const novasUrls = await Promise.all(arquivos.map(arquivo => uploadarImagemCloudinary(arquivo)));
+      const urlsValidas = novasUrls.filter(url => url !== null);
+      if (urlsValidas.length > 0) {
+        setImagensUrls(prev => [...prev, ...urlsValidas]);
+        setErro(null);
+      }
+    } catch (err) {
+      setErro(`Erro ao processar imagens: ${err.message}`);
+    } finally {
+      setUploadandoImagem(false);
     }
+  };
+
+  const removerImagem = (index) => {
+    setImagensUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const definirCapa = (index) => {
+    if (index === 0) return;
+    setImagensUrls(prev => {
+      const novaLista = [...prev];
+      const imagemSelecionada = novaLista[index];
+      novaLista.splice(index, 1); // Remove from current position
+      novaLista.unshift(imagemSelecionada); // Add to the beginning
+      return novaLista;
+    });
   };
 
   async function handleCadastrar(e) {
@@ -170,7 +192,8 @@ export default function CadastroProduto() {
         idCategoria: categoriaId,
         descricao: descricao ? descricao.trim() : null,
         precoOriginal: preco,
-        foto: imagemUrl || null,
+        foto: imagensUrls.length > 0 ? imagensUrls[0] : null,
+        fotosAdicionais: imagensUrls.length > 1 ? imagensUrls.slice(1) : [],
       };
       
       const response = await fetch(`${API_URL}/produto`, {
@@ -256,22 +279,50 @@ export default function CadastroProduto() {
 
           <div className="mb-4">
             <LabelComAjuda
-              texto="Imagem do Produto"
-              ajuda="Envie uma foto real do produto, com boa iluminação e fundo neutro. Formatos aceitos: JPG e PNG."
+              texto="Imagens do Produto"
+              ajuda="Envie fotos reais do produto. A primeira foto será a principal (capa). Formatos aceitos: JPG e PNG. Você pode enviar várias fotos de uma vez."
             />
+            
+            {imagensUrls.length > 0 && (
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {imagensUrls.map((url, idx) => (
+                  <div key={idx} className="position-relative" style={{ width: '100px', height: '100px' }}>
+                    <img src={url} alt={`Preview ${idx + 1}`} className={`rounded shadow-sm ${idx === 0 ? 'border border-primary border-3' : 'border'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button 
+                      type="button" 
+                      onClick={() => removerImagem(idx)}
+                      className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
+                      style={{ transform: 'translate(25%, -25%)', padding: '0.1rem 0.4rem', fontSize: '10px', zIndex: 5 }}
+                      title="Remover imagem"
+                    >
+                      X
+                    </button>
+                    {idx === 0 ? (
+                      <span className="position-absolute bottom-0 start-0 bg-primary text-white text-center w-100 fw-bold" style={{fontSize: '10px', padding: '4px 0'}}>CAPA</span>
+                    ) : (
+                      <button 
+                        type="button" 
+                        onClick={() => definirCapa(idx)}
+                        className="btn btn-sm btn-dark position-absolute bottom-0 start-0 w-100 opacity-75 fw-bold" 
+                        style={{ fontSize: '9px', padding: '2px 0', borderRadius: '0 0 0.25rem 0.25rem' }}
+                        title="Tornar imagem principal"
+                      >
+                        TORNAR CAPA
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <label className="d-flex flex-column align-items-center justify-content-center rounded-4 p-4 shadow-sm bg-light" style={{ border: '2px dashed #d1d5db', cursor: 'pointer', transition: 'all 0.3s' }}>
-              <input type="file" accept="image/*" onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
+              <input type="file" accept="image/*" multiple onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
               {uploadandoImagem ? (
                 <span className="text-info fw-bold">⏳ Enviando...</span>
-              ) : imagemUrl ? (
-                <>
-                  <img src={imagemUrl} alt="Preview" className="rounded shadow-sm mb-2" style={{ maxWidth: '120px', maxHeight: '120px' }} />
-                  <span className="text-success fw-bold"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Imagem carregada</span>
-                </>
               ) : (
                 <>
                   <span style={{ fontSize: '2rem', opacity: 0.4 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
-                  <span className="text-muted small fw-bold mt-2">Clique para enviar uma foto</span>
+                  <span className="text-muted small fw-bold mt-2">Clique para enviar fotos</span>
                 </>
               )}
             </label>

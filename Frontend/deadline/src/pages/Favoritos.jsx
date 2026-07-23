@@ -5,6 +5,7 @@ import { obterFavoritos, contarFavoritos } from '../utils/favoritos';
 import BotaoFavorito from '../components/BotaoFavorito';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
+import Footer from '../components/Footer';
 
 export default function Favoritos() {
   const [favoritos, setFavoritos] = useState([]);
@@ -101,6 +102,7 @@ export default function Favoritos() {
         detalhesOferta={detalhesOferta}
         onClose={() => setDetalhesOferta(null)}
       />
+      <Footer />
     </div>
   );
 }

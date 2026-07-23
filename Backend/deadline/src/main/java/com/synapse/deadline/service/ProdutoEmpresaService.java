@@ -60,6 +60,9 @@ public class ProdutoEmpresaService {
         produto.setDescricao(dto.getDescricao());
         produto.setPrecoOriginal(dto.getPrecoOriginal());
         produto.setFoto(dto.getFoto());
+        if (dto.getFotosAdicionais() != null) {
+            produto.getFotosAdicionais().addAll(dto.getFotosAdicionais());
+        }
         produto.setEmpresa(empresaLogada); 
         produto.setAtivo(true);
 
@@ -118,6 +121,10 @@ public class ProdutoEmpresaService {
         produtoExistente.setDescricao(dto.getDescricao());
         produtoExistente.setPrecoOriginal(dto.getPrecoOriginal());
         produtoExistente.setFoto(dto.getFoto());
+        produtoExistente.getFotosAdicionais().clear();
+        if (dto.getFotosAdicionais() != null) {
+            produtoExistente.getFotosAdicionais().addAll(dto.getFotosAdicionais());
+        }
         
         if (dto.getAtivo() != null) {
             produtoExistente.setAtivo(dto.getAtivo());
@@ -229,6 +236,9 @@ public class ProdutoEmpresaService {
         
         dto.setPrecoOriginal(produto.getPrecoOriginal());
         dto.setFoto(produto.getFoto());
+        if (produto.getFotosAdicionais() != null) {
+            dto.setFotosAdicionais(new java.util.ArrayList<>(produto.getFotosAdicionais()));
+        }
         dto.setAtivo(produto.getAtivo());
         dto.setNomeEmpresa(empresa != null ? empresa.getNomeFantasia() : null);
         dto.setEnderecoEmpresa(formatarEndereco(empresa));

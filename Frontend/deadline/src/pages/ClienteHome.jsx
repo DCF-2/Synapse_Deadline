@@ -7,6 +7,7 @@ import { obterHistoricoBuscas, salvarNovaBusca, removerBuscaDoHistorico, limparH
 import BotaoFavorito from '../components/BotaoFavorito';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
+import Footer from '../components/Footer';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
@@ -14,6 +15,7 @@ export default function ClienteHome() {
   const [ofertas, setOfertas] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [carregando, setCarregando] = useState(true);
+  const [limiteExibicao, setLimiteExibicao] = useState(20);
   
   // Estados para Filtros
   const [termoBusca, setTermoBusca] = useState(''); 
@@ -124,7 +126,7 @@ export default function ClienteHome() {
       }
 
       url.searchParams.append('sort', ordenacao);
-      url.searchParams.append('size', '50'); 
+      url.searchParams.append('size', '1000'); 
 
       const res = await fetch(url.toString());
       if (res.ok) {
@@ -175,13 +177,13 @@ export default function ClienteHome() {
     setCarregandoDetalhes(true);
     try {
       const url = new URL(`${API_URL}/oferta/publico/${id}`);
-      if (localizacao) {
-        url.searchParams.append('latitude', localizacao.latitude);
-        url.searchParams.append('longitude', localizacao.longitude);
-      }
       const res = await fetch(url.toString());
       if (res.ok) {
         const data = await res.json();
+        const ofertaListagem = ofertas.find(o => o.id === id);
+        if (ofertaListagem && ofertaListagem.distanciaKm != null) {
+          data.distanciaKm = ofertaListagem.distanciaKm;
+        }
         setDetalhesOferta(data);
       }
     } catch (error) {
@@ -198,7 +200,7 @@ export default function ClienteHome() {
       <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
-            <img src="/logo_deadline.png" alt="Deadline" style={{ height: '35px' }} />
+            <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '85px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
           </Link>
           <div className="d-flex gap-2 align-items-center">
             <Link to="/favoritos" className="btn btn-warning fw-bold rounded-pill px-3 d-flex align-items-center gap-2" title="Ver favoritos">
@@ -461,16 +463,29 @@ export default function ClienteHome() {
                  <p className="text-muted">Tente ajustar os seus filtros de busca.</p>
                </div>
             ) : (
-              <div className="row g-4">
-                {ofertas.map((oferta) => (
-                  <div className="col-12 col-md-6 col-xl-4" key={oferta.id}>
-                    <OfertaCard 
-                      oferta={oferta} 
-                      onClickCard={abrirDetalhes} 
-                      esconderLoja={false} 
-                    />
+              <div>
+                <div className="row g-4">
+                  {ofertas.slice(0, limiteExibicao).map((oferta) => (
+                    <div className="col-12 col-md-6 col-xl-4" key={oferta.id}>
+                      <OfertaCard 
+                        oferta={oferta} 
+                        onClickCard={abrirDetalhes} 
+                        esconderLoja={false} 
+                      />
+                    </div>
+                  ))}
+                </div>
+                {ofertas.length > limiteExibicao && (
+                  <div className="text-center mt-5 mb-3">
+                    <button 
+                      className="btn fw-bold rounded-pill px-5 py-2 shadow-sm text-white"
+                      style={{ backgroundColor: 'var(--dl-primary, #0f9b58)' }}
+                      onClick={() => setLimiteExibicao(prev => prev + 20)}
+                    >
+                      Ver Mais
+                    </button>
                   </div>
-                ))}
+                )}
               </div>
             )}
           </div>
@@ -483,6 +498,7 @@ export default function ClienteHome() {
         onClose={() => setDetalhesOferta(null)} 
       />
 
+      <Footer />
     </div>
   );
 }

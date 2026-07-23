@@ -10,6 +10,7 @@ export default function ProdutoDetalhes() {
   const [loading, setLoading] = useState(true);
   const [erro, setErro] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [imagemAtiva, setImagemAtiva] = useState(null);
 
   useEffect(() => {
     let ativo = true;
@@ -41,6 +42,7 @@ export default function ProdutoDetalhes() {
 
         if (ativo) {
           setProduto(data);
+          setImagemAtiva(data.foto);
         }
       } catch (error) {
         if (ativo) {
@@ -140,12 +142,27 @@ export default function ProdutoDetalhes() {
                        <span className="badge bg-danger fs-5 px-4 py-2 rounded-pill shadow-sm">INATIVO</span>
                     </div>
                   )}
-                  {produto.foto ? (
-                    <img src={produto.foto} alt={produto.tituloProduto} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px' }} />
+                  {imagemAtiva ? (
+                    <img src={imagemAtiva} alt={produto.tituloProduto} style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '20px', paddingBottom: '70px' }} />
                   ) : (
                     <div className="d-flex align-items-center justify-content-center w-100 h-100" style={{ background: 'linear-gradient(135deg, #f0fdf4, #ecfdf5)' }}>
                       <span style={{ fontSize: '6rem', opacity: 0.3 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                     </div>
+                  )}
+
+                  {produto.fotosAdicionais && produto.fotosAdicionais.length > 0 && (
+                  <div className="position-absolute bottom-0 w-100 d-flex gap-2 overflow-auto pb-3 pt-3 justify-content-center" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.05), transparent)'}}>
+                    {[produto.foto, ...produto.fotosAdicionais].filter(Boolean).map((imgUrl, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setImagemAtiva(imgUrl)}
+                        className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 bg-white ${imagemAtiva === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
+                        style={{ width: '50px', height: '50px', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
                   )}
                 </div>
               </div>

@@ -2,6 +2,8 @@ package com.synapse.deadline.entity;
 
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Entidade que representa o catálogo base de produtos de uma empresa.
@@ -62,6 +64,14 @@ public class Produto {
     private String foto;
 
     /**
+     * Fotos adicionais para exibir um carrossel ou galeria no detalhe da oferta.
+     */
+    @ElementCollection
+    @CollectionTable(name = "produto_fotos", joinColumns = @JoinColumn(name = "produto_id"))
+    @Column(name = "foto_url")
+    private List<String> fotosAdicionais = new ArrayList<>();
+
+    /**
      * Flag lógica para soft-delete ou inativação do catálogo.
      */
     @Column(nullable = false)
@@ -95,6 +105,9 @@ public class Produto {
 
     public String getFoto() { return foto; }
     public void setFoto(String foto) { this.foto = foto; }
+
+    public List<String> getFotosAdicionais() { return fotosAdicionais; }
+    public void setFotosAdicionais(List<String> fotosAdicionais) { this.fotosAdicionais = fotosAdicionais; }
 
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }

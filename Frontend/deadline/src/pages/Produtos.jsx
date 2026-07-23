@@ -1,10 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useModal } from '../contexts/ModalContext';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 
-export default function ProdutosPage() {
+const ProdutoImagemAutoPlay = ({ produto }) => {
+  const [imgIdx, setImgIdx] = useState(0);
+  const fotos = [produto.foto, ...(produto.fotosAdicionais || [])].filter(Boolean);
 
+  useEffect(() => {
+    let intv;
+    if (fotos.length > 1) {
+      intv = setInterval(() => {
+        setImgIdx(prev => (prev + 1) % fotos.length);
+      }, 3000);
+    }
+    return () => clearInterval(intv);
+  }, [fotos.length]);
+
+  if (fotos.length === 0) {
+    return <span style={{ fontSize: '3rem', opacity: 0.2 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>;
+  }
+  return <img src={fotos[imgIdx]} alt={produto.tituloProduto} style={{ maxWidth: '100%', maxHeight: '80px', objectFit: 'contain' }} />;
+};
+
+export default function ProdutosPage() {
+  const { showAlert } = useModal();
 
   // Estados da API
   const [produtos, setProdutos] = useState([]);
@@ -14,6 +35,7 @@ export default function ProdutosPage() {
   
   // Controle de Modais
   const [produtoSelecionado, setProdutoSelecionado] = useState(null); // Modal de Visualizar
+  const [imagemAtivaModal, setImagemAtivaModal] = useState(null);
   const [showConfirm, setShowConfirm] = useState(null); // Modal de Confirmação (Ação)
   
   const [removendo, setRemovendo] = useState(false);
@@ -139,12 +161,15 @@ export default function ProdutosPage() {
       if (res.ok) {
         const detalhes = await res.json();
         setProdutoSelecionado(detalhes); // Abre o modal com todos os dados
+        setImagemAtivaModal(detalhes.foto);
       } else {
         setProdutoSelecionado(produto); // Fallback: usa os dados resumidos se falhar
+        setImagemAtivaModal(produto.foto);
       }
     } catch (error) {
       console.error("Erro ao buscar detalhes do produto:", error);
       setProdutoSelecionado(produto);
+      setImagemAtivaModal(produto.foto);
     }
   };
 
@@ -191,7 +216,7 @@ export default function ProdutosPage() {
       setProdutoSelecionado(null);
       await carregarProdutos(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
     } catch (error) {
-      alert(error.message);
+      showAlert("Erro", error.message);
     }
   };
 
@@ -289,11 +314,7 @@ export default function ProdutosPage() {
               )}
 
               <div className="text-center mb-3 flex-grow-1 d-flex align-items-center justify-content-center pt-2">
-                  {produto.foto ? (
-                    <img src={produto.foto} alt={produto.tituloProduto} style={{ maxWidth: '100%', maxHeight: '80px', objectFit: 'contain' }} />
-                  ) : (
-                    <span style={{ fontSize: '3rem', opacity: 0.2 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
-                  )}
+                  <ProdutoImagemAutoPlay produto={produto} />
               </div>
               <div>
                 <h6 className="fw-bold mb-1 text-truncate" title={produto.tituloProduto}>{produto.tituloProduto}</h6>
@@ -322,12 +343,27 @@ export default function ProdutosPage() {
               </div>
               
               <div className="modal-body">
-                  <div className="text-center mb-4">
-                     {produtoSelecionado.foto ? (
-                        <img src={produtoSelecionado.foto} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
+                  <div className="text-center mb-4 position-relative pb-4">
+                     {imagemAtivaModal ? (
+                        <img src={imagemAtivaModal} alt="Produto" className="rounded shadow-sm" style={{ maxHeight: '160px', objectFit: 'contain' }} />
                      ) : (
                         <span style={{ fontSize: '5rem', opacity: 0.2 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                      )}
+                     
+                     {produtoSelecionado.fotosAdicionais && produtoSelecionado.fotosAdicionais.length > 0 && (
+                        <div className="position-absolute bottom-0 w-100 d-flex gap-2 overflow-auto pb-2 justify-content-center" style={{background: 'linear-gradient(to top, rgba(0,0,0,0.02), transparent)'}}>
+                          {[produtoSelecionado.foto, ...produtoSelecionado.fotosAdicionais].filter(Boolean).map((imgUrl, idx) => (
+                            <div 
+                              key={idx} 
+                              onClick={() => setImagemAtivaModal(imgUrl)}
+                              className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 bg-white ${imagemAtivaModal === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
+                              style={{ width: '40px', height: '40px', cursor: 'pointer', transition: 'all 0.2s' }}
+                            >
+                              <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            </div>
+                          ))}
+                        </div>
+                      )}
                   </div>
                   
                   {/* LINHA 1: Categoria e Preço */}

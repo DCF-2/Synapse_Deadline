@@ -84,6 +84,9 @@ public class OfertaService {
 
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setFoto(oferta.getProduto().getFoto());
+        if (oferta.getProduto().getFotosAdicionais() != null) {
+            dto.setFotosAdicionais(new java.util.ArrayList<>(oferta.getProduto().getFotosAdicionais()));
+        }
         dto.setPrecoPromocional(oferta.getPrecoPromocional());
         dto.setPercentualDesconto(oferta.getPercentualDesconto());
         dto.setValidadeProduto(oferta.getValidadeProduto());
@@ -303,6 +306,9 @@ public class OfertaService {
         dto.setNomeCategoria(oferta.getProduto().getCategoria() != null ? oferta.getProduto().getCategoria().getNome() : "Sem Categoria");
         dto.setDescricao(oferta.getProduto().getDescricao());
         dto.setFoto(oferta.getProduto().getFoto());
+        if (oferta.getProduto().getFotosAdicionais() != null) {
+            dto.setFotosAdicionais(new java.util.ArrayList<>(oferta.getProduto().getFotosAdicionais()));
+        }
         dto.setPrecoOriginal(oferta.getProduto().getPrecoOriginal());
         dto.setPrecoPromocional(oferta.getPrecoPromocional());
         dto.setPercentualDesconto(oferta.getPercentualDesconto());

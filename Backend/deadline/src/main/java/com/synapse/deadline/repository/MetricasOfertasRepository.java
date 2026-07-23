@@ -25,28 +25,28 @@ public interface MetricasOfertasRepository extends JpaRepository<MetricasOfertas
            "FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
     Long sumEngajamentosByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    @Query("SELECT COALESCE(SUM(m.cliquesDetalhe), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumCliquesDetalheByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesDetalhe), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumCliquesDetalheByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
     
-    @Query("SELECT COALESCE(SUM(m.cliquesWhatsAppOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumWhatsAppByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesWhatsAppOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumWhatsAppByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    @Query("SELECT COALESCE(SUM(m.cliquesEmailOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumEmailByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesEmailOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumEmailByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    @Query("SELECT COALESCE(SUM(m.cliquesComoChegarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumComoChegarByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesComoChegarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumComoChegarByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    @Query("SELECT COALESCE(SUM(m.cliquesFavoritarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumFavoritosByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesFavoritarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumFavoritosByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
-    @Query("SELECT COALESCE(SUM(m.cliquesWhatsAppOferta) + SUM(m.cliquesEmailOferta) + SUM(m.cliquesComoChegarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")
-    Long sumCliquesContatoByEmpresaId(@Param("empresaId") Long empresaId);
+    @Query("SELECT COALESCE(SUM(m.cliquesWhatsAppOferta) + SUM(m.cliquesEmailOferta) + SUM(m.cliquesComoChegarOferta), 0) FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim")
+    Long sumCliquesContatoByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
     @Query("SELECT m.dia, COALESCE(SUM(m.cliquesDetalhe) + SUM(m.cliquesWhatsAppOferta) + SUM(m.cliquesEmailOferta) + SUM(m.cliquesComoChegarOferta) + SUM(m.cliquesFavoritarOferta), 0) " +
-           "FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia >= :dataInicio " +
+           "FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId AND m.dia BETWEEN :inicio AND :fim " +
            "GROUP BY m.dia ORDER BY m.dia ASC")
-    java.util.List<Object[]> findEvolucaoDiariaByEmpresaId(@Param("empresaId") Long empresaId, @Param("dataInicio") LocalDate dataInicio);
+    java.util.List<Object[]> findEvolucaoDiariaByEmpresaIdAndPeriodo(@Param("empresaId") Long empresaId, @Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 
     @Modifying
     @Query("DELETE FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")

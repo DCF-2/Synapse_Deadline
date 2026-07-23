@@ -15,7 +15,7 @@ export default function EditarProduto() {
   const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
   const [precoOriginal, setPrecoOriginal] = useState('');
   const [descricao, setDescricao] = useState('');
-  const [imagemUrl, setImagemUrl] = useState('');
+  const [imagensUrls, setImagensUrls] = useState([]);
   const [ativo, setAtivo] = useState(true);
 
   const [erro, setErro] = useState(null);
@@ -44,7 +44,13 @@ export default function EditarProduto() {
           setCodigoBarrasEan(data.codBarrasEan || '');
           setPrecoOriginal(data.precoOriginal ? data.precoOriginal.toString() : '');
           setDescricao(data.descricao || '');
-          setImagemUrl(data.foto || '');
+          if (data.foto) {
+            let urls = [data.foto];
+            if (data.fotosAdicionais && data.fotosAdicionais.length > 0) {
+              urls = [...urls, ...data.fotosAdicionais];
+            }
+            setImagensUrls(urls);
+          }
           setAtivo(data.ativo !== false);
           
           if(data.nomeCategoria) {
@@ -69,23 +75,45 @@ export default function EditarProduto() {
   }, [id]);
 
   const handleImagemChange = async (e) => {
-    const arquivo = e.target.files?.[0];
-    if (!arquivo) return;
+    const arquivos = Array.from(e.target.files);
+    if (!arquivos || arquivos.length === 0) return;
     
     setUploadandoImagem(true);
     try {
-      const formData = new FormData();
-      formData.append('file', arquivo);
-      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData });
-      if (!res.ok) throw new Error('Erro no upload');
-      const data = await res.json();
-      setImagemUrl(data.secure_url);
+      const novasUrls = await Promise.all(arquivos.map(arquivo => {
+        const formData = new FormData();
+        formData.append('file', arquivo);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, { method: 'POST', body: formData })
+          .then(res => res.ok ? res.json() : null)
+          .then(data => data ? data.secure_url : null);
+      }));
+      
+      const urlsValidas = novasUrls.filter(url => url !== null);
+      if (urlsValidas.length > 0) {
+        setImagensUrls(prev => [...prev, ...urlsValidas]);
+        setErro(null);
+      }
     } catch (err) {
-      setErro(err.message);
+      setErro(`Erro ao processar imagens: ${err.message}`);
     } finally {
       setUploadandoImagem(false);
     }
+  };
+
+  const removerImagem = (index) => {
+    setImagensUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const definirCapa = (index) => {
+    if (index === 0) return;
+    setImagensUrls(prev => {
+      const novaLista = [...prev];
+      const imagemSelecionada = novaLista[index];
+      novaLista.splice(index, 1); // Remove from current position
+      novaLista.unshift(imagemSelecionada); // Add to the beginning
+      return novaLista;
+    });
   };
 
   async function handleSalvar(e) {
@@ -105,7 +133,8 @@ export default function EditarProduto() {
         idCategoria: categoriaId,
         descricao: descricao ? descricao.trim() : null,
         precoOriginal: preco,
-        foto: imagemUrl || null,
+        foto: imagensUrls.length > 0 ? imagensUrls[0] : null,
+        fotosAdicionais: imagensUrls.length > 1 ? imagensUrls.slice(1) : [],
         ativo: ativo
       };
       
@@ -189,20 +218,48 @@ export default function EditarProduto() {
           </div>
 
           <div className="mb-4">
-            <label className="form-label fw-bold text-muted small">Imagem do Produto</label>
+            <label className="form-label fw-bold text-muted small">Imagens do Produto</label>
+            
+            {imagensUrls.length > 0 && (
+              <div className="d-flex flex-wrap gap-2 mb-3">
+                {imagensUrls.map((url, idx) => (
+                  <div key={idx} className="position-relative" style={{ width: '100px', height: '100px' }}>
+                    <img src={url} alt={`Preview ${idx + 1}`} className={`rounded shadow-sm ${idx === 0 ? 'border border-primary border-3' : 'border'}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    <button 
+                      type="button" 
+                      onClick={() => removerImagem(idx)}
+                      className="btn btn-sm btn-danger position-absolute top-0 end-0 rounded-circle" 
+                      style={{ transform: 'translate(25%, -25%)', padding: '0.1rem 0.4rem', fontSize: '10px', zIndex: 5 }}
+                      title="Remover imagem"
+                    >
+                      X
+                    </button>
+                    {idx === 0 ? (
+                      <span className="position-absolute bottom-0 start-0 bg-primary text-white text-center w-100 fw-bold" style={{fontSize: '10px', padding: '4px 0'}}>CAPA</span>
+                    ) : (
+                      <button 
+                        type="button" 
+                        onClick={() => definirCapa(idx)}
+                        className="btn btn-sm btn-dark position-absolute bottom-0 start-0 w-100 opacity-75 fw-bold" 
+                        style={{ fontSize: '9px', padding: '2px 0', borderRadius: '0 0 0.25rem 0.25rem' }}
+                        title="Tornar imagem principal"
+                      >
+                        TORNAR CAPA
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+
             <label className="d-flex flex-column align-items-center justify-content-center rounded-4 p-4 shadow-sm bg-light" style={{ border: '2px dashed #d1d5db', cursor: 'pointer' }}>
-              <input type="file" accept="image/*" onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
+              <input type="file" accept="image/*" multiple onChange={handleImagemChange} style={{ display: 'none' }} disabled={uploadandoImagem} />
               {uploadandoImagem ? (
                 <span className="text-info fw-bold">⏳ Enviando...</span>
-              ) : imagemUrl ? (
-                <>
-                  <img src={imagemUrl} alt="Preview" className="rounded shadow-sm mb-2" style={{ maxWidth: '120px', maxHeight: '120px' }} />
-                  <span className="text-success fw-bold"><img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Clique para alterar a imagem</span>
-                </>
               ) : (
                 <>
                   <span style={{ fontSize: '2rem', opacity: 0.4 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
-                  <span className="text-muted small fw-bold mt-2">Clique para enviar uma foto</span>
+                  <span className="text-muted small fw-bold mt-2">Clique para adicionar fotos</span>
                 </>
               )}
             </label>

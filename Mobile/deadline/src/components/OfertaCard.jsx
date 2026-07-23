@@ -1,10 +1,23 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Share } from '@capacitor/share';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 const OfertaCard = ({ oferta, favoritosIds, handleToggleFavorito, abrirDetalhes, esconderLoja = false }) => {
+  const [imagemAtualIndex, setImagemAtualIndex] = useState(0);
+
+  const todasImagens = [oferta.foto, ...(oferta.fotosAdicionais || [])].filter(Boolean);
+
+  useEffect(() => {
+    if (todasImagens.length > 1) {
+      const interval = setInterval(() => {
+        setImagemAtualIndex((prev) => (prev + 1) % todasImagens.length);
+      }, 3000); // Muda de imagem a cada 3 segundos
+      return () => clearInterval(interval);
+    }
+  }, [todasImagens.length]);
+
   const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
   const formatarDistancia = (dist) => {
@@ -65,11 +78,23 @@ const OfertaCard = ({ oferta, favoritosIds, handleToggleFavorito, abrirDetalhes,
         </div>
       </div>
 
-      <div className="bg-light text-center p-2 d-flex align-items-center justify-content-center" style={{ height: '115px' }}>
-        {oferta.foto ? (
-          <img src={oferta.foto} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+      <div className="bg-light text-center p-2 d-flex flex-column align-items-center justify-content-center position-relative" style={{ height: '115px' }}>
+        {todasImagens.length > 0 ? (
+          <img src={todasImagens[imagemAtualIndex]} alt={oferta.tituloProduto} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
         ) : (
           <span style={{ fontSize: '2.5rem', opacity: 0.15 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "30px", height: "30px", objectFit: "contain" }} /></span>
+        )}
+
+        {todasImagens.length > 1 && (
+          <div className="position-absolute bottom-0 start-50 translate-middle-x mb-1 d-flex gap-1">
+            {todasImagens.map((_, idx) => (
+              <div
+                key={idx}
+                className={`rounded-circle ${idx === imagemAtualIndex ? 'bg-success' : 'bg-secondary'}`}
+                style={{ width: '4px', height: '4px', opacity: 0.7, transition: 'all 0.3s' }}
+              />
+            ))}
+          </div>
         )}
       </div>
 
@@ -89,10 +114,10 @@ const OfertaCard = ({ oferta, favoritosIds, handleToggleFavorito, abrirDetalhes,
 
         {!esconderLoja && oferta.nomeFantasiaEmpresa && (
           <div className="d-flex align-items-center gap-1 my-1" onClick={(e) => e.stopPropagation()}>
-            <Link to={`/loja/${oferta.empresaId}`} className="text-decoration-none text-dark d-flex align-items-center gap-1 w-100">
+            <Link to={`/loja/${oferta.empresaId}`} className="text-decoration-none text-dark d-flex align-items-center gap-1 d-inline-flex">
               <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border flex-shrink-0" style={{ width: '24px', height: '24px' }}>
                 {oferta.logotipoEmpresa ? (
-                  <img src={oferta.logotipoEmpresa} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  <img src={oferta.logotipoEmpresa} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                 ) : (
                   <img src="/icons/companhia.png" alt="icon" style={{ width: "12px", height: "12px", objectFit: "contain" }} />
                 )}

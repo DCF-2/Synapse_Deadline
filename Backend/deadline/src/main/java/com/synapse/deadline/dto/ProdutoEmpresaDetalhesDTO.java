@@ -2,6 +2,7 @@ package com.synapse.deadline.dto;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * DTO para exibir todos os detalhes de um produto no painel da Empresa.
@@ -16,6 +17,7 @@ public class ProdutoEmpresaDetalhesDTO {
     private String descricao;
     private BigDecimal precoOriginal;
     private String foto;
+    private List<String> fotosAdicionais;
     private Boolean ativo;
     private String nomeEmpresa;
     private String enderecoEmpresa;
@@ -43,6 +45,8 @@ public class ProdutoEmpresaDetalhesDTO {
     public void setPrecoOriginal(BigDecimal precoOriginal) { this.precoOriginal = precoOriginal; }
     public String getFoto() { return foto; }
     public void setFoto(String foto) { this.foto = foto; }
+    public List<String> getFotosAdicionais() { return fotosAdicionais; }
+    public void setFotosAdicionais(List<String> fotosAdicionais) { this.fotosAdicionais = fotosAdicionais; }
     public Boolean getAtivo() { return ativo; }
     public void setAtivo(Boolean ativo) { this.ativo = ativo; }
     public String getNomeEmpresa() { return nomeEmpresa; }

@@ -1,10 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Share } from '@capacitor/share';
+import { obterFavoritos, alternarFavorito } from '../utils/storage_mobile';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta, formatarMoeda, formatarData }) {
+  const [isFavorito, setIsFavorito] = useState(false);
+  const [imagemAtiva, setImagemAtiva] = useState(null);
+
+  useEffect(() => {
+    if (detalhesOferta) {
+      setIsFavorito(obterFavoritos().includes(detalhesOferta.id));
+      setImagemAtiva(detalhesOferta.foto);
+    }
+  }, [detalhesOferta]);
+
   if (!detalhesOferta) return null;
 
   const formatarDistanciaLocal = (dist) => {
@@ -40,34 +51,74 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
     }
   };
 
+  const handleFavoritar = () => {
+    alternarFavorito(detalhesOferta.id);
+    setIsFavorito(obterFavoritos().includes(detalhesOferta.id));
+  };
+
   return (
     <div className="modal d-block" style={{ background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(5px)', zIndex: 1050 }}>
       <div className="modal-dialog modal-dialog-centered modal-lg">
         <div className="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
           <div className="modal-header border-0 bg-light p-3">
-            <Link to={`/loja/${detalhesOferta.empresaId}`} className="d-flex align-items-center gap-2 text-decoration-none">
-              <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden" style={{ width: '40px', height: '40px' }}>
+            <Link to={`/loja/${detalhesOferta.empresaId}`} className="text-decoration-none d-flex align-items-center gap-2 flex-grow-1" style={{ maxWidth: '65%' }}>
+              <div className="rounded-circle overflow-hidden border shadow-sm d-flex align-items-center justify-content-center bg-white flex-shrink-0" style={{ width: '40px', height: '40px' }}>
                 {detalhesOferta.logotipoEmpresa ? (
-                  <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  <img src={detalhesOferta.logotipoEmpresa} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                 ) : (<span className="fw-bold text-success"><img src="/icons/loja.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain" }} /></span>)}
               </div>
-              <div>
-                <small className="text-muted d-block fw-bold" style={{ fontSize: '0.65rem' }}>Vendido por:</small>
-                <h6 className="fw-bold text-dark m-0 small d-flex align-items-center gap-1">
+              <div className="text-truncate">
+                <small className="text-muted d-block fw-bold lh-1 mb-1" style={{ fontSize: '0.65rem' }}>Vendido por:</small>
+                <h6 className="fw-bold text-dark m-0 small text-truncate">
                   {detalhesOferta.nomeFantasiaEmpresa}
                 </h6>
               </div>
             </Link>
-            <button type="button" className="btn-close" onClick={() => setDetalhesOferta(null)}></button>
+            <div className="d-flex align-items-center gap-2">
+              <button type="button" className="btn-close ms-1" onClick={() => setDetalhesOferta(null)}></button>
+            </div>
           </div>
           <div className="modal-body p-3" style={{ maxHeight: '80vh', overflowY: 'auto' }}>
             <div className="row g-3">
               <div className="col-md-5 text-center">
-                <div className="bg-light rounded-4 p-2 mb-2 d-flex align-items-center justify-content-center" style={{ height: '180px' }}>
-                  {detalhesOferta.foto ? (
-                    <img src={detalhesOferta.foto} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                <div className="bg-light rounded-4 p-2 mb-2 d-flex align-items-center justify-content-center position-relative" style={{ height: '180px' }}>
+                  <div className="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style={{ zIndex: 10 }}>
+                    <button 
+                      type="button" 
+                      className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border ${isFavorito ? 'btn-warning border-warning' : 'btn-light bg-white'}`}
+                      style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                      onClick={handleFavoritar}
+                    >
+                      <img src="/icons/favorito.png" alt="Favorito" style={{ width: '16px', height: '16px', objectFit: 'contain', filter: isFavorito ? 'brightness(0) invert(1)' : 'grayscale(100%) opacity(40%)' }} />
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn btn-sm btn-light bg-white rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border"
+                      style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                      onClick={() => compartilharNativo(detalhesOferta)}
+                    >
+                      <img src="/icons/compartilhar.png" alt="Compartilhar" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+                    </button>
+                  </div>
+                  {imagemAtiva ? (
+                    <img src={imagemAtiva} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   ) : (<span style={{ fontSize: '3rem', opacity: 0.15 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "40px", height: "40px", objectFit: "contain" }} /></span>)}
                 </div>
+
+                {detalhesOferta.fotosAdicionais && detalhesOferta.fotosAdicionais.length > 0 && (
+                  <div className="d-flex gap-2 overflow-auto pb-2 mb-2 justify-content-center">
+                    {[detalhesOferta.foto, ...detalhesOferta.fotosAdicionais].filter(Boolean).map((imgUrl, idx) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setImagemAtiva(imgUrl)}
+                        className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 ${imagemAtiva === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
+                        style={{ width: '45px', height: '45px', cursor: 'pointer', transition: 'all 0.2s' }}
+                      >
+                        <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      </div>
+                    ))}
+                  </div>
+                )}
                 <div className="d-flex justify-content-between align-items-center bg-success bg-opacity-10 p-2 rounded-4 border border-success border-opacity-25">
                   <div className="text-start">
                     <span className="text-muted text-decoration-line-through small d-block" style={{ fontSize: '0.75rem' }}>De: {formatarMoeda(detalhesOferta.precoOriginal)}</span>

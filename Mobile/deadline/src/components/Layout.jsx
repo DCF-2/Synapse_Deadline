@@ -79,7 +79,7 @@ export default function Layout() {
           <div className="d-flex align-items-center gap-2 ms-auto me-3 text-white">
             <small className="fw-bold" style={{ fontSize: '0.8rem' }}>{empresaInfo.nomeFantasia}</small>
             {empresaInfo.logotipo ? (
-              <img src={empresaInfo.logotipo} alt="Logo Empresa" className="rounded-circle bg-white border" style={{ width: '32px', height: '32px', objectFit: 'contain' }} />
+              <img src={empresaInfo.logotipo} alt="Logo Empresa" className="rounded-circle bg-white border" style={{ width: '32px', height: '32px', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
             ) : (
               <div className="rounded-circle bg-white text-success d-flex align-items-center justify-content-center fw-bold" style={{ width: '32px', height: '32px', fontSize: '0.8rem' }}>
                 {getIniciais(empresaInfo.nomeFantasia)}
@@ -112,7 +112,7 @@ export default function Layout() {
               <div className="d-none d-md-flex align-items-center p-2 mb-4 bg-white bg-opacity-10 rounded-4 border" style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
                 <div className="flex-shrink-0 bg-white rounded-3 d-flex align-items-center justify-content-center border shadow-sm p-1 overflow-hidden" style={{ width: '48px', height: '48px' }}>
                   {empresaInfo.logotipo ? (
-                    <img src={empresaInfo.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    <img src={empresaInfo.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                   ) : (
                     <span className="fw-bold text-success" style={{ fontSize: '1.1rem' }}>{getIniciais(empresaInfo.nomeFantasia)}</span>
                   )}

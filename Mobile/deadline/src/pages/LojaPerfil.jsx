@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { IonPage, IonContent, IonRefresher, IonRefresherContent } from '@ionic/react';
+import { Link, useParams, useHistory } from 'react-router-dom';
+import { IonPage, IonContent, IonRefresher, IonRefresherContent, useIonAlert } from '@ionic/react';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 import '../styles/theme.css';
@@ -10,6 +10,8 @@ const API_URL = import.meta.env.VITE_API_URL;
 
 export default function LojaPerfil() {
   const { id } = useParams();
+  const history = useHistory();
+  const [presentAlert] = useIonAlert();
   const [loja, setLoja] = useState(null);
   const [ofertas, setOfertas] = useState([]);
   const [carregando, setCarregando] = useState(true);
@@ -93,7 +95,11 @@ export default function LojaPerfil() {
 
   const entrarEmContatoWhatsApp = () => {
     if (!loja?.contatoWhatsapp) {
-      alert("Esta loja não disponibilizou um número de WhatsApp.");
+      presentAlert({
+        header: 'Indisponível',
+        message: 'Esta loja não disponibilizou um número de WhatsApp.',
+        buttons: ['OK']
+      });
       return;
     }
     if (ofertas.length > 0) {
@@ -142,7 +148,7 @@ export default function LojaPerfil() {
               <div className="bg-white rounded-circle shadow d-flex align-items-center justify-content-center overflow-hidden border border-3 border-white position-absolute" 
                    style={{ width: '90px', height: '90px', top: '-45px', left: '15px' }}>
                  {loja.logotipo ? (
-                   <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                   <img src={loja.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                  ) : ( <span style={{ fontSize: '2.5rem' }}><img src="/icons/loja.png" alt="icon" style={{ width: "40px", height: "40px", objectFit: "contain" }} /></span> )}
               </div>
               
