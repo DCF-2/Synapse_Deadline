@@ -515,6 +515,20 @@ export default function ConfiguracoesPage() {
                       <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
                     </label>
                   </div>
+<<<<<<< HEAD
+=======
+                  <div className="d-flex gap-2">
+                    {bannerPerfil && (
+                      <button type="button" className="btn btn-danger btn-sm fw-bold rounded-pill mb-0" onClick={handleRemoverBanner}>
+                        Remover
+                      </button>
+                    )}
+                    <label className="btn btn-light btn-sm fw-bold rounded-pill mb-0" style={{ cursor: 'pointer' }}>
+                      {enviandoBanner ? 'Enviando...' : (bannerPerfil ? 'Trocar' : 'Escolher imagem')}
+                      <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
+                    </label>
+                  </div>
+>>>>>>> a1573f6 (Feature/warning share mobile (#73))
                 </div>
               </div>
             </div>
@@ -533,7 +547,11 @@ export default function ConfiguracoesPage() {
                       </button>
                     )}
                   </div>
+<<<<<<< HEAD
                   <small className="text-muted d-block mt-2">{enviandoLogo ? "Enviando arquivo ao servidor..." : "Recomendação: 500x500 pixels (1:1). Formatos: PNG ou JPG (Max 2MB)."}</small>
+=======
+                  <small className="text-muted d-block mt-2">{enviandoLogo ? "Enviando arquivo ao servidor..." : "Recomendado: Imagem quadrada em formato PNG ou JPG (Max 5MB)."}</small>
+>>>>>>> a1573f6 (Feature/warning share mobile (#73))
                </div>
             </div>
 

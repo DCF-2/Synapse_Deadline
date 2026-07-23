@@ -221,9 +221,14 @@ export default function ClienteHome() {
 
           <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div className="container px-3 d-flex justify-content-center align-items-center">
+<<<<<<< HEAD
               <Link className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-success" to="/">
                 <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
                 Kai Ofertas
+=======
+              <Link className="navbar-brand d-flex align-items-center gap-2 m-0" to="/">
+                <img src="/logo_deadline.png" alt="Deadline" style={{ height: '45px' }} />
+>>>>>>> a1573f6 (Feature/warning share mobile (#73))
               </Link>
             </div>
           </nav>
