@@ -167,7 +167,7 @@ export default function ClienteHome() {
   // Recarrega sempre que os filtros principais, a busca ativa ou a ordenação mudarem
   useEffect(() => {
     carregarVitrine();
-  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao, triggerFetch]);
+  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao, triggerFetch, precoMin, precoMax]);
 
   // Form submission para os filtros de preço/etc
   const aplicarFiltrosAvancados = (e) => {

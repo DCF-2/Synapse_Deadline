@@ -149,10 +149,10 @@ export default function LojaPerfil() {
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
             <span className="text-success fs-4"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Vitrine
           </Link>
-          <div className="d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0">
+          <Link to="/" className="d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0 text-decoration-none">
             <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
             Kai Ofertas
-          </div>
+          </Link>
         </div>
       </nav>
 
@@ -165,7 +165,7 @@ export default function LojaPerfil() {
             backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
             backgroundColor: loja.bannerPerfil ? 'rgba(0, 0, 0, 0.8)' : 'var(--dl-primary)',
             backgroundPosition: 'center',
-            backgroundSize: 'contain',
+            backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             ...(loja.bannerPerfil ? {} : {
               background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'

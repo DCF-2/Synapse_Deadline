@@ -147,10 +147,10 @@ export default function LojaPerfil() {
               <Link className="navbar-brand d-flex align-items-center gap-1 fw-bold text-dark text-decoration-none" to="/" style={{ fontSize: '0.9rem' }}>
                 <span className="text-success fs-5">←</span> Vitrine
               </Link>
-              <div className="d-flex align-items-center gap-2 fw-bold fs-5 text-success m-0">
+              <Link to="/" className="d-flex align-items-center gap-2 fw-bold fs-5 text-success m-0 text-decoration-none">
                 <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '35px' }} />
                 Kai Ofertas
-              </div>
+              </Link>
             </div>
           </nav>
 
