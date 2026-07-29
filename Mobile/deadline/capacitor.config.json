@@ -1,6 +1,6 @@
 {
   "appId": "io.deadline.app",
-  "appName": "Deadline",
+  "appName": "Kai Ofertas",
   "webDir": "dist",
   "plugins": {
     "CapacitorHttp": {

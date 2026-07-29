@@ -41,7 +41,7 @@ const abrirWhatsApp = (oferta) => {
   
   // 2. Abre o WhatsApp com texto pronto
   const fone = oferta.contatoWhatsapp?.replace(/\D/g, ''); // Limpa formatação
-  const mensagem = encodeURIComponent(`Olá! Vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional?.toFixed(2)} no Deadline. Ainda está disponível?`);
+  const mensagem = encodeURIComponent(`Olá! Vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional?.toFixed(2)} no Kai Ofertas. Ainda está disponível?`);
   window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
 };
 
@@ -55,7 +55,7 @@ const abrirEmail = (oferta, showAlert) => {
   }
   
   const assunto = encodeURIComponent(`Interesse na oferta: ${oferta.tituloProduto}`);
-  const corpo = encodeURIComponent(`Olá, vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional?.toFixed(2)} no Deadline e gostaria de mais informações ou reservar a minha unidade.`);
+  const corpo = encodeURIComponent(`Olá, vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional?.toFixed(2)} no Kai Ofertas e gostaria de mais informações ou reservar a minha unidade.`);
   window.open(`mailto:${oferta.emailContato}?subject=${assunto}&body=${corpo}`, '_blank');
 };
 
@@ -111,8 +111,6 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
               <div className="col-md-5 text-center">
                 <div className="bg-light rounded-4 p-3 mb-3 d-flex align-items-center justify-content-center border position-relative" style={{ height: '220px' }}>
                   <div className="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style={{ zIndex: 10 }}>
-                    <BotaoFavorito oferta={detalhesOferta} />
-                    <BotaoCompartilhar oferta={detalhesOferta} />
                   </div>
                   {imagemAtiva ? (
                     <img src={imagemAtiva} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -199,9 +197,7 @@ const OfertaDetalhesModal = ({ detalhesOferta, onClose }) => {
 
           <div className="modal-footer border-top bg-light p-3 d-flex flex-wrap gap-2">
              <button className="btn btn-outline-dark fw-bold rounded-pill px-4 flex-grow-1 d-flex align-items-center justify-content-center gap-2" onClick={() => abrirMapa(detalhesOferta, showAlert)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-                  <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6"/>
-                </svg>
+                <img src="/icons/mapa.png" alt="Como Chegar" style={{ width: "18px", height: "18px", objectFit: "contain" }} />
                 Como Chegar
              </button>
              

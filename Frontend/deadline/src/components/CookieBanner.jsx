@@ -32,7 +32,7 @@ export default function CookieBanner() {
           <div>
             <h6 className="fw-bold mb-1 text-dark">Nós usamos cookies</h6>
             <p className="text-muted mb-0 small">
-              O Deadline utiliza cookies e outras tecnologias para garantir o funcionamento 
+              O Kai Ofertas utiliza cookies e outras tecnologias para garantir o funcionamento 
               do site, medir o desempenho e personalizar sua experiência. 
               Ao continuar navegando, você concorda com nosso uso de cookies.
             </p>

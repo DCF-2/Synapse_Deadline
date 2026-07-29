@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../styles/theme.css';
@@ -59,6 +60,21 @@ export default function LojaPerfil() {
   const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
 
+  const formatarCnpj = (cnpj) => {
+    if (!cnpj) return '';
+    const num = cnpj.replace(/\D/g, '');
+    if (num.length === 14) return num.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    return cnpj;
+  };
+
+  const formatarTelefone = (tel) => {
+    if (!tel) return '';
+    const num = tel.replace(/\D/g, '');
+    if (num.length === 11) return num.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+    if (num.length === 10) return num.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
+    return tel;
+  };
+
   const abrirDetalhes = async (ofertaId) => {
     setCarregandoDetalhes(true);
     try {
@@ -91,7 +107,7 @@ export default function LojaPerfil() {
     }
 
     const fone = loja.contatoWhatsapp.replace(/\D/g, '');
-    const mensagem = encodeURIComponent(`Olá! Vi o perfil da sua loja no Deadline e gostaria de saber mais sobre as vossas ofertas ativas.`);
+    const mensagem = encodeURIComponent(`Olá! Vi o perfil da sua loja no Kai Ofertas e gostaria de saber mais sobre as vossas ofertas ativas.`);
     window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
   };
 
@@ -104,8 +120,8 @@ export default function LojaPerfil() {
       fetch(`${API_URL}/oferta/publico/${ofertas[0].id}/engajamento`, { method: 'POST' }).catch(console.error);
     }
 
-    const assunto = encodeURIComponent(`Contacto via Plataforma Deadline`);
-    const corpo = encodeURIComponent(`Olá, vi o vosso catálogo de produtos com desconto no aplicativo Deadline e gostaria de tirar uma dúvida.`);
+    const assunto = encodeURIComponent(`Contacto via Plataforma Kai Ofertas`);
+    const corpo = encodeURIComponent(`Olá, vi o vosso catálogo de produtos com desconto no aplicativo Kai Ofertas e gostaria de tirar uma dúvida.`);
     window.open(`mailto:${loja.emailContato}?subject=${assunto}&body=${corpo}`, '_blank');
   };
 
@@ -133,7 +149,10 @@ export default function LojaPerfil() {
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold text-dark text-decoration-none" to="/">
             <span className="text-success fs-4"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Vitrine
           </Link>
-          <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
+          <div className="d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0">
+            <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
+            Kai Ofertas
+          </div>
         </div>
       </nav>
 
@@ -142,10 +161,11 @@ export default function LojaPerfil() {
         <div
           style={{
             height: '250px',
+            minHeight: '20vh',
             backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
             backgroundColor: loja.bannerPerfil ? 'rgba(0, 0, 0, 0.8)' : 'var(--dl-primary)',
             backgroundPosition: 'center',
-            backgroundSize: 'contain',
+            backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             ...(loja.bannerPerfil ? {} : {
               background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'
@@ -177,9 +197,9 @@ export default function LojaPerfil() {
                       <span className="fw-bold text-primary">↔ {formatarDistancia(ofertas[0].distanciaKm)} de você</span>
                     )}
                     <span><img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> {loja.horarioFuncionamento}</span>
-                    {loja.cnpj && <span><strong className="text-dark">CNPJ:</strong> {loja.cnpj}</span>}
-                    {loja.contato1 && <span><strong className="text-dark">Tel 1:</strong> {loja.contato1}</span>}
-                    {loja.contato2 && <span><strong className="text-dark">Tel 2:</strong> {loja.contato2}</span>}
+                    {loja.cnpj && <span><strong className="text-dark">CNPJ:</strong> {formatarCnpj(loja.cnpj)}</span>}
+                    {loja.contato1 && <span><strong className="text-dark">Tel 1:</strong> {formatarTelefone(loja.contato1)}</span>}
+                    {loja.contato2 && <span><strong className="text-dark">Tel 2:</strong> {formatarTelefone(loja.contato2)}</span>}
                     {loja.razaoSocial && <span><strong className="text-dark">Razão Social:</strong> {loja.razaoSocial}</span>}
                  </div>
                </div>
@@ -190,12 +210,12 @@ export default function LojaPerfil() {
                <div className="d-flex gap-2 w-100 w-md-auto mt-2">
                  <button className="btn text-white fw-bold rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm" 
                          style={{ backgroundColor: '#25D366', fontSize: '0.9rem' }} onClick={entrarEmContatoWhatsApp}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M13.601 2.326A7.85 7.85 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.9 7.9 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.9 7.9 0 0 0 13.6 2.326zM7.994 14.521a6.6 6.6 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.56 6.56 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592"/></svg>
+                    <img src="/icons/whatsapp.png" alt="WhatsApp" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
                     WhatsApp da Loja
                  </button>
                  <button className="btn text-white fw-bold rounded-pill px-4 d-flex align-items-center gap-2 shadow-sm" 
                          style={{ backgroundColor: '#0d6efd', fontSize: '0.9rem' }} onClick={enviarEmailLoja}>
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414zM0 4.697v7.104l5.803-3.558zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586zm3.436-.586L16 11.801V4.697z"/></svg>
+                    <img src="/icons/e-mail.png" alt="E-mail" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
                     E-mail
                  </button>
                </div>

@@ -18,15 +18,15 @@ export default function ClienteHome() {
   const [limiteExibicao, setLimiteExibicao] = useState(20);
   
   // Estados para Filtros
-  const [termoBusca, setTermoBusca] = useState(''); 
-  const [nomeProduto, setNomeProduto] = useState('');
+  const [termoBusca, setTermoBusca] = useState(() => localStorage.getItem('kai_filtro_termoBusca') || ''); 
+  const [nomeProduto, setNomeProduto] = useState(() => localStorage.getItem('kai_filtro_nomeProduto') || '');
   const [historicoBuscas, setHistoricoBuscas] = useState(() => obterHistoricoBuscas());
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
-  const [categoriaId, setCategoriaId] = useState('');
-  const [precoMin, setPrecoMin] = useState('');
-  const [precoMax, setPrecoMax] = useState('');
-  const [diasMaxValidade, setDiasMaxValidade] = useState('');
-  const [distanciaMaxKm, setDistanciaMaxKm] = useState('100');
+  const [categoriaId, setCategoriaId] = useState(() => localStorage.getItem('kai_filtro_categoriaId') || '');
+  const [precoMin, setPrecoMin] = useState(() => localStorage.getItem('kai_filtro_precoMin') || '');
+  const [precoMax, setPrecoMax] = useState(() => localStorage.getItem('kai_filtro_precoMax') || '');
+  const [diasMaxValidade, setDiasMaxValidade] = useState(() => localStorage.getItem('kai_filtro_diasMaxValidade') || '');
+  const [distanciaMaxKm, setDistanciaMaxKm] = useState(() => localStorage.getItem('kai_filtro_distanciaMaxKm') || '100');
   const [lojasEncontradas, setLojasEncontradas] = useState([]);
 
   // Geolocalização do consumidor
@@ -36,7 +36,10 @@ export default function ClienteHome() {
   const [buscandoLocalizacao, setBuscandoLocalizacao] = useState(false);
 
   // Estado de Ordenação
-  const [ordenacao, setOrdenacao] = useState('validadeProduto,asc');
+  const [ordenacao, setOrdenacao] = useState(() => localStorage.getItem('kai_filtro_ordenacao') || 'distanciaKm,asc');
+  
+  // Trigger para buscar com filtros limpos
+  const [triggerFetch, setTriggerFetch] = useState(0);
 
   // Estado do Modal de Detalhes
   const [detalhesOferta, setDetalhesOferta] = useState(null);
@@ -55,6 +58,18 @@ export default function ClienteHome() {
       window.removeEventListener('historico-busca-atualizado', atualizarHistorico);
     };
   }, []);
+
+  // Persistir filtros
+  useEffect(() => {
+    localStorage.setItem('kai_filtro_termoBusca', termoBusca);
+    localStorage.setItem('kai_filtro_nomeProduto', nomeProduto);
+    localStorage.setItem('kai_filtro_categoriaId', categoriaId);
+    localStorage.setItem('kai_filtro_precoMin', precoMin);
+    localStorage.setItem('kai_filtro_precoMax', precoMax);
+    localStorage.setItem('kai_filtro_diasMaxValidade', diasMaxValidade);
+    localStorage.setItem('kai_filtro_distanciaMaxKm', distanciaMaxKm);
+    localStorage.setItem('kai_filtro_ordenacao', ordenacao);
+  }, [termoBusca, nomeProduto, categoriaId, precoMin, precoMax, diasMaxValidade, distanciaMaxKm, ordenacao]);
 
   // Carrega as categorias na inicialização
   useEffect(() => {
@@ -152,7 +167,7 @@ export default function ClienteHome() {
   // Recarrega sempre que os filtros principais, a busca ativa ou a ordenação mudarem
   useEffect(() => {
     carregarVitrine();
-  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao]);
+  }, [nomeProduto, categoriaId, diasMaxValidade, distanciaMaxKm, ordenacao, localizacao, triggerFetch]);
 
   // Form submission para os filtros de preço/etc
   const aplicarFiltrosAvancados = (e) => {
@@ -168,8 +183,7 @@ export default function ClienteHome() {
     setPrecoMax('');
     setDiasMaxValidade('');
     setDistanciaMaxKm('100');
-    // O useEffect chamará carregarVitrine para as dependências que mudarem, mas chamamos explicitamente para garantir que precoMin/Max apliquem:
-    setTimeout(carregarVitrine, 0); 
+    setTriggerFetch(prev => prev + 1);
   };
 
   // Buscar detalhes ricos do produto ao clicar
@@ -199,8 +213,9 @@ export default function ClienteHome() {
       {/* HEADER PÚBLICO */}
       <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
-          <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
-            <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '85px', filter: 'drop-shadow(0 4px 6px rgba(0,0,0,0.1))' }} />
+          <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0" to="/">
+            <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
+            Kai Ofertas
           </Link>
           <div className="d-flex gap-2 align-items-center">
             <Link to="/favoritos" className="btn btn-warning fw-bold rounded-pill px-3 d-flex align-items-center gap-2" title="Ver favoritos">
@@ -444,11 +459,11 @@ export default function ClienteHome() {
                 <span className="text-muted small text-nowrap">Ordenar por:</span>
                 <select className="form-select form-select-sm bg-light border-0 fw-bold" style={{ width: '220px' }}
                         value={ordenacao} onChange={(e) => setOrdenacao(e.target.value)}>
+                  {localizacao && <option value="distanciaKm,asc">Mais Próximo</option>}
                   <option value="validadeProduto,asc">Vence Mais Cedo</option>
                   <option value="precoPromocional,asc">Menor Preço</option>
                   <option value="percentualDesconto,desc">Maior Desconto (%)</option>
                   <option value="id,desc">Mais Recentes</option>
-                  {localizacao && <option value="distanciaKm,asc">Mais Próximo</option>}
                 </select>
               </div>
             </div>

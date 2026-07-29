@@ -103,6 +103,20 @@ export default function AuthPage() {
       } catch (e) { console.error(e); }
     }
   };
+  const handleUploadLogoCadastro = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        setErro('O logotipo deve ter no máximo 2MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCad(prev => ({ ...prev, logotipo: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const validarEAvancar = (e, proximoStep) => {
     e.preventDefault();
@@ -189,7 +203,7 @@ export default function AuthPage() {
           <div className="ds-form">
             
             <div className="ds-logo-wrapper">
-              <img src="/logo_deadline.png" alt="Deadline Logo" className="ds-logo" />
+              <img src="/logo_deadline.png" alt="Kai Ofertas Logo" className="ds-logo" />
             </div>
 
             <h1 className="ds-title">Crie a sua Loja</h1>
@@ -228,6 +242,23 @@ export default function AuthPage() {
                         <option key={ramo.id} value={ramo.id}>{ramo.nome}</option>
                       ))}
                     </select>
+                  </div>
+
+                  <div className="ds-input-group">
+                    <label className="ds-label">Logotipo da Empresa (Opcional)</label>
+                    <div className="d-flex align-items-center gap-3">
+                      <div className="bg-light rounded-circle shadow-sm d-flex align-items-center justify-content-center border overflow-hidden flex-shrink-0" style={{ width: '60px', height: '60px' }}>
+                        {cad.logotipo ? (
+                          <img src={cad.logotipo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <span style={{ fontSize: '1.5rem', opacity: 0.3 }}><img src="/icons/companhia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain" }} /></span>
+                        )}
+                      </div>
+                      <div className="flex-grow-1">
+                        <input type="file" accept="image/png, image/jpeg" className="form-control border-0 bg-white shadow-sm" style={{ fontSize: '0.8rem' }} onChange={handleUploadLogoCadastro} />
+                        <small className="text-muted mt-1 d-block" style={{ fontSize: '0.7rem' }}>Formatos: PNG ou JPG (Max 2MB).</small>
+                      </div>
+                    </div>
                   </div>
 
                   <button type="submit" className="ds-btn ds-btn-primary">Avançar para Endereço</button>
@@ -308,10 +339,19 @@ export default function AuthPage() {
                 <div className="dl-animate-in">
                   <div className="ds-review-box">
                     <div className="ds-review-section">
-                      <div className="ds-review-title">1. Identificação</div>
-                      <div><strong>Nome:</strong> {cad.nomeFantasia}</div>
-                      <div><strong>CNPJ:</strong> {cad.cnpj}</div>
-                      <div><strong>Ramo:</strong> {showNovoRamo ? `(Novo) ${cad.novoRamo}` : `Opção ID ${cad.idRamo}`}</div>
+                      <div className="d-flex align-items-center justify-content-between">
+                        <div>
+                          <div className="ds-review-title">1. Identificação</div>
+                          <div><strong>Nome:</strong> {cad.nomeFantasia}</div>
+                          <div><strong>CNPJ:</strong> {cad.cnpj}</div>
+                          <div><strong>Ramo:</strong> {showNovoRamo ? `(Novo) ${cad.novoRamo}` : `Opção ID ${cad.idRamo}`}</div>
+                        </div>
+                        {cad.logotipo && (
+                          <div className="rounded-circle shadow-sm overflow-hidden border" style={{ width: '60px', height: '60px' }}>
+                            <img src={cad.logotipo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        )}
+                      </div>
                     </div>
                     <div className="ds-review-section">
                       <div className="ds-review-title">2. Endereço</div>
@@ -346,7 +386,7 @@ export default function AuthPage() {
           <div className="ds-form">
             
             <div className="ds-logo-wrapper">
-              <img src="/logo_deadline.png" alt="Deadline Logo" className="ds-logo" />
+              <img src="/logo_deadline.png" alt="Kai Ofertas Logo" className="ds-logo" />
             </div>
 
             <h1 className="ds-title">Bem-vindo de volta</h1>

@@ -27,7 +27,7 @@ export default function BotaoCompartilhar({ oferta, className = '', style = {} }
     return `${baseUrl}/oferta/${oferta.id}`;
   };
 
-  const textoCompartilhamento = `Veja essa oferta no Deadline: ${oferta.tituloProduto} por apenas R$ ${oferta.precoPromocional?.toFixed(2)}!`;
+  const textoCompartilhamento = `Veja essa oferta no Kai Ofertas: ${oferta.tituloProduto} por apenas R$ ${oferta.precoPromocional?.toFixed(2)}!`;
 
   const compartilhar = (tipo, e) => {
     e.stopPropagation();
@@ -53,7 +53,7 @@ export default function BotaoCompartilhar({ oferta, className = '', style = {} }
         window.open('https://www.instagram.com/direct/inbox/', '_blank');
         break;
       case 'email':
-        window.open(`mailto:?subject=${encodeURIComponent("Olha essa oferta no Deadline!")}&body=${texto}%20${link}`, '_blank');
+        window.open(`mailto:?subject=${encodeURIComponent("Olha essa oferta no Kai Ofertas!")}&body=${texto}%20${link}`, '_blank');
         break;
       case 'copiar':
         navigator.clipboard.writeText(`${textoCompartilhamento} ${getLink()}`);

@@ -14,14 +14,14 @@ export default function Layout() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const dicasDeadline = [
+  const dicasKaiOfertas = [
     "Promover itens com data de validade próxima reduz perdas e aumenta o giro do estoque.",
     "Ao vender produtos com desconto antes do vencimento, você recupera custos que seriam perdidos.",
     "A sustentabilidade atrai clientes! Reduzir o desperdício melhora a imagem da sua empresa.",
     "Faça auditorias frequentes no estoque para identificar produtos parados há muito tempo.",
     "Organize seus produtos pelo método PEPS (Primeiro a Entrar, Primeiro a Sair) para evitar perdas.",
     "Ofertas com tempo limitado criam senso de urgência, acelerando a decisão de compra do cliente.",
-    "O sistema Deadline ajuda você a monitorar prazos de validade de forma automática e eficiente.",
+    "O sistema Kai Ofertas ajuda você a monitorar prazos de validade de forma automática e eficiente.",
     "Consumidores estão cada vez mais abertos a comprar produtos próximos do vencimento com desconto.",
     "Utilize fotos claras e descrições detalhadas para tornar suas ofertas mais atrativas no aplicativo."
   ];
@@ -59,8 +59,8 @@ export default function Layout() {
 
   // 2. Muda a dica aleatória de forma dinâmica
   useEffect(() => {
-    const indiceAleatorio = Math.floor(Math.random() * dicasDeadline.length);
-    setDicaAtual(dicasDeadline[indiceAleatorio]);
+    const indiceAleatorio = Math.floor(Math.random() * dicasKaiOfertas.length);
+    setDicaAtual(dicasKaiOfertas[indiceAleatorio]);
   }, [location.pathname]);
 
   const handleLogout = () => {
@@ -81,8 +81,9 @@ export default function Layout() {
       
       {/* HEADER MOBILE UNIFICADO */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }}>
-        <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2">
-          <img src="/logo_deadline.png" alt="Deadline" style={{ height: '35px' }} />
+        <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-5 text-white">
+          <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '35px' }} />
+          Kai Ofertas
         </Link>
         
         {/* Informações rápidas da Empresa no mobile */}
@@ -114,8 +115,9 @@ export default function Layout() {
             {/* ÁREA DO LOGOTIPO DA PLATAFORMA E TOGGLE */}
             <div className={`d-none d-md-flex my-3 pb-3 border-bottom align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'}`} style={{ borderColor: 'rgba(255,255,255,0.15) !important' }}>
               {!isCollapsed && (
-                <Link to="/dashboard">
-                  <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '55px', maxWidth: '100%', objectFit: 'contain' }} />
+                <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-white text-decoration-none">
+                  <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', maxWidth: '100%', objectFit: 'contain' }} />
+                  Kai Ofertas
                 </Link>
               )}
               <button className="btn btn-sm text-white" onClick={() => setIsCollapsed(!isCollapsed)} style={{ padding: '0.25rem' }}>
@@ -126,9 +128,9 @@ export default function Layout() {
             {/* WIDGET DE PERFIL MODERNO (EMPRESA LOGADA) */}
             {empresaInfo && (
               <div className={`d-none d-md-flex align-items-center p-2 mb-4 bg-white bg-opacity-10 rounded-4 border ${isCollapsed ? 'justify-content-center border-0 bg-transparent' : ''}`} style={{ borderColor: 'rgba(255,255,255,0.1)' }}>
-                <div className="flex-shrink-0 bg-white rounded-3 d-flex align-items-center justify-content-center border shadow-sm p-1 overflow-hidden" style={{ width: isCollapsed ? '36px' : '48px', height: isCollapsed ? '36px' : '48px' }}>
+                <div className="flex-shrink-0 bg-white rounded-circle d-flex align-items-center justify-content-center border shadow-sm p-1 overflow-hidden" style={{ width: isCollapsed ? '36px' : '48px', height: isCollapsed ? '36px' : '48px' }}>
                   {empresaInfo.logotipo ? (
-                    <img src={empresaInfo.logotipo} alt="Logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                    <img src={empresaInfo.logotipo} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />
                   ) : (
                     <span className="fw-bold text-success" style={{ fontSize: isCollapsed ? '0.8rem' : '1.1rem' }}>{getIniciais(empresaInfo.nomeFantasia)}</span>
                   )}
@@ -212,7 +214,7 @@ export default function Layout() {
               <div className="alert shadow-sm rounded-4 mb-4 d-flex align-items-center justify-content-between p-4" style={{ backgroundColor: '#fff3cd', border: '1px solid #ffe69c' }}>
                 <div>
                   <h5 className="fw-bold mb-2 text-dark">
-                    {dashboardStats.totalProdutosAtivos === 0 ? 'Bem-vindo ao Deadline! 🎉' : <>Ótimo começo! <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></>}
+                    {dashboardStats.totalProdutosAtivos === 0 ? 'Bem-vindo ao Kai Ofertas! 🎉' : <>Ótimo começo! <img src="/icons/ideia.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></>}
                   </h5>
                   <p className="mb-0 fs-6 text-dark opacity-75">
                     {dashboardStats.totalProdutosAtivos === 0 

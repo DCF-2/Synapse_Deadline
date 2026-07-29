@@ -33,7 +33,7 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
   const abrirWhatsApp = (oferta) => {
     fetch(`${API_URL}/oferta/publico/${oferta.id}/engajamento`, { method: 'POST' }).catch(console.error);
     const fone = oferta.contatoWhatsapp?.replace(/\D/g, '');
-    const mensagem = encodeURIComponent(`Olá! Vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional.toFixed(2)} no Deadline. Ainda está disponível?`);
+    const mensagem = encodeURIComponent(`Olá! Vi a oferta do produto "${oferta.tituloProduto}" por R$ ${oferta.precoPromocional.toFixed(2)} no Kai Ofertas. Ainda está disponível?`);
     window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
   };
 
@@ -41,7 +41,7 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
     try {
       await Share.share({
         title: oferta.tituloProduto,
-        text: `Confira essa oferta: ${oferta.tituloProduto} por R$ ${oferta.precoPromocional.toFixed(2)} no Deadline!`,
+        text: `Confira essa oferta: ${oferta.tituloProduto} por R$ ${oferta.precoPromocional.toFixed(2)} no Kai Ofertas!`,
         url: window.location.origin + `/oferta/${oferta.id}`,
         dialogTitle: 'Compartilhar Oferta'
       });
@@ -75,6 +75,22 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
               </div>
             </Link>
             <div className="d-flex align-items-center gap-2">
+              <button 
+                type="button" 
+                className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border ${isFavorito ? 'btn-warning border-warning' : 'btn-light bg-white'}`}
+                style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                onClick={handleFavoritar}
+              >
+                <img src="/icons/favorito.png" alt="Favorito" style={{ width: '16px', height: '16px', objectFit: 'contain', filter: isFavorito ? 'brightness(0) invert(1)' : 'grayscale(100%) opacity(40%)' }} />
+              </button>
+              <button 
+                type="button" 
+                className="btn btn-sm btn-light bg-white rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border"
+                style={{ width: '32px', height: '32px', flexShrink: 0 }}
+                onClick={() => compartilharNativo(detalhesOferta)}
+              >
+                <img src="/icons/compartilhar.png" alt="Compartilhar" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
+              </button>
               <button type="button" className="btn-close ms-1" onClick={() => setDetalhesOferta(null)}></button>
             </div>
           </div>
@@ -82,24 +98,6 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
             <div className="row g-3">
               <div className="col-md-5 text-center">
                 <div className="bg-light rounded-4 p-2 mb-2 d-flex align-items-center justify-content-center position-relative" style={{ height: '180px' }}>
-                  <div className="position-absolute top-0 end-0 m-2 d-flex flex-column gap-2" style={{ zIndex: 10 }}>
-                    <button 
-                      type="button" 
-                      className={`btn btn-sm rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border ${isFavorito ? 'btn-warning border-warning' : 'btn-light bg-white'}`}
-                      style={{ width: '32px', height: '32px', flexShrink: 0 }}
-                      onClick={handleFavoritar}
-                    >
-                      <img src="/icons/favorito.png" alt="Favorito" style={{ width: '16px', height: '16px', objectFit: 'contain', filter: isFavorito ? 'brightness(0) invert(1)' : 'grayscale(100%) opacity(40%)' }} />
-                    </button>
-                    <button 
-                      type="button" 
-                      className="btn btn-sm btn-light bg-white rounded-circle d-flex align-items-center justify-content-center p-0 shadow-sm border"
-                      style={{ width: '32px', height: '32px', flexShrink: 0 }}
-                      onClick={() => compartilharNativo(detalhesOferta)}
-                    >
-                      <img src="/icons/compartilhar.png" alt="Compartilhar" style={{ width: '16px', height: '16px', objectFit: 'contain' }} />
-                    </button>
-                  </div>
                   {imagemAtiva ? (
                     <img src={imagemAtiva} alt="Produto" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   ) : (<span style={{ fontSize: '3rem', opacity: 0.15 }}><img src="/icons/pacote.png" alt="icon" style={{ width: "40px", height: "40px", objectFit: "contain" }} /></span>)}

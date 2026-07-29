@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="row g-4 align-items-center">
           <div className="col-12 col-md-4 text-center text-md-start">
             <Link to="/" className="text-decoration-none d-inline-block bg-white p-2 rounded-3 mb-3 hover-lift" style={{ transition: 'transform 0.2s' }}>
-              <img src="/logo_deadline.png" alt="Deadline" style={{ height: '50px' }} />
+              <img src="/logo_deadline.png" alt="Kai Ofertas" style={{ height: '50px' }} />
             </Link>
             <p className="small text-white-50 mb-0">
               Transformando desperdício em oportunidade.<br/>
@@ -41,7 +41,7 @@ export default function Footer() {
         <hr className="border-secondary my-4" />
         
         <div className="text-center small text-white-50">
-          &copy; {new Date().getFullYear()} Synapse Deadline. Todos os direitos reservados.
+          &copy; {new Date().getFullYear()} Kai Ofertas. Todos os direitos reservados.
         </div>
       </div>
     </footer>
