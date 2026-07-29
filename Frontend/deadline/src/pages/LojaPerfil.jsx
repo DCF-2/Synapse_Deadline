@@ -165,7 +165,7 @@ export default function LojaPerfil() {
             backgroundImage: loja.bannerPerfil ? `url(${loja.bannerPerfil})` : 'none',
             backgroundColor: loja.bannerPerfil ? 'rgba(0, 0, 0, 0.8)' : 'var(--dl-primary)',
             backgroundPosition: 'center',
-            backgroundSize: 'contain',
+            backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
             ...(loja.bannerPerfil ? {} : {
               background: 'linear-gradient(135deg, var(--dl-primary) 0%, var(--dl-secondary) 100%)'
