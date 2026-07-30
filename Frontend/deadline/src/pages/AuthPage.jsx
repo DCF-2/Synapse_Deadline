@@ -4,6 +4,8 @@ import '../styles/auth.css';
 
 // Configuração da URL da API, utilizando variável de ambiente para flexibilidade entre ambientes de desenvolvimento e produção
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
+const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
+const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'your_cloud_name';
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -103,18 +105,34 @@ export default function AuthPage() {
       } catch (e) { console.error(e); }
     }
   };
-  const handleUploadLogoCadastro = (e) => {
+  const handleUploadLogoCadastro = async (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) {
         setErro('O logotipo deve ter no máximo 2MB.');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setCad(prev => ({ ...prev, logotipo: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      setLoading(true);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+        
+        const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+          method: 'POST',
+          body: formData
+        });
+        
+        if (!res.ok) throw new Error('Falha no upload para o Cloudinary');
+        const data = await res.json();
+        
+        setCad(prev => ({ ...prev, logotipo: data.secure_url }));
+      } catch (err) {
+        console.error("Erro no upload da logo:", err);
+        setErro('Erro ao fazer upload da logomarca.');
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
