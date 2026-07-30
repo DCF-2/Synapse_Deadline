@@ -235,8 +235,20 @@ public class OfertaService {
             return paginarLista(filtrados, pageable);
         }
 
+        Pageable dbPageable = pageable;
+        if (pageable.getSort().stream().anyMatch(o -> "distanciaKm".equals(o.getProperty()))) {
+            List<org.springframework.data.domain.Sort.Order> ordensValidas = pageable.getSort().stream()
+                    .filter(o -> !"distanciaKm".equals(o.getProperty()))
+                    .collect(Collectors.toList());
+            dbPageable = org.springframework.data.domain.PageRequest.of(
+                    pageable.getPageNumber(),
+                    pageable.getPageSize(),
+                    org.springframework.data.domain.Sort.by(ordensValidas)
+            );
+        }
+
         Page<Oferta> paginaOfertas = ofertaRepository
-                .findAll(OfertaSpecifications.filtroVitrinePublica(filtro), pageable);
+                .findAll(OfertaSpecifications.filtroVitrinePublica(filtro), dbPageable);
         List<Oferta> ofertas = paginaOfertas.getContent();
         List<OfertaResponseDTO> dtos = ofertas.stream()
                 .map(this::converterParaResponseDTO)

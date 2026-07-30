@@ -61,6 +61,7 @@ public class Produto {
     /**
      * Caminho ou URL da foto do produto no bucket de armazenamento.
      */
+    @Column(columnDefinition = "TEXT")
     private String foto;
 
     /**
@@ -68,7 +69,7 @@ public class Produto {
      */
     @ElementCollection
     @CollectionTable(name = "produto_fotos", joinColumns = @JoinColumn(name = "produto_id"))
-    @Column(name = "foto_url")
+    @Column(name = "foto_url", columnDefinition = "TEXT")
     private List<String> fotosAdicionais = new ArrayList<>();
 
     /**

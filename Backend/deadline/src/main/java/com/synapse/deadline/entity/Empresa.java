@@ -27,7 +27,10 @@ public class Empresa {
     @Column(nullable = false, unique = true)
     private String cnpj;
 
+    @Column(columnDefinition = "TEXT")
     private String logotipo;
+
+    @Column(columnDefinition = "TEXT")
     private String bannerPerfil;
 
     @ManyToOne
