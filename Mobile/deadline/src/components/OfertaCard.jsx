@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Share } from '@capacitor/share';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://synapse-deadline.onrender.com';
 
 const OfertaCard = ({ oferta, favoritosIds, handleToggleFavorito, abrirDetalhes, esconderLoja = false }) => {
   const [imagemAtualIndex, setImagemAtualIndex] = useState(0);

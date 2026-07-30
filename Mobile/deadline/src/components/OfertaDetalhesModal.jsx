@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { Share } from '@capacitor/share';
 import { obterFavoritos, alternarFavorito } from '../utils/storage_mobile';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://synapse-deadline.onrender.com';
 
 export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta, formatarMoeda, formatarData }) {
   const [isFavorito, setIsFavorito] = useState(false);

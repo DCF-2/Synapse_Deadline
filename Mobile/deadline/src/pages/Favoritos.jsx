@@ -6,7 +6,7 @@ import { obterFavoritos, alternarFavorito, obterLocalizacaoConsumidor, calcularD
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://synapse-deadline.onrender.com';
 
 export default function Favoritos() {
   const history = useHistory();
