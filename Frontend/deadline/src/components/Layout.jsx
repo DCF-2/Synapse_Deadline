@@ -82,8 +82,9 @@ export default function Layout() {
       {/* HEADER MOBILE UNIFICADO */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }}>
         <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-5 text-white">
-          <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '35px' }} />
-          Kai Ofertas
+          <div className="bg-white rounded-3 px-2 py-1 shadow-sm d-flex align-items-center justify-content-center">
+            <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '70px', objectFit: 'contain' }} />
+          </div>
         </Link>
         
         {/* Informações rápidas da Empresa no mobile */}
@@ -116,8 +117,9 @@ export default function Layout() {
             <div className={`d-none d-md-flex my-3 pb-3 border-bottom align-items-center ${isCollapsed ? 'justify-content-center' : 'justify-content-between'}`} style={{ borderColor: 'rgba(255,255,255,0.15) !important' }}>
               {!isCollapsed && (
                 <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-white text-decoration-none">
-                  <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', maxWidth: '100%', objectFit: 'contain' }} />
-                  Kai Ofertas
+                  <div className="bg-white rounded-4 px-2 py-1 shadow-sm d-flex align-items-center justify-content-center w-100">
+                    <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '80px', maxWidth: '100%', objectFit: 'contain' }} />
+                  </div>
                 </Link>
               )}
               <button className="btn btn-sm text-white" onClick={() => setIsCollapsed(!isCollapsed)} style={{ padding: '0.25rem' }}>

@@ -92,7 +92,13 @@ export default function CadastroProduto() {
   const [loading, setLoading] = useState(false);
   const [uploadandoImagem, setUploadandoImagem] = useState(false);
 
+  const [buscaCategoria, setBuscaCategoria] = useState('');
+  const [dropdownCatAberto, setDropdownCatAberto] = useState(false);
+
   const navigate = useNavigate();
+
+  const categoriaObjSelecionada = categorias.find(c => String(c.id) === String(categoriaSelecionada));
+  const categoriasFiltradas = categorias.filter(c => c.nome.toLowerCase().includes(buscaCategoria.toLowerCase()));
 
   useEffect(() => {
     const fetchCategorias = async () => {
@@ -250,15 +256,58 @@ export default function CadastroProduto() {
           </div>
 
           <div className="row g-3 mb-4">
-            <div className="col-md-6">
+            <div className="col-md-6 position-relative">
               <LabelComAjuda
                 texto="Categoria"
                 ajuda="Escolha o grupo que melhor representa o produto. Isso define onde ele aparece nos filtros de busca dos clientes."
               />
-              <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={categoriaSelecionada} onChange={(e) => setCategoriaSelecionada(e.target.value)} required>
-                <option value="">Selecione...</option>
-                {categorias.map(cat => <option key={cat.id} value={cat.id}>{cat.nome}</option>)}
-              </select>
+              <div 
+                className="form-control form-control-lg bg-light border-0 shadow-sm d-flex justify-content-between align-items-center"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setDropdownCatAberto(!dropdownCatAberto)}
+              >
+                <span className={categoriaSelecionada ? "text-dark" : "text-muted"}>
+                  {categoriaObjSelecionada ? categoriaObjSelecionada.nome : 'Selecione a categoria...'}
+                </span>
+                <span style={{ fontSize: '12px' }}>▼</span>
+              </div>
+              
+              {dropdownCatAberto && (
+                <div className="position-absolute w-100 mt-1 bg-white border rounded-3 shadow-lg z-3" style={{ zIndex: 1000 }}>
+                  <div className="p-2 border-bottom">
+                    <input 
+                      type="text" 
+                      className="form-control bg-light" 
+                      placeholder="🔎 Buscar categoria..." 
+                      value={buscaCategoria}
+                      onChange={(e) => setBuscaCategoria(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <ul className="list-unstyled mb-0" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                    {categoriasFiltradas.length === 0 ? (
+                      <li className="p-3 text-muted text-center">Nenhuma categoria encontrada.</li>
+                    ) : (
+                      categoriasFiltradas.map(c => (
+                        <li 
+                          key={c.id} 
+                          className="p-2 px-3 border-bottom"
+                          style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+                          onClick={() => {
+                            setCategoriaSelecionada(c.id);
+                            setDropdownCatAberto(false);
+                            setBuscaCategoria('');
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <div className="fw-bold text-dark">{c.nome}</div>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
             </div>
             <div className="col-md-6">
               <LabelComAjuda

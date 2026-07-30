@@ -42,8 +42,7 @@ export default function Favoritos() {
       <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
           <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0" to="/">
-            <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
-            Kai Ofertas
+            <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
           </Link>
           <div className="d-flex gap-2 align-items-center">
             <Link to="/favoritos" className="btn btn-warning fw-bold rounded-pill px-3 d-flex align-items-center gap-2">

@@ -83,8 +83,7 @@ export default function ProdutoDetalhes() {
       {/* HEADER MOBILE */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
         <span className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-5 text-white">
-          <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '35px' }} />
-          Kai Ofertas
+          <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '55px' }} />
         </span>
         <button className="navbar-toggler border-0" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span className="navbar-toggler-icon"></span>
@@ -98,8 +97,7 @@ export default function ProdutoDetalhes() {
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
               <span className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-white text-decoration-none">
-                <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', maxWidth: '100%', objectFit: 'contain' }} />
-                Kai Ofertas
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', maxWidth: '100%', objectFit: 'contain' }} />
               </span>
             </div>
             <ul className="nav flex-column mt-4">

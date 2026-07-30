@@ -18,7 +18,7 @@ export default function Layout() {
     "Faça auditorias frequentes no estoque para identificar produtos parados há muito tempo.",
     "Organize seus produtos pelo método PEPS (Primeiro a Entrar, Primeiro a Sair) para evitar perdas.",
     "Ofertas com tempo limitado criam senso de urgência, acelerando a decisão de compra do cliente.",
-    "O sistema Deadline ajuda você a monitorar prazos de validade de forma automática e eficiente.",
+    "O sistema Kai Ofertas ajuda você a monitorar prazos de validade de forma automática e eficiente.",
     "Consumidores estão cada vez mais abertos a comprar produtos próximos do vencimento com desconto.",
     "Utilize fotos claras e descrições detalhadas para tornar suas ofertas mais atrativas no aplicativo."
   ];
@@ -71,7 +71,7 @@ export default function Layout() {
       {/* HEADER MOBILE UNIFICADO */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: 'var(--dl-primary)' }}>
         <Link to="/dashboard" className="navbar-brand d-flex align-items-center gap-2">
-          <img src="/logo_deadline.png" alt="Deadline" style={{ height: '30px' }} />
+          <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '30px' }} />
         </Link>
         
         {/* Informações rápidas da Empresa no mobile */}
@@ -103,7 +103,7 @@ export default function Layout() {
             {/* ÁREA DO LOGOTIPO DA PLATAFORMA */}
             <div className="d-none d-md-block my-3 text-center border-bottom pb-3" style={{ borderColor: 'rgba(255,255,255,0.15) !important' }}>
               <Link to="/dashboard">
-                <img src="/logo_deadline.png" alt="Deadline Logo" style={{ height: '42px', maxWidth: '100%', objectFit: 'contain' }} />
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '42px', maxWidth: '100%', objectFit: 'contain' }} />
               </Link>
             </div>
 

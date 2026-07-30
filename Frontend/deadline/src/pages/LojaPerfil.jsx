@@ -143,8 +143,7 @@ export default function LojaPerfil() {
             <span className="text-success fs-4"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span> Voltar para Vitrine
           </Link>
           <Link to="/" className="d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0 text-decoration-none">
-            <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
-            Kai Ofertas
+            <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
           </Link>
         </div>
       </nav>

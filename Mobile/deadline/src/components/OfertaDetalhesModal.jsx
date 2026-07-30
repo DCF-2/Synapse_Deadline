@@ -111,7 +111,7 @@ export default function OfertaDetalhesModal({ detalhesOferta, setDetalhesOferta,
                         key={idx} 
                         onClick={() => setImagemAtiva(imgUrl)}
                         className={`rounded-3 overflow-hidden border cursor-pointer flex-shrink-0 ${imagemAtiva === imgUrl ? 'border-success opacity-100 shadow-sm' : 'border-light opacity-50'}`}
-                        style={{ width: '45px', height: '45px', cursor: 'pointer', transition: 'all 0.2s' }}
+                        style={{ width: '45px', height: '65px', cursor: 'pointer', transition: 'all 0.2s' }}
                       >
                         <img src={imgUrl} alt={`Thumb ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                       </div>

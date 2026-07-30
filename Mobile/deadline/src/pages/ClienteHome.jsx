@@ -222,8 +222,7 @@ export default function ClienteHome() {
           <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div className="container px-3 d-flex justify-content-center align-items-center">
               <Link className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-success" to="/">
-                <img src="/logo_deadline.png" alt="Kai Ofertas Logo" style={{ height: '45px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
-                Kai Ofertas
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
               </Link>
             </div>
           </nav>
@@ -300,7 +299,7 @@ export default function ClienteHome() {
                     {lojasEncontradas.map(loja => (
                       <div key={loja.id} className="bg-white rounded-4 shadow-sm p-3 mb-2 border border-light d-flex align-items-center justify-content-between gap-2" style={{ borderLeft: '4px solid #0d6efd' }}>
                         <div className="d-flex align-items-center gap-2">
-                          <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '45px', height: '45px', flexShrink: 0 }}>
+                          <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '45px', height: '65px', flexShrink: 0 }}>
                             {loja.logotipo ? (
                               <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                             ) : (<span className="fs-5">🏢</span>)}

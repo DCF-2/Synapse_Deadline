@@ -203,7 +203,7 @@ export default function AuthPage() {
           <div className="ds-form">
             
             <div className="ds-logo-wrapper">
-              <img src="/logo_deadline.png" alt="Kai Ofertas Logo" className="ds-logo" />
+              <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" className="ds-logo" />
             </div>
 
             <h1 className="ds-title">Crie a sua Loja</h1>
@@ -386,7 +386,7 @@ export default function AuthPage() {
           <div className="ds-form">
             
             <div className="ds-logo-wrapper">
-              <img src="/logo_deadline.png" alt="Kai Ofertas Logo" className="ds-logo" />
+              <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" className="ds-logo" />
             </div>
 
             <h1 className="ds-title">Bem-vindo de volta</h1>
