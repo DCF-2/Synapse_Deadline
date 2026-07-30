@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterLocalizacaoConsumidor, formatarDistancia } from '../utils/geolocalizacao';
@@ -20,7 +20,6 @@ export default function LojaPerfil() {
 
   // Estados do Modal de Detalhes
   const [detalhesOferta, setDetalhesOferta] = useState(null);
-  const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
 
   useEffect(() => {
     obterLocalizacaoConsumidor()
@@ -57,9 +56,6 @@ export default function LojaPerfil() {
     carregarLoja();
   }, [id, localizacao]);
 
-  const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
-  const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
-
   const formatarCnpj = (cnpj) => {
     if (!cnpj) return '';
     const num = cnpj.replace(/\D/g, '');
@@ -76,7 +72,6 @@ export default function LojaPerfil() {
   };
 
   const abrirDetalhes = async (ofertaId) => {
-    setCarregandoDetalhes(true);
     try {
       const url = new URL(`${API_URL}/oferta/publico/${ofertaId}`);
       const res = await fetch(url.toString());
@@ -90,8 +85,6 @@ export default function LojaPerfil() {
       }
     } catch (error) {
       console.error(error);
-    } finally {
-      setCarregandoDetalhes(false);
     }
   };
 

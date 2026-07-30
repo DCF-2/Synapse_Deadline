@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, Link } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
 const CLOUDINARY_UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || 'deadline_upload';
@@ -7,7 +7,6 @@ const CLOUDINARY_CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || 'you
 
 export default function EditarProduto() {
   const { id } = useParams();
-  const navigate = useNavigate();
 
   const [nome, setNome] = useState('');
   const [codigoBarrasEan, setCodigoBarrasEan] = useState('');
@@ -152,7 +151,7 @@ export default function EditarProduto() {
         setErro(data.message || 'Erro ao atualizar produto.');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
-    } catch (err) {
+    } catch {
       setErro('Falha na conexão.');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {

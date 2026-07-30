@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useModal } from '../contexts/ModalContext';
 
@@ -39,7 +39,6 @@ export default function ProdutosPage() {
   const [showConfirm, setShowConfirm] = useState(null); // Modal de Confirmação (Ação)
   
   const [removendo, setRemovendo] = useState(false);
-  const [feedbackRemocao, setFeedbackRemocao] = useState(null);
 
   // Estados de Filtro
   const [buscaInput, setBuscaInput] = useState('');
@@ -53,6 +52,10 @@ export default function ProdutosPage() {
 
   const navigate = useNavigate();
 
+  const handleLogout = () => {
+    localStorage.removeItem('deadline_token');
+    navigate('/login');
+  };
 
   // BUSCA CATEGORIAS DINÂMICAS
   useEffect(() => {
@@ -179,7 +182,7 @@ export default function ProdutosPage() {
     const id = showConfirm.id;
     
     setRemovendo(true);
-    setFeedbackRemocao(null);
+    // Limpa estado anterior se houver
 
     try {
       const token = localStorage.getItem('deadline_token');
@@ -191,13 +194,13 @@ export default function ProdutosPage() {
       if (res.status === 401 || res.status === 403) { handleLogout(); return; }
       if (!res.ok) throw new Error('Erro ao processar a ação.');
 
-      setFeedbackRemocao({ tipo: 'sucesso', mensagem: 'Operação concluída com sucesso!' });
+      showAlert('Operação concluída com sucesso!', 'success');
       setShowConfirm(null);
       setProdutoSelecionado(null);
       await carregarProdutos(buscaAtiva, categoriaSelecionada, statusSelecionado, ordenacao);
 
     } catch (error) {
-      setFeedbackRemocao({ tipo: 'erro', mensagem: error.message });
+      showAlert(error.message, 'error');
     } finally {
       setRemovendo(false);
     }
