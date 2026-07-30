@@ -16,6 +16,8 @@ import java.util.Optional;
 public interface MetricasOfertasRepository extends JpaRepository<MetricasOfertas, Long> {
     
     Optional<MetricasOfertas> findByOfertaAndDia(Oferta oferta, LocalDate dia);
+    
+    void deleteByOferta(Oferta oferta);
 
     @Query("SELECT COALESCE(SUM(m.cliquesDetalhe) + SUM(m.cliquesWhatsAppOferta) + SUM(m.cliquesEmailOferta) + SUM(m.cliquesComoChegarOferta) + SUM(m.cliquesFavoritarOferta), 0) " +
            "FROM MetricasOfertas m WHERE m.oferta.produto.empresa.id = :empresaId")

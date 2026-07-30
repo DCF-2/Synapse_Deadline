@@ -9,6 +9,7 @@ import com.synapse.deadline.entity.Produto;
 import com.synapse.deadline.repository.OfertaRepository;
 import com.synapse.deadline.repository.OfertaSpecifications;
 import com.synapse.deadline.repository.ProdutoRepository;
+import com.synapse.deadline.repository.MetricasOfertasRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,9 @@ public class OfertaService {
 
     @Autowired
     private ProdutoRepository produtoRepository;
+
+    @Autowired
+    private MetricasOfertasRepository metricasOfertasRepository;
 
     @Autowired
     private GoogleMapsDistanceService googleMapsDistanceService;
@@ -166,6 +170,7 @@ public class OfertaService {
             throw new SecurityException("Acesso negado: Você não pode remover esta oferta.");
         }
 
+        metricasOfertasRepository.deleteByOferta(oferta);
         ofertaRepository.delete(oferta);
     }
 
