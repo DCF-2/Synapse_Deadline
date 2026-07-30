@@ -39,24 +39,36 @@ export default function ClienteHome() {
   const [mostrarFiltros, setMostrarFiltros] = useState(false);
 
   // Estados para a Barra de Busca (Externa)
-  const [termoBusca, setTermoBusca] = useState('');
-  const [nomeProduto, setNomeProduto] = useState('');
+  const [termoBusca, setTermoBusca] = useState(() => localStorage.getItem('kai_filtro_termoBusca_mobile') || '');
+  const [nomeProduto, setNomeProduto] = useState(() => localStorage.getItem('kai_filtro_nomeProduto_mobile') || '');
   const [historicoBuscas, setHistoricoBuscas] = useState(obterHistoricoBuscas());
   const [mostrarHistorico, setMostrarHistorico] = useState(false);
   const [favoritosIds, setFavoritosIds] = useState(obterFavoritos());
 
   // Estados para os Filtros (Internos ao Modal)
-  const [categoriaId, setCategoriaId] = useState('');
-  const [precoMin, setPrecoMin] = useState('');
-  const [precoMax, setPrecoMax] = useState('');
-  const [diasMaxValidade, setDiasMaxValidade] = useState('');
-  const [distanciaMaxKm, setDistanciaMaxKm] = useState('100');
+  const [categoriaId, setCategoriaId] = useState(() => localStorage.getItem('kai_filtro_categoriaId_mobile') || '');
+  const [precoMin, setPrecoMin] = useState(() => localStorage.getItem('kai_filtro_precoMin_mobile') || '');
+  const [precoMax, setPrecoMax] = useState(() => localStorage.getItem('kai_filtro_precoMax_mobile') || '');
+  const [diasMaxValidade, setDiasMaxValidade] = useState(() => localStorage.getItem('kai_filtro_diasMaxValidade_mobile') || '');
+  const [distanciaMaxKm, setDistanciaMaxKm] = useState(() => localStorage.getItem('kai_filtro_distanciaMaxKm_mobile') || '100');
   const [lojasEncontradas, setLojasEncontradas] = useState([]);
 
   const [localizacao, setLocalizacao] = useState(null);
   const [statusLocalizacao, setStatusLocalizacao] = useState('pendente');
 
-  const [ordenacao, setOrdenacao] = useState('validadeProduto,asc');
+  const [ordenacao, setOrdenacao] = useState(() => localStorage.getItem('kai_filtro_ordenacao_mobile') || 'distanciaKm,asc');
+
+  // Persistir filtros
+  useEffect(() => {
+    localStorage.setItem('kai_filtro_termoBusca_mobile', termoBusca);
+    localStorage.setItem('kai_filtro_nomeProduto_mobile', nomeProduto);
+    localStorage.setItem('kai_filtro_categoriaId_mobile', categoriaId);
+    localStorage.setItem('kai_filtro_precoMin_mobile', precoMin);
+    localStorage.setItem('kai_filtro_precoMax_mobile', precoMax);
+    localStorage.setItem('kai_filtro_diasMaxValidade_mobile', diasMaxValidade);
+    localStorage.setItem('kai_filtro_distanciaMaxKm_mobile', distanciaMaxKm);
+    localStorage.setItem('kai_filtro_ordenacao_mobile', ordenacao);
+  }, [termoBusca, nomeProduto, categoriaId, precoMin, precoMax, diasMaxValidade, distanciaMaxKm, ordenacao]);
 
   const [detalhesOferta, setDetalhesOferta] = useState(null);
   const [carregandoDetalhes, setCarregandoDetalhes] = useState(false);
@@ -167,6 +179,9 @@ export default function ClienteHome() {
   };
 
   const abrirDetalhes = async (id) => {
+    const ofertaPrevia = ofertas.find(o => o.id === id);
+    if (ofertaPrevia) setDetalhesOferta(ofertaPrevia);
+    
     setCarregandoDetalhes(true);
     try {
       const url = new URL(`${API_URL}/oferta/publico/${id}`);
@@ -206,8 +221,8 @@ export default function ClienteHome() {
 
           <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
             <div className="container px-3 d-flex justify-content-center align-items-center">
-              <Link className="navbar-brand d-flex align-items-center gap-2 m-0" to="/">
-                <img src="/logo_deadline.png" alt="Deadline" style={{ height: '45px' }} />
+              <Link className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-success" to="/">
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
               </Link>
             </div>
           </nav>
@@ -233,11 +248,11 @@ export default function ClienteHome() {
                 }}
               >
                 {[
+                  ...(localizacao ? [{ value: 'distanciaKm,asc', label: 'Mais Próximo', icon: '/icons/proximo.png' }] : []),
                   { value: 'validadeProduto,asc', label: 'Vence Cedo', icon: '/icons/data-limite.png' },
                   { value: 'precoPromocional,asc', label: 'Menor Preço', icon: '/icons/menor-preco.png' },
                   { value: 'percentualDesconto,desc', label: 'Maior Desct.', icon: '/icons/maior-desct.png' },
-                  { value: 'id,desc', label: 'Mais Recentes', icon: '/icons/recente.png' },
-                  ...(localizacao ? [{ value: 'distanciaKm,asc', label: 'Mais Próximo', icon: '/icons/proximo.png' }] : [])
+                  { value: 'id,desc', label: 'Mais Recentes', icon: '/icons/recente.png' }
                 ].map((opcao) => {
                   const statusAtivo = ordenacao === opcao.value;
                   return (
@@ -284,7 +299,7 @@ export default function ClienteHome() {
                     {lojasEncontradas.map(loja => (
                       <div key={loja.id} className="bg-white rounded-4 shadow-sm p-3 mb-2 border border-light d-flex align-items-center justify-content-between gap-2" style={{ borderLeft: '4px solid #0d6efd' }}>
                         <div className="d-flex align-items-center gap-2">
-                          <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '45px', height: '45px', flexShrink: 0 }}>
+                          <div className="bg-white rounded-circle shadow-sm d-flex align-items-center justify-content-center overflow-hidden border" style={{ width: '45px', height: '65px', flexShrink: 0 }}>
                             {loja.logotipo ? (
                               <img src={loja.logotipo} alt={loja.nomeFantasia} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} onError={(e) => { e.target.onerror = null; e.target.src = '/icons/companhia.png'; }} />
                             ) : (<span className="fs-5">🏢</span>)}

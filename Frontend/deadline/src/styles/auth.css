@@ -115,8 +115,9 @@
 }
 
 .ds-logo {
-  height: 55px !important;
-  min-height: 55px !important; /* Força a altura mínima */
+  object-fit: contain;
+  height: 120px !important;
+  min-height: 120px !important; /* Força a altura mínima */
   width: auto !important;
   object-fit: contain;
   flex-shrink: 0; /* IMPEDE o flexbox de esmagar a imagem */

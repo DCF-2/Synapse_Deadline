@@ -32,7 +32,7 @@ const OfertaCard = ({ oferta, favoritosIds, handleToggleFavorito, abrirDetalhes,
     try {
       await Share.share({
         title: oferta.tituloProduto,
-        text: `Confira essa oferta: ${oferta.tituloProduto} por R$ ${oferta.precoPromocional.toFixed(2)} no Deadline!`,
+        text: `Confira essa oferta: ${oferta.tituloProduto} por R$ ${oferta.precoPromocional.toFixed(2)} no Kai Ofertas!`,
         url: window.location.origin + `/oferta/${oferta.id}`,
         dialogTitle: 'Compartilhar Oferta'
       });

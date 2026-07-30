@@ -67,6 +67,22 @@ export default function LojaPerfil() {
 
   const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Number(valor));
   const formatarData = (data) => data ? new Date(`${data}T00:00:00`).toLocaleDateString('pt-BR') : '—';
+  
+  const formatarCnpj = (cnpj) => {
+    if (!cnpj) return '';
+    const num = cnpj.replace(/\D/g, '');
+    if (num.length === 14) return num.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, "$1.$2.$3/$4-$5");
+    return cnpj;
+  };
+  
+  const formatarTelefone = (tel) => {
+    if (!tel) return '';
+    const num = tel.replace(/\D/g, '');
+    if (num.length === 11) return num.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+    if (num.length === 10) return num.replace(/^(\d{2})(\d{4})(\d{4})$/, "($1) $2-$3");
+    return tel;
+  };
+
   const getEnderecoString = () => {
     if (!loja?.endereco) return '';
     const end = loja.endereco;
@@ -106,7 +122,7 @@ export default function LojaPerfil() {
       fetch(`${API_URL}/oferta/publico/${ofertas[0].id}/engajamento`, { method: 'POST' }).catch(console.error);
     }
     const fone = loja.contatoWhatsapp.replace(/\D/g, '');
-    const mensagem = encodeURIComponent(`Olá! Vi o perfil da sua loja no Deadline e gostaria de saber mais sobre as vossas ofertas ativas.`);
+    const mensagem = encodeURIComponent(`Olá! Vi o perfil da sua loja no Kai Ofertas e gostaria de saber mais sobre as vossas ofertas ativas.`);
     window.open(`https://wa.me/55${fone}?text=${mensagem}`, '_blank');
   };
 
@@ -131,7 +147,9 @@ export default function LojaPerfil() {
               <Link className="navbar-brand d-flex align-items-center gap-1 fw-bold text-dark text-decoration-none" to="/" style={{ fontSize: '0.9rem' }}>
                 <span className="text-success fs-5">←</span> Vitrine
               </Link>
-              <img src="/logo_deadline.png" alt="Deadline" style={{ height: '26px' }} />
+              <Link to="/" className="d-flex align-items-center gap-2 fw-bold fs-5 text-success m-0 text-decoration-none">
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px' }} />
+              </Link>
             </div>
           </nav>
 
@@ -175,10 +193,10 @@ export default function LojaPerfil() {
                      <h6 className="fw-bold text-dark mb-2" style={{ fontSize: '0.8rem' }}>Informações da Loja</h6>
                      <div className="d-flex flex-column gap-2 text-muted" style={{ fontSize: '0.75rem' }}>
                        <div><strong><img src="/icons/lista-de-controle.png" alt="icon" style={{ width: "14px", height: "14px", objectFit: "contain", marginRight: "4px" }} /> Horários:</strong> <br/> {loja.horarioFuncionamento}</div>
-                       {loja.cnpj && <div><strong>CNPJ:</strong> {loja.cnpj}</div>}
+                       {loja.cnpj && <div><strong>CNPJ:</strong> {formatarCnpj(loja.cnpj)}</div>}
                        {loja.razaoSocial && <div><strong>Razão Social:</strong> {loja.razaoSocial}</div>}
-                       {loja.contato1 && <div><strong>Telefone Principal:</strong> {loja.contato1}</div>}
-                       {loja.contato2 && <div><strong>Telefone Secundário:</strong> {loja.contato2}</div>}
+                       {loja.contato1 && <div><strong>Telefone Principal:</strong> {formatarTelefone(loja.contato1)}</div>}
+                       {loja.contato2 && <div><strong>Telefone Secundário:</strong> {formatarTelefone(loja.contato2)}</div>}
                        {loja.emailContato && <div><strong>E-mail:</strong> {loja.emailContato}</div>}
                        <div className="mt-1 pt-2 border-top">
                          <strong>Endereço Completo:</strong><br/>

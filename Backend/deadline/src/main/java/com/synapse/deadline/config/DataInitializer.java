@@ -24,9 +24,22 @@ public class DataInitializer {
                 System.out.println(">>> Ramos de empresa populados com sucesso!");
             }
 
-            garantirCategoria(categoriaRepository, "Alimentos e Bebidas", "alimentos-e-bebidas");
-            garantirCategoria(categoriaRepository, "Higiene e Beleza", "higiene-e-beleza");
+            // Farmácia
             garantirCategoria(categoriaRepository, "Medicamentos", "medicamentos");
+            garantirCategoria(categoriaRepository, "Saúde e Higiene", "saude-higiene");
+            garantirCategoria(categoriaRepository, "Infantil e Bebês", "infantil-bebes");
+
+            // Cosméticos
+            garantirCategoria(categoriaRepository, "Cabelos e Corpo", "cabelos-corpo");
+            garantirCategoria(categoriaRepository, "Pele e Maquiagem", "pele-maquiagem");
+            garantirCategoria(categoriaRepository, "Perfumaria", "perfumaria");
+
+            // Suplementos
+            garantirCategoria(categoriaRepository, "Nutrição Esportiva", "nutricao-esportiva");
+            garantirCategoria(categoriaRepository, "Vitaminas e Naturais", "vitaminas-naturais");
+            garantirCategoria(categoriaRepository, "Acessórios Esportivos", "acessorios-esportivos");
+
+            // Geral
             garantirCategoria(categoriaRepository, "Outro", "outro");
             System.out.println(">>> Categorias de produto garantidas com sucesso!");
         };

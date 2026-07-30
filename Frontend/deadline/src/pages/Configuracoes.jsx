@@ -336,10 +336,10 @@ export default function ConfiguracoesPage() {
                 <span className="ms-auto fs-4 text-muted">›</span>
               </button>
 
-              <button onClick={() => setActiveTab('notificacoes')} className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0">
+              <button disabled className="list-group-item list-group-item-action d-flex align-items-center py-4 border-0" style={{opacity: 0.6}}>
                 <span className="fs-3 me-3"><img src="/icons/notificacao.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /></span>
                 <div>
-                  <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Notificações e Alertas</h6>
+                  <h6 className="fw-bold mb-1" style={{ color: 'var(--dl-text-primary)' }}>Notificações e Alertas <span className="badge bg-warning text-dark ms-2" style={{fontSize: '0.65rem'}}>Em desenvolvimento</span></h6>
                   <small style={{ color: 'var(--dl-text-secondary)' }}>Emails semanais, vencimento de ofertas</small>
                 </div>
                 <span className="ms-auto fs-4 text-muted">›</span>
@@ -502,7 +502,7 @@ export default function ConfiguracoesPage() {
                 <div className="position-absolute bottom-0 start-0 end-0 p-3 bg-dark bg-opacity-25 d-flex justify-content-between align-items-center">
                   <div className="text-white">
                     <div className="fw-bold">Banner do Perfil</div>
-                    <small className="opacity-75">Recomendado: 1600x500px</small>
+                    <small className="opacity-75">Recomendação: 1200x400px (3:1). Max 5MB, JPG/PNG.</small>
                   </div>
                   <div className="d-flex gap-2">
                     {bannerPerfil && (
@@ -515,6 +515,7 @@ export default function ConfiguracoesPage() {
                       <input type="file" accept="image/*" hidden onChange={handleUploadBanner} disabled={enviandoBanner} />
                     </label>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -533,7 +534,7 @@ export default function ConfiguracoesPage() {
                       </button>
                     )}
                   </div>
-                  <small className="text-muted d-block mt-2">{enviandoLogo ? "Enviando arquivo ao servidor..." : "Recomendado: Imagem quadrada em formato PNG ou JPG (Max 5MB)."}</small>
+                  <small className="text-muted d-block mt-2">{enviandoLogo ? "Enviando arquivo ao servidor..." : "Recomendação: 500x500 pixels (1:1). Formatos: PNG ou JPG (Max 2MB)."}</small>
                </div>
             </div>
 
@@ -678,7 +679,7 @@ export default function ConfiguracoesPage() {
               <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center">
                 <div className="mb-3 mb-md-0 me-md-4">
                   <h6 className="fw-bold text-danger">Encerrar Parceria (Excluir Conta)</h6>
-                  <p className="text-danger small opacity-75 mb-0">Ao prosseguir com a exclusão da sua conta, todo o seu catálogo de produtos, histórico de ofertas, métricas de engajamento e dados de faturamento serão permanentemente apagados do sistema Deadline de forma irreversível.</p>
+                  <p className="text-danger small opacity-75 mb-0">Ao prosseguir com a exclusão da sua conta, todo o seu catálogo de produtos, histórico de ofertas, métricas de engajamento e dados de faturamento serão permanentemente apagados do sistema Kai Ofertas de forma irreversível.</p>
                 </div>
                 <button className="btn btn-danger fw-bold rounded-pill px-4 flex-shrink-0 shadow-sm" onClick={() => setShowDeleteModal(true)}>
                   Excluir Empresa

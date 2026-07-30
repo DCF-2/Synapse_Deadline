@@ -2,6 +2,8 @@ import React from 'react';
 import { IonApp, IonRouterOutlet, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
 import { Route } from 'react-router-dom';
+import { App as CapApp } from '@capacitor/app';
+import { useEffect } from 'react';
 
 // Estilos Globais e Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -21,6 +23,21 @@ import Favoritos from './pages/Favoritos';
 setupIonicReact();
 
 export default function App() {
+  useEffect(() => {
+    // Trata o botão físico de voltar do Android
+    const backButtonListener = CapApp.addListener('backButton', ({ canGoBack }) => {
+      if (!canGoBack) {
+        CapApp.exitApp();
+      } else {
+        window.history.back();
+      }
+    });
+
+    return () => {
+      backButtonListener.then(listener => listener.remove());
+    };
+  }, []);
+
   return (
     <IonApp>
       <IonReactRouter>

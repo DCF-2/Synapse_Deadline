@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080';
@@ -82,7 +82,9 @@ export default function ProdutoDetalhes() {
       
       {/* HEADER MOBILE */}
       <header className="navbar navbar-dark d-md-none px-3 sticky-top shadow-sm" style={{ backgroundColor: '#52b788' }}>
-        <span className="navbar-brand fw-bold text-white">⏱️ Deadline</span>
+        <span className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-5 text-white">
+          <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '55px' }} />
+        </span>
         <button className="navbar-toggler border-0" onClick={() => setIsMenuOpen(!isMenuOpen)}>
           <span className="navbar-toggler-icon"></span>
         </button>
@@ -94,7 +96,9 @@ export default function ProdutoDetalhes() {
           style={{ backgroundColor: '#3aad77', height: '100vh', position: 'sticky', top: 0, zIndex: 1030 }}>
           <div>
             <div className="d-none d-md-block text-white my-3 ps-2">
-              <h4 className="fw-bold d-flex align-items-center gap-2">⏱️ Deadline</h4>
+              <span className="navbar-brand d-flex align-items-center gap-2 m-0 fw-bold fs-4 text-white text-decoration-none">
+                <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', maxWidth: '100%', objectFit: 'contain' }} />
+              </span>
             </div>
             <ul className="nav flex-column mt-4">
               <li><Link to="/dashboard" className="nav-link text-white opacity-75"><img src="/icons/painel-de-controle.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Dashboard</Link></li>

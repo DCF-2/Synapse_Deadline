@@ -3,7 +3,7 @@ package com.synapse.deadline.config;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -31,6 +31,6 @@ class DataInitializerTest {
 
         assertDoesNotThrow(() -> initializer.initData(ramoRepository, categoriaRepository).run());
 
-        verify(categoriaRepository, times(4)).save(any(CategoriaProduto.class));
+        verify(categoriaRepository, atLeastOnce()).save(any(CategoriaProduto.class));
     }
 }

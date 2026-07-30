@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/theme.css';
 import { obterFavoritos, contarFavoritos } from '../utils/favoritos';
-import BotaoFavorito from '../components/BotaoFavorito';
 import OfertaCard from '../components/OfertaCard';
 import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 import Footer from '../components/Footer';
@@ -39,11 +38,11 @@ export default function Favoritos() {
   };
 
   return (
-    <div style={{ backgroundColor: 'var(--dl-background)', minHeight: '100vh' }}>
+    <div style={{ backgroundColor: 'var(--dl-background)', minHeight: '100vh' }} className="d-flex flex-column">
       <nav className="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
         <div className="container">
-          <Link className="navbar-brand d-flex align-items-center gap-2" to="/">
-            <img src="/logo_deadline.png" alt="Deadline" style={{ height: '35px' }} />
+          <Link className="navbar-brand d-flex align-items-center gap-2 fw-bold fs-4 text-success m-0" to="/">
+            <img src="/logo-KaiOfertas-removebg-preview.png" alt="Kai Ofertas Logo" style={{ height: '65px', filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))' }} />
           </Link>
           <div className="d-flex gap-2 align-items-center">
             <Link to="/favoritos" className="btn btn-warning fw-bold rounded-pill px-3 d-flex align-items-center gap-2">
@@ -58,7 +57,7 @@ export default function Favoritos() {
         </div>
       </nav>
 
-      <div className="container py-5">
+      <div className="container py-5 flex-grow-1">
         <div className="d-flex align-items-center gap-3 mb-4">
           <Link to="/" className="btn btn-light rounded-pill px-3"><img src="/icons/voltar.png" alt="icon" style={{ width: "20px", height: "20px", objectFit: "contain", marginRight: "4px" }} /> Voltar</Link>
           <div>
