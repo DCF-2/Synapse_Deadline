@@ -6,7 +6,7 @@ import OfertaDetalhesModal from '../components/OfertaDetalhesModal';
 import '../styles/theme.css';
 import { obterFavoritos, alternarFavorito, obterLocalizacaoConsumidor, calcularDistanciaHaversine } from '../utils/storage_mobile';
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://synapse-deadline.onrender.com';
 
 export default function LojaPerfil() {
   const { id } = useParams();

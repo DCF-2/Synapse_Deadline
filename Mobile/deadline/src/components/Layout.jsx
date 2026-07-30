@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import '../styles/theme.css'; 
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = 'https://synapse-deadline.onrender.com';
 
 export default function Layout() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
