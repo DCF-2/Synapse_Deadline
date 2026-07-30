@@ -26,23 +26,17 @@ public class DataInitializer {
 
             // Farmácia
             garantirCategoria(categoriaRepository, "Medicamentos", "medicamentos");
-            garantirCategoria(categoriaRepository, "Saúde e Bem-Estar", "saude-e-bem-estar");
-            garantirCategoria(categoriaRepository, "Higiene e Cuidados Pessoais", "higiene-pessoal");
-            garantirCategoria(categoriaRepository, "Mamães e Bebês", "mamaes-e-bebes");
-            garantirCategoria(categoriaRepository, "Saúde Sexual", "saude-sexual");
+            garantirCategoria(categoriaRepository, "Saúde e Higiene", "saude-higiene");
+            garantirCategoria(categoriaRepository, "Infantil e Bebês", "infantil-bebes");
 
             // Cosméticos
-            garantirCategoria(categoriaRepository, "Cabelos", "cabelos");
-            garantirCategoria(categoriaRepository, "Pele e Rosto", "pele-rosto");
-            garantirCategoria(categoriaRepository, "Maquiagem", "maquiagem");
+            garantirCategoria(categoriaRepository, "Cabelos e Corpo", "cabelos-corpo");
+            garantirCategoria(categoriaRepository, "Pele e Maquiagem", "pele-maquiagem");
             garantirCategoria(categoriaRepository, "Perfumaria", "perfumaria");
-            garantirCategoria(categoriaRepository, "Corpo e Banho", "corpo-e-banho");
 
             // Suplementos
-            garantirCategoria(categoriaRepository, "Proteínas e Aminoácidos", "proteinas-aminoacidos");
-            garantirCategoria(categoriaRepository, "Energia e Pré-Treino", "energia-pre-treino");
-            garantirCategoria(categoriaRepository, "Emagrecimento", "emagrecimento");
-            garantirCategoria(categoriaRepository, "Vitaminas e Saúde", "vitaminas-e-saude");
+            garantirCategoria(categoriaRepository, "Nutrição Esportiva", "nutricao-esportiva");
+            garantirCategoria(categoriaRepository, "Vitaminas e Naturais", "vitaminas-naturais");
             garantirCategoria(categoriaRepository, "Acessórios Esportivos", "acessorios-esportivos");
 
             // Geral
