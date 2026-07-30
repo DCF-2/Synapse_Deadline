@@ -89,12 +89,20 @@ export default function NovaOferta() {
   const [loading, setLoading] = useState(false);
   const [carregandoProdutos, setCarregandoProdutos] = useState(true);
 
+  const [buscaProduto, setBuscaProduto] = useState('');
+  const [dropdownAberto, setDropdownAberto] = useState(false);
+
   const navigate = useNavigate();
   const location = useLocation();
 
   const produtoSelecionado = useMemo(() => {
     return produtos.find((p) => String(p.id) === String(produtoId));
   }, [produtos, produtoId]);
+
+  const produtosFiltrados = useMemo(() => {
+    if (!buscaProduto) return produtos;
+    return produtos.filter(p => p.tituloProduto.toLowerCase().includes(buscaProduto.toLowerCase()));
+  }, [produtos, buscaProduto]);
 
   useEffect(() => {
     setPrecoPromocional('');
@@ -206,17 +214,59 @@ export default function NovaOferta() {
         ) : (
           <form onSubmit={handleCriarOferta}>
             
-            <div className="mb-4">
+            <div className="mb-4 position-relative">
               <LabelComAjuda
                 texto="Produto Base"
                 ajuda="O nome cadastrado aqui é o que aparece na oferta ao público."
               />
-              <select className="form-select form-select-lg bg-light border-0 shadow-sm" value={produtoId} onChange={(e) => setProdutoId(e.target.value)} required>
-                <option value="">Selecione um produto cadastrado...</option>
-                {produtos.map((p) => (
-                  <option key={p.id} value={p.id}>{p.tituloProduto} — {p.nomeCategoria || 'Sem categoria'}</option>
-                ))}
-              </select>
+              <div 
+                className="form-control form-control-lg bg-light border-0 shadow-sm d-flex justify-content-between align-items-center"
+                style={{ cursor: 'pointer' }}
+                onClick={() => setDropdownAberto(!dropdownAberto)}
+              >
+                <span className={produtoId ? "text-dark" : "text-muted"}>
+                  {produtoSelecionado ? `${produtoSelecionado.tituloProduto} — ${produtoSelecionado.nomeCategoria || 'Sem categoria'}` : 'Selecione um produto cadastrado...'}
+                </span>
+                <span style={{ fontSize: '12px' }}>▼</span>
+              </div>
+              
+              {dropdownAberto && (
+                <div className="position-absolute w-100 mt-1 bg-white border rounded-3 shadow-lg z-3" style={{ zIndex: 1000 }}>
+                  <div className="p-2 border-bottom">
+                    <input 
+                      type="text" 
+                      className="form-control bg-light" 
+                      placeholder="🔎 Digite para buscar um produto..." 
+                      value={buscaProduto}
+                      onChange={(e) => setBuscaProduto(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <ul className="list-unstyled mb-0" style={{ maxHeight: '220px', overflowY: 'auto' }}>
+                    {produtosFiltrados.length === 0 ? (
+                      <li className="p-3 text-muted text-center">Nenhum produto encontrado.</li>
+                    ) : (
+                      produtosFiltrados.map(p => (
+                        <li 
+                          key={p.id} 
+                          className="p-2 px-3 border-bottom"
+                          style={{ cursor: 'pointer', transition: 'background 0.2s' }}
+                          onClick={() => {
+                            setProdutoId(p.id);
+                            setDropdownAberto(false);
+                            setBuscaProduto('');
+                          }}
+                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#f1f5f9'}
+                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        >
+                          <div className="fw-bold text-dark">{p.tituloProduto}</div>
+                          <div className="small text-muted">{p.nomeCategoria || 'Sem categoria'}</div>
+                        </li>
+                      ))
+                    )}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {produtoSelecionado && (
