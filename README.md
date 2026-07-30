@@ -1,4 +1,4 @@
-# **🕒 Projeto Deadline**
+# **🕒 Projeto Kai Ofertas**
 
 <p align="center">
   <img src="https://img.shields.io/badge/Status-Em%20Desenvolvimento-yellow?style=for-the-badge" alt="Status" />
@@ -12,20 +12,20 @@
 
 No setor farmacêutico, o desperdício de produtos por vencimento é um problema financeiro e regulatório grave, gerando o custo da perda do produto e a taxa de descarte especializado.
 
-O **Deadline** atua como uma vitrine inteligente para resolver este problema. A plataforma transforma um passivo (produto a ser descartado) em fluxo de caixa, atraindo clientes para a loja física e promovendo o acesso mais barato a itens de saúde, dermocosméticos e higiene para a população.
+O **Kai Ofertas** atua como uma vitrine inteligente para resolver este problema. A plataforma transforma um passivo (produto a ser descartado) em fluxo de caixa, atraindo clientes para a loja física e promovendo o acesso mais barato a itens de saúde, dermocosméticos e higiene para a população.
 
 ---
 
 ## **📱 Aplicações e Ecossistema**
 
-O projeto Deadline possui um ecossistema completo dividido em três partes principais:
+O projeto Kai Ofertas possui um ecossistema completo dividido em três partes principais:
 
 ### 1. 🌐 Web App (Painel Administrativo para Empresas)
-**Acesse o site:** *(O link de produção poderá ser encontrado na bio ou aqui, em breve)*  
+**Acesse o site oficial:** [https://synapse-deadline.vercel.app/](https://synapse-deadline.vercel.app/)  
 O ambiente web foi desenhado para as Farmácias e Drogarias. É onde o gerente realiza o cadastro rápido das ofertas de produtos próximos ao vencimento, com um painel (dashboard) prático construído com **React.js e Tailwind CSS**.
 
 ### 2. 📱 App Mobile (Aplicativo para Consumidores)
-**📦 Download do APK:** Para usar o aplicativo no seu dispositivo Android e encontrar as melhores ofertas próximas a você, acesse a aba [**Releases**](../../releases) neste repositório GitHub e faça o download da versão `.apk` mais recente.  
+**📦 Download do APK:** Para usar o aplicativo no seu dispositivo Android e encontrar as melhores ofertas próximas a você, acesse a nossa [**página de Releases**](https://github.com/davifreitas/Synapse_Deadline/releases) e baixe a versão `.apk` mais recente.  
 O app foi desenvolvido com foco na agilidade e proximidade. Feito com **React e Ionic Capacitor**, entregando uma experiência nativa focada em geolocalização.
 
 ### 3. ⚙️ Backend (API e Motor de Regras)
@@ -33,7 +33,7 @@ O cérebro da operação. Desenvolvido em **Java com Spring Boot** e banco de da
 
 ---
 
-## **🔄 Como o Deadline Funciona (Fluxo Principal)**
+## **🔄 Como o Kai Ofertas Funciona (Fluxo Principal)**
 
 Para entender o modelo de negócios e o papel de cada aplicação, veja o diagrama de fluxo abaixo:
 
@@ -81,7 +81,7 @@ Para facilitar a contribuição e manutenção, o repositório está estruturado
 
 ```mermaid
 graph LR
-    R[📁 Synapse_Deadline] --> B[⚙️ Backend]
+    R[📁 Kai_Ofertas] --> B[⚙️ Backend]
     R --> F[🌐 Frontend]
     R --> M[📱 Mobile]
 
@@ -171,17 +171,9 @@ Para rodar este ecossistema completo na sua máquina, siga o passo a passo de ca
 1. **Vínculo Obrigatório**: Todo produto existe apenas se atrelado a uma Farmácia válida.  
 2. **Ocultação Automática**: Produtos cuja validade atual seja menor ou igual à data de hoje somem imediatamente da visão do consumidor.  
 3. **Cálculo Matemático na API**: O backend garante a consistência do Desconto x Preço Final na hora do cadastro, prevenindo fraudes de interface.  
-4. **Exclusividade Presencial**: Transação e pagamento ocorrem balcão a balcão. O Deadline age apenas como o gerador do tráfego (Lead).
+4. **Exclusividade Presencial**: Transação e pagamento ocorrem balcão a balcão. O Kai Ofertas age apenas como o gerador do tráfego (Lead).
 
----
 
-## **🔮 Roadmap / Diferenciais Futuros**
-* 🚨 **Filtro por Urgência**: Etiquetas visuais de *"Vence Hoje!"* ou *"Vence em 2 dias"*, criando senso de escassez (modelo iFood promo).  
-* 🗺️ **Mapa de Ofertas**: Visualização estilo Google Maps para encontrar promoções passeando pelo bairro.  
-* ♻️ **Métricas de Impacto**: Mostrar ao usuário e à farmácia quantos KGs de desperdício/descarte foram evitados.  
-* 🤖 **Sugestão Automática de Preço**: Inteligência para sugerir % de desconto ideal baseado nos dias restantes para o vencimento.
-
----
 
 ## **🎓 Equipe e Instituição**
 Este é um projeto acadêmico de **Projeto e Desenvolvimento de Software** desenvolvido no **Instituto Federal de Pernambuco (IFPE) - Campus Recife**.

@@ -27,35 +27,25 @@ public class DataInitializer {
             // Farmácia
             garantirCategoria(categoriaRepository, "Medicamentos", "medicamentos");
             garantirCategoria(categoriaRepository, "Saúde e Bem-Estar", "saude-e-bem-estar");
-            garantirCategoria(categoriaRepository, "Medicamentos com Receita", "medicamentos-com-receita");
-            garantirCategoria(categoriaRepository, "Medicamentos Isentos de Prescrição", "medicamentos-isentos");
-            garantirCategoria(categoriaRepository, "Genéricos e Similares", "genericos-e-similares");
-            garantirCategoria(categoriaRepository, "Saúde e Prevenção", "saude-e-prevencao");
-            garantirCategoria(categoriaRepository, "Primeiros Socorros", "primeiros-socorros");
-            garantirCategoria(categoriaRepository, "Aparelhos e Ortopedia", "aparelhos-e-ortopedia");
-            garantirCategoria(categoriaRepository, "Saúde Sexual", "saude-sexual");
+            garantirCategoria(categoriaRepository, "Higiene e Cuidados Pessoais", "higiene-pessoal");
             garantirCategoria(categoriaRepository, "Mamães e Bebês", "mamaes-e-bebes");
+            garantirCategoria(categoriaRepository, "Saúde Sexual", "saude-sexual");
 
             // Cosméticos
-            garantirCategoria(categoriaRepository, "Cuidados com a Pele", "cuidados-com-a-pele");
-            garantirCategoria(categoriaRepository, "Cuidados com o Cabelo", "cuidados-com-o-cabelo");
+            garantirCategoria(categoriaRepository, "Cabelos", "cabelos");
+            garantirCategoria(categoriaRepository, "Pele e Rosto", "pele-rosto");
             garantirCategoria(categoriaRepository, "Maquiagem", "maquiagem");
-            garantirCategoria(categoriaRepository, "Cabelos (Capilar)", "cabelos");
-            garantirCategoria(categoriaRepository, "Rosto (Skincare)", "rosto-skincare");
-            garantirCategoria(categoriaRepository, "Corpo e Banho", "corpo-e-banho");
             garantirCategoria(categoriaRepository, "Perfumaria", "perfumaria");
-            garantirCategoria(categoriaRepository, "Unhas", "unhas");
-            garantirCategoria(categoriaRepository, "Acessórios de Beleza", "acessorios-beleza");
+            garantirCategoria(categoriaRepository, "Corpo e Banho", "corpo-e-banho");
 
             // Suplementos
-            garantirCategoria(categoriaRepository, "Pré-Treinos", "pre-treinos");
-            garantirCategoria(categoriaRepository, "Proteínas", "proteinas");
-            garantirCategoria(categoriaRepository, "Aminoácidos", "aminoacidos");
-            garantirCategoria(categoriaRepository, "Energia e Performance", "energia-performance");
-            garantirCategoria(categoriaRepository, "Emagrecimento e Definição", "emagrecimento");
-            garantirCategoria(categoriaRepository, "Vitaminas e Minerais", "vitaminas-e-minerais");
-            garantirCategoria(categoriaRepository, "Alimentação Saudável", "alimentacao-saudavel");
+            garantirCategoria(categoriaRepository, "Proteínas e Aminoácidos", "proteinas-aminoacidos");
+            garantirCategoria(categoriaRepository, "Energia e Pré-Treino", "energia-pre-treino");
+            garantirCategoria(categoriaRepository, "Emagrecimento", "emagrecimento");
+            garantirCategoria(categoriaRepository, "Vitaminas e Saúde", "vitaminas-e-saude");
             garantirCategoria(categoriaRepository, "Acessórios Esportivos", "acessorios-esportivos");
+
+            // Geral
             garantirCategoria(categoriaRepository, "Outro", "outro");
             System.out.println(">>> Categorias de produto garantidas com sucesso!");
         };
